@@ -8,7 +8,7 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
   * [**Table of contents**](#table-of-contents)
   * [**License**](#license)
   * [**Installation**](#installation)
-     * [**One-click GUI**](#ne-click-gui)
+     * [**One-click GUI**](#one-click-gui)
      * [**Python**](#python)
   * [**Test data**](#test-data)
   * [**Usage**](#usage)
@@ -23,8 +23,8 @@ Get a copy of the [MIT license here](LICENSE.txt).
 
 Two types of installation are possible:
 
-* **One-click GUI installer:** Choose this installation if you only want the graphical user interface and/or keep things as simple as possible.
-* **Python installer:** Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
+* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface and/or keep things as simple as possible.
+* [**Python installer:**](#python) Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
 
 *Since this software is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
 
