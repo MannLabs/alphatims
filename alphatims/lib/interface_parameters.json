@@ -1,0 +1,17 @@
+{
+  "log_file": {
+    "description": "Save all log data to a file",
+    "default": "",
+    "type": "path"
+  },
+  "log_stream": {
+    "description": "Stream all log data",
+    "default": true,
+    "type": "flag"
+  },
+  "bruker_d_folder": {
+    "description": "A Bruker .d folder with raw data",
+    "default": null,
+    "type": "path"
+  }
+}

@@ -1,0 +1,3 @@
+recursive-include alphatims *
+include LICENSE.txt
+include README.md
