@@ -12,6 +12,8 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
      * [**Python**](#python)
   * [**Test data**](#test-data)
   * [**Usage**](#usage)
+  * [**Under the hood**](#under-the-hood)
+  * [**Future perspectives**](#future-perspectives)
 
 ## License
 
@@ -30,7 +32,7 @@ Two types of installation are possible:
 
 * **Windows:** TODO
 * **Linux:** TODO
-* **MacOS:** Unavailable due to availability of Bruker libraries ()
+* **MacOS:** Unavailable due to availability of Bruker libraries
 
 ### Python
 
@@ -74,3 +76,17 @@ alphatims
 conda deactivate alphatims
 ```
 * **Python:** AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims` if the conda environment is activated with `conda activate alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) is present in the [nbs folder](nbs).
+
+## Under the hood
+
+A connection to the .tdf and .tdf_bin in the bruker .d directory are made once and all data is read into memory as a TimsTOF object. This is done by opening the sql database (.tdf) and reading all individual scans from the binary data (.tdf_bin) with the function `bruker_dll.tims_read_scans_v2` from the Bruker library. The TimsTOF data object stores all TOF arrivals in two huge arrays: `tof_indices` and `intensities`. This data seems to be centroided on a 'per-scan' basis (i.e. per push), but are independent in the retention time and ion mobility domain.
+
+Since the `tof_indices` array is quite sparse in the TOF domain, it is indexed with a `tof_indptr` array that similar to a a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_(CSR,_CRS_or_Yale_format). Herein a 'row' corresponds to a (`frame`, `scan`) tuple and the `tof_indptr` array thus has a length of `frame_max_index * scan_max_index`, which approximately equals `10 * gradient_length_in_seconds * 927`. Filtering in `rt`/`frame` and `mobility`/`scan` domain is thus just a slice of the `tof_indptr` array when represented as a 2D-matrix and is hence very performant. Filtering in `TOF`/`mz` domain unfortunately requires to loop over individual scans with the function. Luckily this can be done with numba and with a performance of $log(n)$ since the `tof_indices` are sorted per scan.
+
+Slicing the total dataset happens with a magic `__getitem__` function and automatically converts any floating `rt`/`mobility`/`mz` values to the appropriate `frame`/`scan`/`TOF` indices and vice versa as well.
+
+## Future perspectives
+
+Precursor indices `quad_indptr` will be incorporated to complete the symmetry between instrumental components (LC, TIMS, quadrupole/collison cel, TOF) and acquired data. Note that `quad_indptr` are fully dependent on `frame`/`scan` indices, while all other coordinates can be considere orthogonal/independent, at least from a data accession perspective.
+
+Implementation of feature finding has not been started yet.
