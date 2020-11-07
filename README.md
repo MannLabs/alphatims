@@ -57,7 +57,7 @@ If the editable flag `-e` is use, all modifications to the AlphaTims [source cod
 
 ## Test data
 
-A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download here](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc).
+A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download here](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 
 ## Usage
 
@@ -81,7 +81,7 @@ conda deactivate alphatims
 
 A connection to the .tdf and .tdf_bin in the bruker .d directory are made once and all data is read into memory as a TimsTOF object. This is done by opening the sql database (.tdf) and reading all individual scans from the binary data (.tdf_bin) with the function `bruker_dll.tims_read_scans_v2` from the Bruker library. The TimsTOF data object stores all TOF arrivals in two huge arrays: `tof_indices` and `intensities`. This data seems to be centroided on a 'per-scan' basis (i.e. per push), but are independent in the retention time and ion mobility domain.
 
-Since the `tof_indices` array is quite sparse in the TOF domain, it is indexed with a `tof_indptr` array that similar to a a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_(CSR,_CRS_or_Yale_format). Herein a 'row' corresponds to a (`frame`, `scan`) tuple and the `tof_indptr` array thus has a length of `frame_max_index * scan_max_index`, which approximately equals `10 * gradient_length_in_seconds * 927`. Filtering in `rt`/`frame` and `mobility`/`scan` domain is thus just a slice of the `tof_indptr` array when represented as a 2D-matrix and is hence very performant. Filtering in `TOF`/`mz` domain unfortunately requires to loop over individual scans with the function. Luckily this can be done with numba and with a performance of $log(n)$ since the `tof_indices` are sorted per scan.
+Since the `tof_indices` array is quite sparse in the TOF domain, it is indexed with a `tof_indptr` array that similar to a a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_%28CSR,_CRS_or_Yale_format%29). Herein a 'row' corresponds to a (`frame`, `scan`) tuple and the `tof_indptr` array thus has a length of `frame_max_index * scan_max_index`, which approximately equals `10 * gradient_length_in_seconds * 927`. Filtering in `rt`/`frame` and `mobility`/`scan` domain is thus just a slice of the `tof_indptr` array when represented as a 2D-matrix and is hence very performant. Filtering in `TOF`/`mz` domain unfortunately requires to loop over individual scans with the function. Luckily this can be done with numba and with a performance of $log(n)$ since the `tof_indices` are sorted per scan.
 
 Slicing the total dataset happens with a magic `__getitem__` function and automatically converts any floating `rt`/`mobility`/`mz` values to the appropriate `frame`/`scan`/`TOF` indices and vice versa as well.
 
