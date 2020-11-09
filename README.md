@@ -53,10 +53,34 @@ git clone https://github.com/swillems/alphatims.git
 pip install ./alphatims --use-feature=2020-resolver
 # For an editable version with modifiable source code use:
 # pip install -e ./alphatims --use-feature=2020-resolver
-conda deactivate alphatims
+conda deactivate
 ```
 
 If the editable flag `-e` is use, all modifications to the AlphaTims [source code folder](alphatims) are then directly incorporated. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.
+
+To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution can be added as an alias. On linux, this can be done with e.g.:
+
+```bash
+conda activate alphatims
+alphatims_bin="$(which alphatims)"
+# With bash
+echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
+# With zsh
+echo "alias alphatims='"${alphatims_bin}"'" >> ~/.zshrc
+conda deactivate
+```
+
+On Windows, this can be done by adding the executable to the `PATH` with e.g.:
+
+```bash
+# TODO Code snippet below is not functional
+# conda activate alphatims
+# set alphatims_bin=where alphatims
+# set PATH=%PATH%;%alphatims_bin%
+# conda deactivate
+```
+
+Note that this binary still incorporates all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
 
 ## Test data
 
@@ -77,7 +101,7 @@ The GUI is accessible if you used the one-click GUI installer or by the followin
 ```bash
 conda activate alphatims
 alphatims gui
-conda deactivate alphatims
+conda deactivate
 ```
 ### CLI
 
@@ -86,7 +110,7 @@ The CLI can be run with the following commands in a terminal:
 ```bash
 conda activate alphatims
 alphatims
-conda deactivate alphatims
+conda deactivate
 ```
 ### Python
 
