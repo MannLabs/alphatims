@@ -345,23 +345,28 @@ class TimsTOF(object):
         raw_indices=None,
         *,
         frame_indices=None,
+        quad_indices=None,
         scan_indices=None,
         tof_indices=None,
         to_frame_indices:bool=False,
         to_scan_indices:bool=False,
+        to_quad_indices:bool=False,
         to_tof_indices:bool=False,
         to_rt_values:bool=False,
         to_mobility_values:bool=False,
+        to_quad_mz_values:bool=False,
         to_mz_values:bool=False,
         return_as_dict:bool=False,
     ):
-        values = {}
+        result = {}
         if (raw_indices is not None) and any(
             [
                 to_frame_indices,
                 to_scan_indices,
+                to_quad_indices,
                 to_rt_values,
                 to_mobility_values,
+                to_quad_mz_values,
             ]
         ):
             parsed_indices = np.searchsorted(
@@ -373,25 +378,36 @@ class TimsTOF(object):
             frame_indices = parsed_indices // self.scan_max_index
         if (to_scan_indices or to_mobility_values) and scan_indices is None:
             scan_indices = parsed_indices % self.scan_max_index
+        if (to_quad_indices or to_quad_mz_values) and quad_indices is None:
+            quad_indices = np.searchsorted(
+                self.quad_indptr,
+                parsed_indices,
+                "left"
+            ) - 1
         if (to_tof_indices or to_mz_values) and tof_indices is None:
             tof_indices = self.tof_indices[raw_indices]
         if to_frame_indices:
-            values["frame_indices"] = frame_indices
+            result["frame_indices"] = frame_indices
         if to_scan_indices:
-            values["scan_indices"] = scan_indices
+            result["scan_indices"] = scan_indices
+        if to_quad_indices:
+            result["quad_indices"] = quad_indices
         if to_tof_indices:
-            values["tof_indices"] = tof_indices
+            result["tof_indices"] = tof_indices
         if to_rt_values:
-            values["rt_values"] = self.rt_values[frame_indices]
+            result["rt_values"] = self.rt_values[frame_indices]
         if to_mobility_values:
-            values["mobility_values"] = self.mobility_values[scan_indices]
+            result["mobility_values"] = self.mobility_values[scan_indices]
+        if to_quad_mz_values:
+            result["quad_low_mz_values"] = self.quad_low_values[quad_indices]
+            result["quad_high_mz_values"] = self.quad_high_values[quad_indices]
         if to_mz_values:
-            values["mz_values"] = self.mz_values[tof_indices]
+            result["mz_values"] = self.mz_values[tof_indices]
         if not return_as_dict:
             # python >= 3.7 maintains dict insertion order
-            return list(values.values())
+            return list(result.values())
         else:
-            return values
+            return result
 
     def convert_to_indices(
         self,
@@ -470,13 +486,24 @@ class TimsTOF(object):
         slice_step = keys[-1].step
         if slice_step is None:
             slice_step = 1
-        return sparse_slice(
+        quad_start = keys[-2].start
+        if quad_start is None:
+            quad_start = -np.inf
+        quad_stop = keys[-2].stop
+        if quad_stop is None:
+            quad_stop = np.inf
+        return tof_slicer(
             self.tof_indices,
             slice_start,
             slice_stop,
             slice_step,
             stretch_starts[keys[:2]].flatten(),
             stretch_ends[keys[:2]].flatten(),
+            self.tof_indptr[self.quad_indptr],
+            self.quad_low_values,
+            self.quad_high_values,
+            quad_start,
+            quad_stop,
         )
 
     def bin_intensities(self, indices, axis):
@@ -513,16 +540,29 @@ class TimsTOF(object):
 
 
 @alphatims.utils.njit
-def sparse_slice(
+def tof_slicer(
     index_array,
     slice_start,
     slice_stop,
     slice_step,
     sparse_starts,
     sparse_ends,
+    quad_indptr,
+    quad_low_values,
+    quad_high_values,
+    quad_low,
+    quad_high
 ):
     result = []
+    quad_index = 0
     for sparse_start, sparse_end in zip(sparse_starts, sparse_ends):
+        # TODO IndexError possible?
+        while quad_indptr[quad_index + 1] <= sparse_end:
+            quad_index += 1
+        if quad_low_values[quad_index] < quad_low:
+            continue
+        if quad_high_values[quad_index] > quad_high:
+            continue
         if (
             sparse_start == sparse_end
         ) or (
