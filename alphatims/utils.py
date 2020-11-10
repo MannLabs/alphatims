@@ -12,7 +12,7 @@ LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(os.path.dirname(BASE_PATH), "logs")
 with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:
     INTERFACE_PARAMETERS = json.load(in_file)
-MAX_THREADS = 1
+MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
 
 
 def set_logger(*, log_file_name="", stream=True, log_level=logging.INFO):
@@ -92,7 +92,7 @@ def pjit(
             *args,
         ):
             if len(iterable) == 0:
-                for i in range(start, step, stop):
+                for i in range(start, stop, step):
                     numba_func(i, *args)
             else:
                 for i in iterable:
@@ -107,37 +107,33 @@ def pjit(
                     thread_count,
                     set_global=False
                 )
-            if current_thread_count == 1:
-                for i in iterable:
-                    numba_func(i, *args)
-            else:
-                threads = []
-                for thread_id in range(current_thread_count):
-                    local_iterable = iterable[thread_id::current_thread_count]
-                    if isinstance(iterable, range):
-                        start = local_iterable.start
-                        stop = local_iterable.stop
-                        step = local_iterable.step
-                        local_iterable = np.array([], dtype=np.int64)
-                    else:
-                        start = -1
-                        stop = -1
-                        step = -1
-                    t = threading.Thread(
-                        target=numba_func_parallel,
-                        args=(
-                            local_iterable,
-                            start,
-                            stop,
-                            step,
-                            *args
-                        )
+            threads = []
+            for thread_id in range(current_thread_count):
+                local_iterable = iterable[thread_id::current_thread_count]
+                if isinstance(local_iterable, range):
+                    start = local_iterable.start
+                    stop = local_iterable.stop
+                    step = local_iterable.step
+                    local_iterable = np.array([], dtype=np.int64)
+                else:
+                    start = -1
+                    stop = -1
+                    step = -1
+                thread = threading.Thread(
+                    target=numba_func_parallel,
+                    args=(
+                        local_iterable,
+                        start,
+                        stop,
+                        step,
+                        *args
                     )
-                    t.start()
-                    threads.append(t)
-                for t in threads:
-                    t.join()
-                    del t
+                )
+                thread.start()
+                threads.append(thread)
+            for thread in threads:
+                thread.join()
+                del thread
         return functools.wraps(func)(wrapper)
     if _func is None:
         return parallel_compiled_func_inner
