@@ -27,7 +27,7 @@ Get a copy of the [MIT license](LICENSE.txt).
 Two types of installation are possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface and/or keep things as simple as possible.
-* [**Python installer:**](##python-windows-and-linux) Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
+* [**Python installer:**](#python-windows-and-linux) Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
 
 *Since this software is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
 
@@ -66,7 +66,7 @@ alphatims_bin="$(which alphatims)"
 # With bash
 echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
 # With zsh
-echo "alias alphatims='"${alphatims_bin}"'" >> ~/.zshrc
+# echo "alias alphatims='"${alphatims_bin}"'" >> ~/.zshrc
 conda deactivate
 ```
 
