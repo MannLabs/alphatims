@@ -1,17 +1,12 @@
 #!python
 
 # builtin
-import ctypes
-import sqlite3
 import os
 import sys
 import contextlib
 import logging
 # external
 import numpy as np
-import pandas as pd
-import numba
-from matplotlib import pyplot as plt
 # local
 import alphatims.utils
 
@@ -28,6 +23,7 @@ MSMSTYPE_DIAPASEF = 9
 
 
 def init_bruker_dll(bruker_dll_file_name):
+    import ctypes
     logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
     bruker_dll = ctypes.cdll.LoadLibrary(
         os.path.realpath(bruker_dll_file_name)
@@ -82,27 +78,30 @@ def open_bruker_d_folder(bruker_dll, bruker_d_folder_name):
         bruker_dll.tims_close(bruker_d_folder_handle)
 
 
-
-def read_frames(bruker_d_folder_name):
+def read_bruker_frames(bruker_d_folder_name):
+    import sqlite3
+    import pandas as pd
     logging.info(f"Reading frames for {bruker_d_folder_name}")
-    with sqlite3.connect(os.path.join(bruker_d_folder_name, "analysis.tdf")) as con:
+    with sqlite3.connect(
+        os.path.join(bruker_d_folder_name, "analysis.tdf")
+    ) as sql_database_connection:
         global_meta_data = pd.read_sql_query(
             "SELECT * from GlobalMetaData",
-            con
+            sql_database_connection
         )
         frames = pd.read_sql_query(
             "SELECT * FROM Frames",
-            con
+            sql_database_connection
         )
         if MSMSTYPE_DIAPASEF in frames.MsMsType.values:
             acquisition_mode = "diaPASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * FROM DiaFrameMsMsInfo",
-                con
+                sql_database_connection
             )
             fragment_frame_groups = pd.read_sql_query(
                 "SELECT * from DiaFrameMsMsWindows",
-                con
+                sql_database_connection
             )
             fragment_frames = fragment_frames.merge(
                 fragment_frame_groups,
@@ -112,7 +111,7 @@ def read_frames(bruker_d_folder_name):
             acquisition_mode = "PASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * from PasefFrameMsMsInfo",
-                con
+                sql_database_connection
             )
         else:
             raise ValueError("Scan mode is not PASEF or diaPASEF")
@@ -123,7 +122,8 @@ def read_frames(bruker_d_folder_name):
             fragment_frames,
         )
 
-@numba.njit(nogil=True)
+
+@alphatims.utils.njit(nogil=True)
 def parse_frame_buffer(
     frame_id,
     buffer,
@@ -140,8 +140,14 @@ def parse_frame_buffer(
         start = end - size
         mz_start = scan_count + start * 2
         int_start = scan_count + start * 2 + size
-        mz_indices[peak_start + start: peak_start + end] = buffer[mz_start: mz_start + size]
-        intensities[peak_start + start: peak_start + end] = buffer[int_start: int_start + size]
+        buffer_start = peak_start + start
+        buffer_end = peak_start + end
+        mz_indices[buffer_start: buffer_end] = buffer[
+            mz_start: mz_start + size
+        ]
+        intensities[buffer_start: buffer_end] = buffer[
+            int_start: int_start + size
+        ]
 
 
 def read_scans_of_frame(
@@ -156,6 +162,7 @@ def read_scans_of_frame(
     calibrated_mzs=None,
     calibrated_ccs=None,
 ):
+    import ctypes
     scan_start = 0
     scan_end = frames.NumScans[frame_id - 1]
     scan_count = scan_end - scan_start
@@ -210,10 +217,11 @@ def read_scans_of_frame(
         )
 
 
-
-def read_scans(
+def read_bruker_scans(
     frames,
     bruker_d_folder_name:str,
+    bruker_calibrated_mz_values:bool=False,
+    bruker_calibrated_mobility_values:bool=False,
 ):
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
@@ -223,8 +231,14 @@ def read_scans(
         scan_count + 1,
         dtype=np.int64
     )
-    calibrated_mzs = np.empty(frame_indptr[-1], dtype=np.float64)
-    calibrated_ccs = np.empty(scan_count, dtype=np.float64)
+    if bruker_calibrated_mz_values:
+        calibrated_mzs = np.empty(frame_indptr[-1], dtype=np.float64)
+    else:
+        calibrated_mzs = None
+    if bruker_calibrated_mobility_values:
+        calibrated_ccs = np.empty(scan_count, dtype=np.float64)
+    else:
+        calibrated_ccs = None
     intensities = np.empty(frame_indptr[-1], dtype=np.uint16)
     tof_indices = np.empty(frame_indptr[-1], dtype=np.uint32)
     with open_bruker_d_folder(
@@ -258,24 +272,35 @@ def read_scans(
 
 class TimsTOF(object):
 
-    def __init__(self, bruker_d_folder_name:str):
+    def __init__(
+        self,
+        bruker_d_folder_name:str,
+        bruker_calibrated_mz_values:bool=False,
+        bruker_calibrated_mobility_values:bool=False,
+    ):
         logging.info(f"Importing data for {bruker_d_folder_name}")
         (
             self.acquisition_mode,
             global_meta_data,
             self.frames,
             self.fragment_frames,
-        ) = read_frames(bruker_d_folder_name)
+        ) = read_bruker_frames(bruker_d_folder_name)
         (
             self.tof_indptr,
             self.tof_indices,
             self.intensities,
-            self.calibrated_mzs,
-            self.calibrated_ccs,
-        ) = read_scans(
+            calibrated_mz_values,
+            calibrated_mobility_values,
+        ) = read_bruker_scans(
             self.frames,
             bruker_d_folder_name,
+            bruker_calibrated_mz_values,
+            bruker_calibrated_mobility_values,
         )
+        if bruker_calibrated_mz_values:
+            self.calibrated_mz_values = calibrated_mz_values
+        if bruker_calibrated_mobility_values:
+            self.calibrated_mobility_values = calibrated_mobility_values
         self.meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -283,11 +308,12 @@ class TimsTOF(object):
         self.scan_max_index = self.frames.NumScans.max()
         self.tof_max_index = int(self.meta_data["DigitizerNumSamples"])
         self.rt_values = self.frames.Time.values
-        self.mobility_min_value = float(self.meta_data["OneOverK0AcqRangeLower"])
-        self.mobility_max_value = float(self.meta_data["OneOverK0AcqRangeUpper"])
-#         self.mobility_values = np.arange(self.scan_max_index) / self.scan_max_index * (
-#             self.mobility_max_value - self.mobility_min_value
-#         ) + self.mobility_min_value
+        self.mobility_min_value = float(
+            self.meta_data["OneOverK0AcqRangeLower"]
+        )
+        self.mobility_max_value = float(
+            self.meta_data["OneOverK0AcqRangeUpper"]
+        )
         self.mobility_values = self.mobility_max_value - (
             self.mobility_max_value - self.mobility_min_value
         ) / self.scan_max_index * np.arange(self.scan_max_index)
@@ -327,10 +353,16 @@ class TimsTOF(object):
         to_rt_values:bool=False,
         to_mobility_values:bool=False,
         to_mz_values:bool=False,
+        return_as_dict:bool=False,
     ):
-        values = []
-        if (raw_indices is not None) and (
-            to_frame_indices or to_scan_indices or to_rt_values or to_mobility_values
+        values = {}
+        if (raw_indices is not None) and any(
+            [
+                to_frame_indices,
+                to_scan_indices,
+                to_rt_values,
+                to_mobility_values,
+            ]
         ):
             parsed_indices = np.searchsorted(
                 self.tof_indptr,
@@ -344,18 +376,22 @@ class TimsTOF(object):
         if (to_tof_indices or to_mz_values) and tof_indices is None:
             tof_indices = self.tof_indices[raw_indices]
         if to_frame_indices:
-            values.append(frame_indices)
+            values["frame_indices"] = frame_indices
         if to_scan_indices:
-            values.append(scan_indices)
+            values["scan_indices"] = scan_indices
         if to_tof_indices:
-            values.append(tof_indices)
+            values["tof_indices"] = tof_indices
         if to_rt_values:
-            values.append(self.rt_values[frame_indices])
+            values["rt_values"] = self.rt_values[frame_indices]
         if to_mobility_values:
-            values.append(self.mobility_values[scan_indices])
+            values["mobility_values"] = self.mobility_values[scan_indices]
         if to_mz_values:
-            values.append(self.mz_values[tof_indices])
-        return values
+            values["mz_values"] = self.mz_values[tof_indices]
+        if not return_as_dict:
+            # python >= 3.7 maintains dict insertion order
+            return list(values.values())
+        else:
+            return values
 
     def convert_to_indices(
         self,
@@ -375,9 +411,9 @@ class TimsTOF(object):
                 side=side
             )
         elif to_scan_indices:
-            indices = (values - self.mobility_min_value) * self.scan_max_index / (
+            indices = self.scan_max_index / (
                 self.mobility_max_value - self.mobility_min_value
-            )
+            ) * (values - self.mobility_min_value)
         elif to_tof_indices:
             indices = (np.sqrt(values) - self.tof_intercept) / self.tof_slope
         else:
@@ -420,9 +456,6 @@ class TimsTOF(object):
             raise IndexError("Slice triple expected")
         new_keys = []
         for i, key in enumerate(keys):
-            to_frame_index = False
-            to_scan_index = False
-            to_tof_index = False
             if isinstance(key, slice):
                 slice_start = key.start
                 slice_stop = key.stop
@@ -430,16 +463,16 @@ class TimsTOF(object):
                 if isinstance(slice_start, float):
                     slice_start = self.convert_to_indices(
                         slice_start,
-                        to_frame_indices=(i==0),
-                        to_scan_indices=(i==1),
-                        to_tof_indices=(i==2),
+                        to_frame_indices=(i == 0),
+                        to_scan_indices=(i == 1),
+                        to_tof_indices=(i == 2),
                     )
                 if isinstance(slice_stop, float):
                     slice_stop = self.convert_to_indices(
                         slice_stop,
-                        to_frame_indices=(i==0),
-                        to_scan_indices=(i==1),
-                        to_tof_indices=(i==2),
+                        to_frame_indices=(i == 0),
+                        to_scan_indices=(i == 1),
+                        to_tof_indices=(i == 2),
                         side="right"
                     )
                 new_keys.append(slice(slice_start, slice_stop, slice_step))
@@ -463,8 +496,40 @@ class TimsTOF(object):
         )
         return mask
 
+    def bin_intensities(self, indices, axis):
+        intensities = self.intensities[indices].astype(np.float64)
+        max_index = {
+            "rt": self.frame_max_index,
+            "mobility": self.scan_max_index,
+            "mz": self.tof_max_index,
+        }
+        parsed_indices = self.convert_from_indices(
+            indices,
+            to_frame_indices="rt" in axis,
+            to_scan_indices="mobility" in axis,
+            to_tof_indices="mz" in axis,
+            return_as_dict=True,
+        )
+        binned_intensities = np.zeros(tuple([max_index[ax] for ax in axis]))
+        parse_dict = {
+            "rt": "frame_indices",
+            "mobility": "scan_indices",
+            "mz": "tof_indices",
+        }
+        bin_intensities(
+            range(indices.size),
+            intensities,
+            tuple(
+                [
+                    parsed_indices[parse_dict[ax]] for ax in axis
+                ]
+            ),
+            binned_intensities
+        )
+        return binned_intensities
 
-@numba.njit
+
+@alphatims.utils.njit
 def sparse_slice(
     index_array,
     slice_start,
@@ -474,22 +539,28 @@ def sparse_slice(
     sparse_ends,
 ):
     result = []
-    for start, end in zip(sparse_starts, sparse_ends):
-        if (start == end) or (index_array[end - 1] < slice_start) or (index_array[start] > slice_stop):
+    for sparse_start, sparse_end in zip(sparse_starts, sparse_ends):
+        if (
+            sparse_start == sparse_end
+        ) or (
+            index_array[sparse_end - 1] < slice_start
+        ) or (
+            index_array[sparse_start] > slice_stop
+        ):
             continue
         if slice_start == -np.inf:
-            idx_start = start
+            idx_start = sparse_start
         else:
-            idx_start = start + np.searchsorted(
-                index_array[start: end],
+            idx_start = sparse_start + np.searchsorted(
+                index_array[sparse_start: sparse_end],
                 slice_start,
                 "left"
             )
         if slice_stop == np.inf:
-            idx_stop = end
+            idx_stop = sparse_end
         else:
             idx_stop = idx_start + np.searchsorted(
-                index_array[idx_start: end],
+                index_array[idx_start: sparse_end],
                 slice_stop,
                 "left"
             )
@@ -502,7 +573,8 @@ def sparse_slice(
                     result.append(idx)
     return np.array(result)
 
-@numba.njit
+
+@alphatims.utils.njit
 def parse_quad_indptr(
     frame_ids,
     scan_begins,
@@ -550,87 +622,19 @@ def parse_quad_indptr(
     )
 
 
-
-def bin_intensities_1d(self, indices, axis="mz"):
-    intensities = self.intensities[indices]
-    if axis == "mz":
-        parsed_indices = self.convert_from_indices(indices, to_tof_indices=True)[0]
-        max_index = self.tof_max_index
-    elif axis == "mobility":
-        parsed_indices = self.convert_from_indices(indices, to_scan_indices=True)[0]
-        max_index = self.scan_max_index
-    elif axis == "rt":
-        parsed_indices = self.convert_from_indices(indices, to_frame_indices=True)[0]
-        max_index = self.frame_max_index
-    binned_intensities = bin_intensities(
-        intensities,
-        parsed_indices,
-        (max_index,)
-    )
-    return binned_intensities
-
-
-def bin_intensities_2d(self, indices, axis=("rt", "mobility")):
-    intensities = self.intensities[indices]
-    parsed_indices = np.empty((intensities.shape[0], 2), dtype=np.int32)
-    max_index = {
-        "mz": self.tof_max_index,
-        "mobility": self.scan_max_index,
-        "rt": self.frame_max_index,
-    }
-    if "mz" in axis:
-        if "mz" == axis[0]:
-            idx = 0
-        else:
-            idx = 1
-        parsed_indices[:,idx] = self.convert_from_indices(
-            indices,
-            to_tof_indices=True
-        )[0]
-    if "mobility" in axis:
-        if "mobility" == axis[0]:
-            idx = 0
-        else:
-            idx = 1
-        parsed_indices[:,idx] = self.convert_from_indices(
-            indices,
-            to_scan_indices=True
-        )[0]
-    if "rt" in axis:
-        if "rt" == axis[0]:
-            idx = 0
-        else:
-            idx = 1
-        parsed_indices[:,idx] = self.convert_from_indices(
-            indices,
-            to_frame_indices=True
-        )[0]
-    binned_intensities = bin_intensities(
-        intensities,
-        parsed_indices,
-        (max_index[axis[0]],  max_index[axis[1]]),
-    )
-    return binned_intensities
-
-
-@numba.njit
+# Overhead of using multiple threads is slower
+@alphatims.utils.pjit(thread_count=1)
 def bin_intensities(
+    query,
     intensities,
     parsed_indices,
-    max_index
+    intensity_bins
 ):
-    result = np.zeros(max_index)
-    if len(max_index) == 1:
-        for index, intensity in zip(
-            parsed_indices,
-            intensities
-        ):
-            result[index] += intensity
-    elif len(max_index) == 2:
-        for index0, index1, intensity in zip(
-            parsed_indices[:,0],
-            parsed_indices[:,1],
-            intensities
-        ):
-            result[index0, index1] += intensity
-    return result
+    intensity = intensities[query]
+    if len(parsed_indices) == 1:
+        intensity_bins[parsed_indices[0][query]] += intensity
+    elif len(parsed_indices) == 2:
+        intensity_bins[
+            parsed_indices[0][query],
+            parsed_indices[1][query]
+        ] += intensity

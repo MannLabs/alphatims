@@ -15,14 +15,14 @@ def run_cli():
     cli_overview()
 
 
-def run_gui(**kwargs):
+def run_gui():
     raise NotImplementedError
 
 
 @click.group(
     context_settings=CONTEXT_SETTINGS,
 )
-def cli_overview():
+def cli_overview(**kwargs):
     pass
 
 
@@ -30,5 +30,5 @@ def cli_overview():
     "gui",
     help="Start graphical user interface.",
 )
-def cli_start_gui(**kwargs):
-    run_gui(**kwargs)
+def cli_start_gui():
+    run_gui()

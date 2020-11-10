@@ -13,5 +13,10 @@
     "description": "A Bruker .d folder with raw data",
     "default": null,
     "type": "path"
+  },
+  "threads": {
+    "description": "The number of threads to use (0 means all, negative means how many NOT to use)",
+    "default": 1,
+    "type": "integer"
   }
 }
