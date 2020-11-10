@@ -426,6 +426,10 @@ class TimsTOF(object):
         return indices
 
     def __getitem__(self, keys):
+        try:
+            frame_slice, scan_slice, quad_slice, tof_slice = keys
+        except ValueError:
+            raise ValueError("Slice 4-tuple expected")
         stretch_starts = self.tof_indptr[:-1].reshape(
             self.frame_max_index,
             self.scan_max_index
@@ -434,26 +438,6 @@ class TimsTOF(object):
             self.frame_max_index,
             self.scan_max_index
         )
-#         try:
-#             key_iter = iter(keys)
-#         except TypeError:
-#             if isinstance(keys, float):
-#                 keys = np.searchsorted(
-#                     self.rt_values,
-#                     keys
-#                 )
-#             if isinstance(keys, int):
-#                 return np.arange(
-#                     self.tof_indptr[keys * self.scan_max_index],
-#                     self.tof_indptr[(keys + 1) * self.scan_max_index],
-#                 )
-#             stretch_start = stretch_starts[keys]
-#             stretch_end = stretch_starts[keys]
-#             return
-#         while len(keys) < 3:
-#             keys.append(slice(None))
-        if len(keys) != 3:
-            raise IndexError("Slice triple expected")
         new_keys = []
         for i, key in enumerate(keys):
             if isinstance(key, slice):
@@ -465,28 +449,28 @@ class TimsTOF(object):
                         slice_start,
                         to_frame_indices=(i == 0),
                         to_scan_indices=(i == 1),
-                        to_tof_indices=(i == 2),
+                        to_tof_indices=(i == 3),
                     )
                 if isinstance(slice_stop, float):
                     slice_stop = self.convert_to_indices(
                         slice_stop,
                         to_frame_indices=(i == 0),
                         to_scan_indices=(i == 1),
-                        to_tof_indices=(i == 2),
+                        to_tof_indices=(i == 3),
                         side="right"
                     )
                 new_keys.append(slice(slice_start, slice_stop, slice_step))
         keys = tuple(new_keys)
-        slice_start = keys[2].start
+        slice_start = keys[-1].start
         if slice_start is None:
             slice_start = -np.inf
-        slice_stop = keys[2].stop
+        slice_stop = keys[-1].stop
         if slice_stop is None:
             slice_stop = np.inf
-        slice_step = keys[2].step
+        slice_step = keys[-1].step
         if slice_step is None:
             slice_step = 1
-        mask = sparse_slice(
+        return sparse_slice(
             self.tof_indices,
             slice_start,
             slice_stop,
@@ -494,7 +478,6 @@ class TimsTOF(object):
             stretch_starts[keys[:2]].flatten(),
             stretch_ends[keys[:2]].flatten(),
         )
-        return mask
 
     def bin_intensities(self, indices, axis):
         intensities = self.intensities[indices].astype(np.float64)
