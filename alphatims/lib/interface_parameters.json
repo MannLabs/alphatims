@@ -1,6 +1,6 @@
 {
   "log_file": {
-    "description": "Save all log data to a file",
+    "description": "Save all log data to a file (\"\" means to log folder in AlphaTims directory)",
     "default": "",
     "type": "path"
   },
