@@ -7,7 +7,7 @@ __license__ = "MIT"
 __description__ = "A python package for Bruker TimsTOF raw data analysis and feature finding"
 __author__ = "Sander Willems"
 __author_email__ = "willems@biochem.mpg.de"
-__github__ = "TODO"
+__github__ = "https://github.com/MannLabs/alphatims"
 __keywords__ = [
     "ms",
     "mass spectrometry",
