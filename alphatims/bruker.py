@@ -210,9 +210,9 @@ def read_scans_of_frame(
             np.arange(scan_end, dtype=np.float64).ctypes.data_as(
                 ctypes.POINTER(ctypes.c_double)
             ),
-            calibrated_ccs[scan_offset: scan_offset + scan_count].ctypes.data_as(
-                ctypes.POINTER(ctypes.c_double)
-            ),
+            calibrated_ccs[
+                scan_offset: scan_offset + scan_count
+            ].ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             scan_count
         )
 
@@ -259,6 +259,7 @@ def read_bruker_scans(
                 calibrated_mzs=calibrated_mzs,
                 calibrated_ccs=calibrated_ccs,
             )
+        logging.info(f"Found {frame_indptr[-1]} TOF arrivals")
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
     return (
@@ -348,25 +349,26 @@ class TimsTOF(object):
         quad_indices=None,
         scan_indices=None,
         tof_indices=None,
-        to_frame_indices:bool=False,
-        to_scan_indices:bool=False,
-        to_quad_indices:bool=False,
-        to_tof_indices:bool=False,
-        to_rt_values:bool=False,
-        to_mobility_values:bool=False,
-        to_quad_mz_values:bool=False,
-        to_mz_values:bool=False,
+        return_frame_indices:bool=False,
+        return_scan_indices:bool=False,
+        return_quad_indices:bool=False,
+        return_tof_indices:bool=False,
+        return_rt_values:bool=False,
+        return_mobility_values:bool=False,
+        return_quad_mz_values:bool=False,
+        return_mz_values:bool=False,
+        return_intensity_values:bool=False,
         return_as_dict:bool=False,
     ):
         result = {}
         if (raw_indices is not None) and any(
             [
-                to_frame_indices,
-                to_scan_indices,
-                to_quad_indices,
-                to_rt_values,
-                to_mobility_values,
-                to_quad_mz_values,
+                return_frame_indices,
+                return_scan_indices,
+                return_quad_indices,
+                return_rt_values,
+                return_mobility_values,
+                return_quad_mz_values,
             ]
         ):
             parsed_indices = np.searchsorted(
@@ -374,35 +376,37 @@ class TimsTOF(object):
                 raw_indices,
                 "right"
             ) - 1
-        if (to_frame_indices or to_rt_values) and frame_indices is None:
+        if (return_frame_indices or return_rt_values) and frame_indices is None:
             frame_indices = parsed_indices // self.scan_max_index
-        if (to_scan_indices or to_mobility_values) and scan_indices is None:
+        if (return_scan_indices or return_mobility_values) and scan_indices is None:
             scan_indices = parsed_indices % self.scan_max_index
-        if (to_quad_indices or to_quad_mz_values) and quad_indices is None:
+        if (return_quad_indices or return_quad_mz_values) and quad_indices is None:
             quad_indices = np.searchsorted(
                 self.quad_indptr,
                 parsed_indices,
-                "left"
+                "right"
             ) - 1
-        if (to_tof_indices or to_mz_values) and tof_indices is None:
+        if (return_tof_indices or return_mz_values) and tof_indices is None:
             tof_indices = self.tof_indices[raw_indices]
-        if to_frame_indices:
+        if return_frame_indices:
             result["frame_indices"] = frame_indices
-        if to_scan_indices:
+        if return_scan_indices:
             result["scan_indices"] = scan_indices
-        if to_quad_indices:
+        if return_quad_indices:
             result["quad_indices"] = quad_indices
-        if to_tof_indices:
+        if return_tof_indices:
             result["tof_indices"] = tof_indices
-        if to_rt_values:
+        if return_rt_values:
             result["rt_values"] = self.rt_values[frame_indices]
-        if to_mobility_values:
+        if return_mobility_values:
             result["mobility_values"] = self.mobility_values[scan_indices]
-        if to_quad_mz_values:
+        if return_quad_mz_values:
             result["quad_low_mz_values"] = self.quad_low_values[quad_indices]
             result["quad_high_mz_values"] = self.quad_high_values[quad_indices]
-        if to_mz_values:
+        if return_mz_values:
             result["mz_values"] = self.mz_values[tof_indices]
+        if return_intensity_values:
+            result["intensity_values"] = self.intensities[raw_indices]
         if not return_as_dict:
             # python >= 3.7 maintains dict insertion order
             return list(result.values())
@@ -413,28 +417,26 @@ class TimsTOF(object):
         self,
         values,
         *,
-        to_frame_indices:bool=False,
-        to_scan_indices:bool=False,
-        to_tof_indices:bool=False,
+        return_frame_indices:bool=False,
+        return_scan_indices:bool=False,
+        return_tof_indices:bool=False,
         side:str="right"
     ):
         if side not in ("left", "right"):
             raise KeyError("Invalid side")
-        if to_frame_indices:
+        if return_frame_indices:
             indices = np.searchsorted(
                 self.rt_values,
                 values,
                 side=side
             )
-        elif to_scan_indices:
+        elif return_scan_indices:
             indices = self.scan_max_index / (
                 self.mobility_max_value - self.mobility_min_value
             ) * (values - self.mobility_min_value)
-        elif to_tof_indices:
+        elif return_tof_indices:
             indices = (np.sqrt(values) - self.tof_intercept) / self.tof_slope
-        else:
-            raise KeyError("No target index defined")
-        if not to_frame_indices:
+        if not return_frame_indices:
             if side == "left":
                 indices = np.floor(indices).astype(np.int32)
             elif side == "right":
@@ -456,6 +458,9 @@ class TimsTOF(object):
         )
         new_keys = []
         for i, key in enumerate(keys):
+            if i == 2:
+                new_keys.append(key)
+                continue
             if isinstance(key, slice):
                 slice_start = key.start
                 slice_stop = key.stop
@@ -463,16 +468,16 @@ class TimsTOF(object):
                 if isinstance(slice_start, float):
                     slice_start = self.convert_to_indices(
                         slice_start,
-                        to_frame_indices=(i == 0),
-                        to_scan_indices=(i == 1),
-                        to_tof_indices=(i == 3),
+                        return_frame_indices=(i == 0),
+                        return_scan_indices=(i == 1),
+                        return_tof_indices=(i == 3),
                     )
                 if isinstance(slice_stop, float):
                     slice_stop = self.convert_to_indices(
                         slice_stop,
-                        to_frame_indices=(i == 0),
-                        to_scan_indices=(i == 1),
-                        to_tof_indices=(i == 3),
+                        return_frame_indices=(i == 0),
+                        return_scan_indices=(i == 1),
+                        return_tof_indices=(i == 3),
                         side="right"
                     )
                 new_keys.append(slice(slice_start, slice_stop, slice_step))
@@ -515,9 +520,9 @@ class TimsTOF(object):
         }
         parsed_indices = self.convert_from_indices(
             indices,
-            to_frame_indices="rt" in axis,
-            to_scan_indices="mobility" in axis,
-            to_tof_indices="mz" in axis,
+            return_frame_indices="rt" in axis,
+            return_scan_indices="mobility" in axis,
+            return_tof_indices="mz" in axis,
             return_as_dict=True,
         )
         binned_intensities = np.zeros(tuple([max_index[ax] for ax in axis]))
@@ -538,6 +543,37 @@ class TimsTOF(object):
         )
         return binned_intensities
 
+    def as_dataframe(
+        self,
+        indices,
+        *,
+        frame_indices=True,
+        scan_indices=True,
+        quad_indices=True,
+        tof_indices=True,
+        rt_values=True,
+        mobility_values=True,
+        quad_mz_values=True,
+        mz_values=True,
+        intensity_values=True
+    ):
+        import pandas as pd
+        return pd.DataFrame(
+           self.convert_from_indices(
+                indices,
+                return_frame_indices=frame_indices,
+                return_scan_indices=scan_indices,
+                return_quad_indices=quad_indices,
+                return_tof_indices=tof_indices,
+                return_rt_values=rt_values,
+                return_mobility_values=mobility_values,
+                return_quad_mz_values=quad_mz_values,
+                return_mz_values=mz_values,
+                return_intensity_values=intensity_values,
+                return_as_dict=True,
+            )
+        )
+
 
 @alphatims.utils.njit
 def tof_slicer(
@@ -556,12 +592,11 @@ def tof_slicer(
     result = []
     quad_index = 0
     for sparse_start, sparse_end in zip(sparse_starts, sparse_ends):
-        # TODO IndexError possible?
-        while quad_indptr[quad_index + 1] <= sparse_end:
+        while quad_indptr[quad_index + 1] < sparse_end:
             quad_index += 1
-        if quad_low_values[quad_index] < quad_low:
+        if quad_high_values[quad_index] < quad_low:
             continue
-        if quad_high_values[quad_index] > quad_high:
+        if quad_low_values[quad_index] > quad_high:
             continue
         if (
             sparse_start == sparse_end
