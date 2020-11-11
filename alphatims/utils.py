@@ -3,6 +3,7 @@
 # builtin
 import logging
 import os
+import sys
 import json
 
 
@@ -15,21 +16,20 @@ with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:
 MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
 
 
-def set_logger(*, log_file_name="", stream=True, log_level=logging.INFO):
+def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
     import time
-    import sys
     root = logging.getLogger()
     formatter = logging.Formatter(
         '%(asctime)s %(levelname)-s - %(message)s', "%Y-%m-%d %H:%M:%S"
     )
+    root.setLevel(log_level)
     while root.hasHandlers():
         root.removeHandler(root.handlers[0])
-    if stream:
-        root.setLevel(logging.INFO)
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(logging.INFO)
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
+    if stream is not None:
+        stream_handler = logging.StreamHandler(stream)
+        stream_handler.setLevel(log_level)
+        stream_handler.setFormatter(formatter)
+        root.addHandler(stream_handler)
     if log_file_name is not None:
         if log_file_name == "":
             if not os.path.exists(LOG_PATH):
