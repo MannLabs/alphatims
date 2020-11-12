@@ -48,7 +48,7 @@ It is strongly recommended to use a [conda virtual environment](https://docs.con
 # cd folder/where/to/install/downloaded/software
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
-git clone https://github.com/swillems/alphatims.git
+git clone https://github.com/MannLabs/alphatims.git
 # For a standard version use:
 pip install ./alphatims --use-feature=2020-resolver
 # For an editable version with modifiable source code use:
