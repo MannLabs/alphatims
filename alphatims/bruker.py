@@ -7,6 +7,7 @@ import contextlib
 import logging
 # external
 import numpy as np
+import h5py
 # local
 import alphatims.utils
 
@@ -246,7 +247,9 @@ def read_bruker_scans(
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
         logging.info(f"Reading scans for {bruker_d_folder_name}")
-        for frame_id in range(1, frame_indptr.shape[0]):
+        for frame_id in alphatims.utils.progress_callback(
+            range(1, frame_indptr.shape[0])
+        ):
             read_scans_of_frame(
                 frame_id,
                 frames,
@@ -278,6 +281,23 @@ class TimsTOF(object):
         bruker_d_folder_name:str,
         bruker_calibrated_mz_values:bool=False,
         bruker_calibrated_mobility_values:bool=False,
+    ):
+        if bruker_d_folder_name.endswith(".d"):
+            self.import_data_from_d_folder(
+                bruker_d_folder_name,
+                bruker_calibrated_mz_values,
+                bruker_calibrated_mobility_values,
+            )
+        elif bruker_d_folder_name.endswith(".hdf"):
+            self.import_data_from_hdf_file(
+                bruker_d_folder_name,
+            )
+
+    def import_data_from_d_folder(
+        self,
+        bruker_d_folder_name:str,
+        bruker_calibrated_mz_values:bool,
+        bruker_calibrated_mobility_values:bool,
     ):
         logging.info(f"Importing data for {bruker_d_folder_name}")
         (
@@ -340,6 +360,12 @@ class TimsTOF(object):
             self.scan_max_index,
             self.frame_max_index,
         )
+
+    def import_data_from_hdf_file(
+        self,
+        bruker_d_folder_name:str,
+    ):
+        raise NotImplementedError
 
     def convert_from_indices(
         self,
