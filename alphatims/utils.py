@@ -14,6 +14,10 @@ LOG_PATH = os.path.join(os.path.dirname(BASE_PATH), "logs")
 with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:
     INTERFACE_PARAMETERS = json.load(in_file)
 MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
+PROGRESS_CALLBACK_STYLE_NONE = 0
+PROGRESS_CALLBACK_STYLE_TEXT = 1
+PROGRESS_CALLBACK_STYLE_PLOT = 2
+PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_NONE
 
 
 def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
@@ -139,3 +143,28 @@ def pjit(
         return parallel_compiled_func_inner
     else:
         return parallel_compiled_func_inner(_func)
+
+
+def set_progress_callback_style(style=None, set_global=True):
+    if set_global:
+        global PROGRESS_CALLBACK_STYLE
+    if style is not None:
+        PROGRESS_CALLBACK_STYLE = style
+    if not set_global:
+        return PROGRESS_CALLBACK_STYLE
+
+
+def progress_callback(iterable, style=None):
+    import tqdm
+    if style is None:
+        global PROGRESS_CALLBACK_STYLE
+        style = PROGRESS_CALLBACK_STYLE
+    if style == PROGRESS_CALLBACK_STYLE_NONE:
+        return iterable
+    elif style == PROGRESS_CALLBACK_STYLE_TEXT:
+        return tqdm.tqdm(iterable)
+    elif style == PROGRESS_CALLBACK_STYLE_PLOT:
+        # TODO: update?
+        return tqdm.gui.tqdm(iterable)
+    else:
+        raise ValueError("Not a valid progress callback style")
