@@ -1,8 +1,8 @@
 #!python
 
 
-__project__ = "AlphaTims"
-__version__ = "0.0.201111"
+__project__ = "alphatims"
+__version__ = "0.0.201117"
 __license__ = "MIT"
 __description__ = "A python package for Bruker TimsTOF raw data analysis and feature finding"
 __author__ = "Sander Willems"
@@ -29,8 +29,8 @@ __classifiers__ = [
         "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 __console_scripts__ = [
-    "alphatims=alphatims.interface:run_cli",
-    "alphatims_gui=alphatims.interface:run_gui",
+    "alphatims=alphatims.cli:run",
+    "alphatims_gui=alphatims.gui:run",
 ]
 __urls__ = {
     "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",

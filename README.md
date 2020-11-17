@@ -9,49 +9,57 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
   * [**License**](#license)
   * [**Installation**](#installation)
      * [**One-click GUI**](#one-click-gui)
-     * [**Python (Windows and Linux)**](#python-windows-and-linux)
+     * [**Jupyter notebook installer**](#jupyter)
+     * [**Full installer**](#full)
   * [**Test data**](#test-data)
   * [**Usage**](#usage)
     * [**GUI**](#gui)
     * [**CLI**](#cli)
-    * [**Python**](#python)
+    * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
   * [**Under the hood**](#under-the-hood)
   * [**Future perspectives**](#future-perspectives)
 
 ## License
 
-Get a copy of the [MIT license](LICENSE.txt).
+Get a copy of the [MIT license](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ## Installation
 
-Two types of installation are possible:
+Three types of installation are possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface and/or keep things as simple as possible.
-* [**Python installer:**](#python-windows-and-linux) Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
+* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
+* [**Jupyter notebook installer:**](#jupyter-notebooks) Choose this if you only work in Jupyter Notebooks and want to use AlphaTims as an extension.
+* [**Python installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
 
-*Since this software is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
+*Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
 
 ### One-click GUI
 
-* **Windows:** TODO
-* **Linux:** TODO
-* **MacOS:** Unavailable due to availability of Bruker libraries
+* **Windows:** TODO.
+* **Linux:** TODO.
+* **MacOS:** Unavailable due to availability of Bruker libraries.
 
-### Python (Windows and Linux)
+### Jupyter notebook
 
-It is strongly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal:
+In an existing Jupyter notebook with Python 3, run the following:
 
 ```bash
-# It is not advised to install AlphaTims directly in the home folder.
-# Instead, create and move to another folder with e.g. the following commands:
-# mkdir folder/where/to/install/downloaded/software
-# cd folder/where/to/install/downloaded/software
+!pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
+```
+
+### Full
+
+It is strongly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal (copy-paste per individual line):
+
+```bash
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
-git clone https://github.com/MannLabs/alphatims.git
 # For a standard version use:
-pip install ./alphatims --use-feature=2020-resolver
-# For an editable version with modifiable source code use:
+pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
+# For an editable version with modifiable source code use the code below:
+# mkdir folder/where/to/install/downloaded/software
+# cd folder/where/to/install/downloaded/software
+# git clone https://github.com/MannLabs/alphatims.git
 # pip install -e ./alphatims --use-feature=2020-resolver
 conda deactivate
 ```
@@ -80,15 +88,15 @@ On Windows, this can be done by adding the executable to the `PATH` with e.g.:
 # conda deactivate
 ```
 
-Note that this binary still incorporates all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
+Note that this binary still reflects all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
 
 ## Test data
 
-A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 
 ## Usage
 
-There are three ways to use the software
+There are three ways to use the software:
 
 * [**GUI**](#gui)
 * [**CLI**](#cli)
@@ -96,7 +104,7 @@ There are three ways to use the software
 
 ### GUI
 
-The GUI is accessible if you used the one-click GUI installer or by the following commands in a terminal:
+The GUI is accessible if you used the one-click GUI installer or through the following commands in a terminal:
 
 ```bash
 conda activate alphatims
@@ -112,7 +120,7 @@ conda activate alphatims
 alphatims
 conda deactivate
 ```
-### Python
+### Python and jupyter notebooks
 
 AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims` if the conda environment is activated with `conda activate alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) is present in the [nbs folder](nbs).
 

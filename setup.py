@@ -34,7 +34,7 @@ setuptools.setup(
     keywords=package_to_install.__keywords__,
     classifiers=package_to_install.__classifiers__,
     packages=setuptools.find_packages(),
-    include_package_to_install_data=True,
+    include_package_data=True,
     entry_points={
         "console_scripts": package_to_install.__console_scripts__,
     },

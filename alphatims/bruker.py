@@ -79,7 +79,7 @@ def open_bruker_d_folder(bruker_dll, bruker_d_folder_name):
         bruker_dll.tims_close(bruker_d_folder_handle)
 
 
-def read_bruker_frames(bruker_d_folder_name):
+def read_bruker_frames(bruker_d_folder_name, add_zeroth_frame=True,):
     import sqlite3
     import pandas as pd
     logging.info(f"Reading frames for {bruker_d_folder_name}")
@@ -116,6 +116,20 @@ def read_bruker_frames(bruker_d_folder_name):
             )
         else:
             raise ValueError("Scan mode is not PASEF or diaPASEF")
+        if add_zeroth_frame:
+            frames = pd.concat(
+                [
+                    pd.DataFrame(frames.iloc[0]).T,
+                    frames,
+                ],
+                ignore_index=True
+            )
+            frames.Id[0] = 0
+            frames.Time[0] = 0
+            frames.MaxIntensity[0] = 0
+            frames.SummedIntensities[0] = 0
+            frames.NumPeaks[0] = 0
+            fragment_frames.Frame += 1
         return (
             acquisition_mode,
             global_meta_data,
@@ -126,7 +140,7 @@ def read_bruker_frames(bruker_d_folder_name):
 
 @alphatims.utils.njit(nogil=True)
 def parse_frame_buffer(
-    frame_id,
+    scan_offset,
     buffer,
     scan_count,
     peak_start,
@@ -134,7 +148,6 @@ def parse_frame_buffer(
     mz_indices,
     intensities,
 ):
-    scan_offset = scan_count * (frame_id - 1)
     scan_indptr[scan_offset: scan_offset + scan_count] = buffer[:scan_count]
     end_indices = np.cumsum(buffer[:scan_count])
     for end, size in zip(end_indices, buffer[:scan_count]):
@@ -165,10 +178,10 @@ def read_scans_of_frame(
 ):
     import ctypes
     scan_start = 0
-    scan_end = frames.NumScans[frame_id - 1]
+    scan_end = frames.NumScans[frame_id]
     scan_count = scan_end - scan_start
-    peak_start = frame_indptr[frame_id - 1]
-    peak_end = frame_indptr[frame_id]
+    peak_start = frame_indptr[frame_id]
+    peak_end = frame_indptr[frame_id + 1]
     peak_count = peak_end - peak_start
     buffer = np.empty(
         shape=scan_count + 2 * peak_count,
@@ -182,8 +195,9 @@ def read_scans_of_frame(
         buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32)),
         len(buffer) * 4
     )
+    scan_offset = scan_count * (frame_id)
     parse_frame_buffer(
-        frame_id,
+        scan_offset,
         buffer,
         scan_count,
         peak_start,
@@ -204,7 +218,6 @@ def read_scans_of_frame(
             peak_count
         )
     if calibrated_ccs is not None:
-        scan_offset = scan_count * (frame_id - 1)
         bruker_dll.tims_scannum_to_oneoverk0(
             bruker_d_folder_handle,
             frame_id,
@@ -228,10 +241,7 @@ def read_bruker_scans(
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
     scan_count = frames.NumScans.max() * frames.shape[0]
-    scan_indptr = np.empty(
-        scan_count + 1,
-        dtype=np.int64
-    )
+    scan_indptr = np.empty(scan_count + 1, dtype=np.int64)
     if bruker_calibrated_mz_values:
         calibrated_mzs = np.empty(frame_indptr[-1], dtype=np.float64)
     else:
@@ -248,7 +258,7 @@ def read_bruker_scans(
     ) as (bruker_dll, bruker_d_folder_handle):
         logging.info(f"Reading scans for {bruker_d_folder_name}")
         for frame_id in alphatims.utils.progress_callback(
-            range(1, frame_indptr.shape[0])
+            range(1, frame_indptr.shape[0] - 1)
         ):
             read_scans_of_frame(
                 frame_id,
