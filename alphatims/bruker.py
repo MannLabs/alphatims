@@ -310,6 +310,7 @@ class TimsTOF(object):
         bruker_calibrated_mobility_values:bool,
     ):
         logging.info(f"Importing data for {bruker_d_folder_name}")
+        self.bruker_d_folder_name = bruker_d_folder_name
         (
             self.acquisition_mode,
             global_meta_data,

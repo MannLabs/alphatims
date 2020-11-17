@@ -6,24 +6,20 @@ import time
 # local
 import alphatims.utils
 import alphatims.bruker
-import numpy
 
-import pandas as pd
-import matplotlib.ticker
-from matplotlib import pyplot as plt
 import holoviews as hv
-from holoviews.operation.datashader import datashade
-from holoviews import opts, dim
-import hvplot.pandas
+# from holoviews.operation.datashader import datashade
+# from holoviews import opts, dim
 import colorcet
+import hvplot.pandas
 
-hv.extension('matplotlib')
-datashade.cmap = colorcet.fire[50:]
-opts.defaults(
-    opts.Image(cmap="gray_r", axiswise=True),
-    opts.Points(cmap="bwr", edgecolors='k', s=50, alpha=1.0), # Remove color_index=2
-    opts.RGB(bgcolor="black", show_grid=False),
-    opts.Scatter3D(color=dim('c'), fig_size=250, cmap='bwr', edgecolor='k', s=50, alpha=1.0)) #color_index=3
+# hv.extension('matplotlib')
+# datashade.cmap = colorcet.fire[50:]
+# opts.defaults(
+#     opts.Image(cmap="gray_r", axiswise=True),
+#     opts.Points(cmap="bwr", edgecolors='k', s=50, alpha=1.0), # Remove color_index=2
+#     opts.RGB(bgcolor="black", show_grid=False),
+#     opts.Scatter3D(color=dim('c'), fig_size=250, cmap='bwr', edgecolor='k', s=50, alpha=1.0)) #color_index=3
 hv.extension('bokeh')
 
 
@@ -32,8 +28,9 @@ CONTINUE_RUNNING = True
 
 
 exit_button = pn.widgets.Button(name='Quit', button_type='primary')
-dataset_selection = pn.widgets.FileSelector(
-    file_pattern=".d"
+dataset_selection = pn.widgets.TextInput(
+    name='Bruker .d folder',
+    placeholder='Copy-paste .d folder here'
 )
 # dataset_selection = pn.widgets.FileInput(
 #     # file_pattern=".d"
@@ -54,9 +51,9 @@ scan_slider = pn.widgets.IntRangeSlider(
 )
 quad_slider = pn.widgets.RangeSlider(
     name='Quad',
-    start=0,
+    start=-1,
     end=1,
-    value=(-1, 1),
+    value=(-1, -1),
     step=1
 )
 tof_slider = pn.widgets.IntRangeSlider(
@@ -71,14 +68,7 @@ tof_slider = pn.widgets.IntRangeSlider(
 def run():
     global CONTINUE_RUNNING
     layout = pn.Row(
-        dataset_selection,
-        pn.Column(
-            frame_slider,
-            scan_slider,
-            quad_slider,
-            tof_slider,
-            exit_button,
-        ),
+        settings_pane,
         browser_pane,
     )
     server = layout.show(threaded=True)
@@ -91,20 +81,37 @@ def run():
     dataset_selection.param.value,
     watch=True
 )
-def update_dataset(dataset_values):
+def settings_pane(dataset_name):
     global DATASET
-    if len(dataset_values) != 1:
+    if not dataset_name.endswith(".d"):
         DATASET = None
-    elif not dataset_values[0].endswith(".d"):
-        DATASET = None
-    else:
-        DATASET = alphatims.bruker.TimsTOF(
-            dataset_values[0]
+        return pn.Column(
+            dataset_selection,
+            exit_button,
         )
-        frame_slider.end = DATASET.frame_max_index
-        scan_slider.end = DATASET.scan_max_index
-        quad_slider.end = DATASET.quad_max_index
-        tof_slider.end = DATASET.tof_max_index
+    else:
+        if (DATASET is None) or (DATASET.bruker_d_folder_name != dataset_name):
+            DATASET = alphatims.bruker.TimsTOF(
+                dataset_name
+            )
+            frame_slider.end = DATASET.frame_max_index
+            scan_slider.end = DATASET.scan_max_index
+            quad_slider.end = DATASET.quad_max_index
+            tof_slider.end = DATASET.tof_max_index
+            # browser_pane(
+            #     frame_slider.param.value,
+            #     scan_slider.param.value,
+            #     quad_slider.param.value,
+            #     tof_slider.param.value,
+            # )
+        return pn.Column(
+            dataset_selection,
+            frame_slider,
+            scan_slider,
+            quad_slider,
+            tof_slider,
+            exit_button,
+        )
 
 
 @pn.depends(
@@ -149,7 +156,7 @@ def browser_pane(
             width=480,
             height=350,
             ylabel=labels[y_coor],
-            tools=['hover', 'box_select'],
+            # tools=['hover', 'box_select'],
         #     agg='mean',
             ylim=(
                 df[y_coor].min(),
@@ -181,16 +188,23 @@ def button_event(event):
     CONTINUE_RUNNING = False
 
 
-# x = pn.widgets.Select(value='mpg', options=columns, name='x')
-# y = pn.widgets.Select(value='hp', options=columns, name='y')
-# color = pn.widgets.ColorPicker(name='Color', value='#AA0505')
-#
-# @pn.depends(x.param.value, y.param.value, color.param.value)
-# def autompg_plot(x, y, color):
-#     return autompg.hvplot.scatter(x, y, c=color)
-#
-# pn.Row(
-#     pn.Column('## MPG Explorer', x, y, color),
-#     autompg_plot)
 
-# server.io_loop.handlers[18][0]
+
+
+# class Sine(param.Parameterized):
+#
+#     phase = param.Number(default=0, bounds=(0, np.pi))
+#
+#     frequency = param.Number(default=1, bounds=(0.1, 2))
+#
+#     @param.depends('phase', 'frequency')
+#     def view(self):
+#         y = np.sin(np.linspace(0, np.pi * 3, 40) * self.frequency + self.phase)
+#         y = ((y - y.min()) / y.ptp()) * 20
+#         array = np.array(
+#             [list((' ' * (int(round(d)) - 1) + '*').ljust(20)) for d in y])
+#         return pn.pane.Str('\n'.join([''.join(r) for r in array.T]), height=380, width=500)
+#
+#
+# sine = Sine(name='ASCII Sine Wave')
+# pn.Row(sine.param, sine.view)
