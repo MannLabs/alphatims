@@ -20,22 +20,22 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
 
 ## License
 
-Get a copy of the [MIT license](LICENSE.txt).
+Get a copy of the [MIT license](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ## Installation
 
 Two types of installation are possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface and/or keep things as simple as possible.
-* [**Python installer:**](#python-windows-and-linux) Choose this installation if you are familiar with a terminal and/or python and want access to all available features.
+* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
+* [**Python installer:**](#python-windows-and-linux) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features.
 
-*Since this software is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
+*Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
 
 ### One-click GUI
 
-* **Windows:** TODO
-* **Linux:** TODO
-* **MacOS:** Unavailable due to availability of Bruker libraries
+* **Windows:** TODO.
+* **Linux:** TODO.
+* **MacOS:** Unavailable due to availability of Bruker libraries.
 
 ### Python (Windows and Linux)
 
@@ -48,6 +48,7 @@ It is strongly recommended to use a [conda virtual environment](https://docs.con
 # cd folder/where/to/install/downloaded/software
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
+# Cloning a GitHub repository automatically creates a new AlphaTims folder
 git clone https://github.com/MannLabs/alphatims.git
 # For a standard version use:
 pip install ./alphatims --use-feature=2020-resolver
@@ -80,15 +81,15 @@ On Windows, this can be done by adding the executable to the `PATH` with e.g.:
 # conda deactivate
 ```
 
-Note that this binary still incorporates all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
+Note that this binary still reflects all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
 
 ## Test data
 
-A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 
 ## Usage
 
-There are three ways to use the software
+There are three ways to use the software:
 
 * [**GUI**](#gui)
 * [**CLI**](#cli)
@@ -96,7 +97,7 @@ There are three ways to use the software
 
 ### GUI
 
-The GUI is accessible if you used the one-click GUI installer or by the following commands in a terminal:
+The GUI is accessible if you used the one-click GUI installer or through the following commands in a terminal:
 
 ```bash
 conda activate alphatims
