@@ -9,7 +9,7 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
   * [**License**](#license)
   * [**Installation**](#installation)
      * [**One-click GUI**](#one-click-gui)
-     * [**Jupyter notebook installer**](#jupyter)
+     * [**Jupyter notebook installer**](#jupyter-notebook)
      * [**Full installer**](#full)
   * [**Test data**](#test-data)
   * [**Usage**](#usage)
@@ -28,7 +28,7 @@ Get a copy of the [MIT license](LICENSE.txt). Since AlphaTims is dependent on Br
 Three types of installation are possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
-* [**Jupyter notebook installer:**](#jupyter-notebooks) Choose this if you only work in Jupyter Notebooks and want to use AlphaTims as an extension.
+* [**Jupyter notebook installer:**](#jupyter-notebook) Choose this if you only work in Jupyter Notebooks and want to use AlphaTims as an extension.
 * [**Python installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
 
 *Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
@@ -100,7 +100,7 @@ There are three ways to use the software:
 
 * [**GUI**](#gui)
 * [**CLI**](#cli)
-* [**Python**](#python)
+* [**Python**](#python-and-jupyter-notebooks)
 
 ### GUI
 
@@ -122,7 +122,7 @@ conda deactivate
 ```
 ### Python and jupyter notebooks
 
-AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims` if the conda environment is activated with `conda activate alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) is present in the [nbs folder](nbs).
+AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) is present in the [nbs folder](nbs).
 
 ## Under the hood
 
