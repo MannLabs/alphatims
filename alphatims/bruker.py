@@ -336,7 +336,7 @@ class TimsTOF(object):
             zip(global_meta_data.Key, global_meta_data.Value)
         )
         self.frame_max_index = self.frames.shape[0]
-        self.scan_max_index = self.frames.NumScans.max()
+        self.scan_max_index = int(self.frames.NumScans.max())
         self.tof_max_index = int(self.meta_data["DigitizerNumSamples"])
         self.rt_values = self.frames.Time.values
         self.mobility_min_value = float(
@@ -370,6 +370,7 @@ class TimsTOF(object):
             self.scan_max_index,
             self.frame_max_index,
         )
+        self.quad_max_index = np.max(self.quad_high_values)
 
     def import_data_from_hdf_file(
         self,

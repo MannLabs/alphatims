@@ -28,8 +28,8 @@ Get a copy of the [MIT license](LICENSE.txt). Since AlphaTims is dependent on Br
 Three types of installation are possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
-* [**Jupyter notebook installer:**](#jupyter-notebook) Choose this if you only work in Jupyter Notebooks and want to use AlphaTims as an extension.
-* [**Python installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
+* [**Jupyter notebook installer:**](#jupyter-notebook) Choose this installation if you only work in Jupyter Notebooks and just want to use AlphaTims as an extension.
+* [**Full installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
 
 ***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for all installation types.***
 
@@ -41,7 +41,7 @@ Three types of installation are possible:
 
 ### Jupyter notebook
 
-In an existing Jupyter notebook with Python 3, run the following:
+In an existing Jupyter notebook with Python 3 (and git installed), run the following:
 
 ```bash
 !pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
@@ -80,7 +80,7 @@ On Windows, this can be done with e.g.:
 ```bash
 conda activate alphatims
 where alphatims
-# The resulting should be something like:
+# The result should be something like:
 # C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
 # This directory can then be permanently added to e.g. PATH with:
 # setx PATH=%PATH%;C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
@@ -129,7 +129,7 @@ AlphaTims can be imported as a python package into any python script or notebook
 
 A connection to the .tdf and .tdf_bin in the bruker .d directory are made once and all data is read into memory as a TimsTOF object. This is done by opening the sql database (.tdf) and reading all individual scans from the binary data (.tdf_bin) with the function `bruker_dll.tims_read_scans_v2` from the Bruker library. The TimsTOF data object stores all TOF arrivals in two huge arrays: `tof_indices` and `intensities`. This data seems to be centroided on a 'per-scan' basis (i.e. per push), but are independent in the retention time and ion mobility domain.
 
-Since the `tof_indices` array is quite sparse in the TOF domain, it is indexed with a `tof_indptr` array that similar to a a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_%28CSR,_CRS_or_Yale_format%29). Herein a 'row' corresponds to a (`frame`, `scan`) tuple and the `tof_indptr` array thus has a length of `frame_max_index * scan_max_index + 1`, which approximately equals `10 * gradient_length_in_seconds * 927`. Filtering in `rt`/`frame` and `mobility`/`scan` domain is thus just a slice of the `tof_indptr` array when represented as a 2D-matrix and is hence very performant. Filtering in `TOF`/`mz` domain unfortunately requires to loop over individual scans. Luckily this can be done with numba and with a performance of `log(n)` since the `tof_indices` are sorted per scan. Finally, a `quad_indptr` (sparse pointer) array and associated `quad_low_values` and `quad_high_values` arrays allow to determine which precursor values are filtered by the quadrupole for each (`frame`, `scan`) tuple.
+Since the `tof_indices` array is quite sparse in the TOF domain, it is indexed with a `tof_indptr` array that is similar to a a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_%28CSR,_CRS_or_Yale_format%29). Herein a 'row' corresponds to a (`frame`, `scan`) tuple and the `tof_indptr` array thus has a length of `frame_max_index * scan_max_index + 1`, which approximately equals `10 * gradient_length_in_seconds * 927`. Filtering in `rt`/`frame` and `mobility`/`scan` domain is thus just a slice of the `tof_indptr` array when represented as a 2D-matrix and is hence very performant. Filtering in `TOF`/`mz` domain unfortunately requires to loop over individual scans. Luckily this can be done with numba and with a performance of `log(n)` since the `tof_indices` are sorted per scan. Finally, a `quad_indptr` (sparse pointer) array and associated `quad_low_values` and `quad_high_values` arrays allow to determine which precursor values are filtered by the quadrupole for each (`frame`, `scan`) tuple.
 
 Slicing the total dataset happens with a magic `__getitem__` function and automatically converts any floating `rt`/`mobility`/`fragment mz` values to the appropriate `frame`/`scan`/`TOF` indices and vice versa as well.
 
