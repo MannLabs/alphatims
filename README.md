@@ -31,7 +31,7 @@ Three types of installation are possible:
 * [**Jupyter notebook installer:**](#jupyter-notebook) Choose this if you only work in Jupyter Notebooks and want to use AlphaTims as an extension.
 * [**Python installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
 
-*Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for both the one-click GUI and python installer.*
+***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for all installation types.***
 
 ### One-click GUI
 
@@ -49,22 +49,19 @@ In an existing Jupyter notebook with Python 3, run the following:
 
 ### Full
 
-It is strongly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal (copy-paste per individual line):
+It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal (copy-paste per individual line):
 
 ```bash
+# mkdir folder/where/to/install/downloaded/software
+cd folder/where/to/install/downloaded/software
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
-# For a standard version use:
-pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
-# For an editable version with modifiable source code use the code below:
-# mkdir folder/where/to/install/downloaded/software
-# cd folder/where/to/install/downloaded/software
-# git clone https://github.com/MannLabs/alphatims.git
-# pip install -e ./alphatims --use-feature=2020-resolver
+git clone https://github.com/MannLabs/alphatims.git
+pip install -e ./alphatims --use-feature=2020-resolver
 conda deactivate
 ```
 
-If the editable flag `-e` is use, all modifications to the AlphaTims [source code folder](alphatims) are then directly incorporated. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.
+By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.
 
 To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution can be added as an alias. On linux, this can be done with e.g.:
 
@@ -78,17 +75,21 @@ echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
 conda deactivate
 ```
 
-On Windows, this can be done by adding the executable to the `PATH` with e.g.:
+On Windows, this can be done with e.g.:
 
 ```bash
-# TODO Code snippet below is not functional
-# conda activate alphatims
-# set alphatims_bin=where alphatims
-# set PATH=%PATH%;%alphatims_bin%
-# conda deactivate
+conda activate alphatims
+where alphatims
+# The resulting should be something like:
+# C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
+# This directory can then be permanently added to e.g. PATH with:
+# setx PATH=%PATH%;C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
+conda deactivate
 ```
 
 Note that this binary still reflects all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
+
+When using Jupyter notebooks and multiple conda environments, it is recommended to `conda install nb_conda_kernels` in the conda base environment. The AlphaTims conda environment can then be installed as a kernel with `conda install ipykernel` in the AlphaTims environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `Python [conda env: alphatims]` kernel available.
 
 ## Test data
 
