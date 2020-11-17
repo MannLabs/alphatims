@@ -1,3 +1,4 @@
-recursive-include alphatims *
+recursive-include alphatims/ *
 include LICENSE.txt
+include LICENSE-THIRD-PARTY.txt
 include README.md
