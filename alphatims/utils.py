@@ -24,7 +24,7 @@ def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
     import time
     root = logging.getLogger()
     formatter = logging.Formatter(
-        '%(asctime)s %(levelname)-s - %(message)s', "%Y-%m-%d %H:%M:%S"
+        '%(asctime)s> %(message)s', "%Y-%m-%d %H:%M:%S"
     )
     root.setLevel(log_level)
     while root.hasHandlers():
@@ -76,8 +76,7 @@ def set_threads(threads, set_global=True):
         while threads <= 0:
             threads += max_cpu_count
         MAX_THREADS = threads
-    if not set_global:
-        return MAX_THREADS
+    return MAX_THREADS
 
 
 def njit(*args, **kwargs):

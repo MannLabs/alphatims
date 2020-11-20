@@ -16,9 +16,13 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @contextlib.contextmanager
 def cli_logging(command_name, **kwargs):
     import logging
+    import time
     try:
+        start_time = time.time()
         if "threads" in kwargs:
-            alphatims.utils.set_threads(kwargs["threads"])
+            kwargs["threads"] = alphatims.utils.set_threads(
+                kwargs["threads"]
+            )
         if ("log_file" in kwargs):
             alphatims.utils.set_logger(
                 log_file_name=kwargs["log_file"],
@@ -33,13 +37,16 @@ def cli_logging(command_name, **kwargs):
         logging.info(
             f"Running command `alphatims {command_name}` with parameters:"
         )
-        for key, value in kwargs.items():
-            logging.info(f"{key}: {value}")
+        max_len = max(len(key) for key in kwargs)
+        for key, value in sorted(kwargs.items()):
+            logging.info(f"{key:<{max_len}} - {value}")
         logging.info("")
         yield
     finally:
-        logging.info("Analysis done")
-        alphatims.utils.set_logger()
+        logging.info(
+            f"Analysis done in {time.time() - start_time:.2f} seconds"
+        )
+        alphatims.utils.set_logger(log_file_name=None)
 
 
 def click_option(parameter_name):

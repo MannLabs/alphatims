@@ -263,7 +263,10 @@ def read_bruker_scans(
         BRUKER_DLL_FILE_NAME,
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
-        logging.info(f"Reading tof_indices for {bruker_d_folder_name}")
+        logging.info(
+            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
+            f"{bruker_d_folder_name}"
+        )
         for frame_id in alphatims.utils.progress_callback(
             range(1, frame_indptr.shape[0] - 1)
         ):
@@ -279,7 +282,6 @@ def read_bruker_scans(
                 calibrated_mzs=calibrated_mzs,
                 calibrated_ccs=calibrated_ccs,
             )
-        logging.info(f"Found {frame_indptr[-1]} TOF arrivals")
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
     return (
@@ -406,8 +408,7 @@ class TimsTOF(object):
             f"Writing TimsTOF data to {full_file_name}"
         )
         with h5py.File(full_file_name, hdf_mode) as hdf_root:
-            # TODO!!!!!!!!
-            del self.__dict__["frames"]
+            del self.__dict__["frames"]  # TODO!!!!!!!!
             alphatims.utils.create_hdf_group_from_dict(
                 hdf_root,
                 {"raw": self.__dict__},

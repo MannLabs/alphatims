@@ -39,7 +39,7 @@
   },
   "threads": {
     "help": "The number of threads to use (0 means all, negative means how many to leave available)",
-    "default": 1,
+    "default": -1,
     "type": "int",
     "required": false
   }
