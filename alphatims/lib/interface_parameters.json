@@ -1,22 +1,46 @@
 {
   "log_file": {
-    "description": "Save all log data to a file (\"\" means to log folder in AlphaTims directory)",
+    "help": "Save all log data to a file (\"\" means to log folder in AlphaTims directory)",
     "default": "",
-    "type": "path"
+    "type": {
+      "name": "path",
+      "exists": false,
+      "file_okay": true,
+      "dir_okay": true
+    },
+    "required": false
   },
-  "log_stream": {
-    "description": "Stream all log data",
-    "default": true,
-    "type": "flag"
+  "no_log_stream": {
+    "help": "Do not stream log data",
+    "default": false,
+    "is_flag": true,
+    "required": false
   },
   "bruker_d_folder": {
-    "description": "A Bruker .d folder with raw data",
-    "default": null,
-    "type": "path"
+    "help": "A Bruker .d folder with raw data",
+    "type": {
+      "name": "path",
+      "exists": true,
+      "file_okay": false,
+      "dir_okay": true
+    },
+    "required": true
+  },
+  "output_folder": {
+    "help": "A directory for all output (by default the `bruker_d_folder` is used)",
+    "type": {
+      "name": "path",
+      "exists": false,
+      "file_okay": false,
+      "dir_okay": true
+    },
+    "default": "",
+    "required": false
   },
   "threads": {
-    "description": "The number of threads to use (0 means all, negative means how many NOT to use)",
-    "default": 1,
-    "type": "integer"
+    "help": "The number of threads to use (0 means all, negative means how many to leave available)",
+    "default": -1,
+    "type": "int",
+    "required": false
   }
 }

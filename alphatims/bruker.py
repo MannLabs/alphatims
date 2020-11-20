@@ -15,6 +15,13 @@ if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = "timsdata.dll"
 elif sys.platform[:5] == "linux":
     BRUKER_DLL_FILE_NAME = "timsdata.so"
+else:
+    logging.warning(
+        "No Bruker libraries are available for MacOS. "
+        "Raw data import/conversion will not be possible."
+    )
+    BRUKER_DLL_FILE_NAME = ""
+    # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
     alphatims.utils.EXT_PATH,
     BRUKER_DLL_FILE_NAME
@@ -256,7 +263,10 @@ def read_bruker_scans(
         BRUKER_DLL_FILE_NAME,
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
-        logging.info(f"Reading scans for {bruker_d_folder_name}")
+        logging.info(
+            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
+            f"{bruker_d_folder_name}"
+        )
         for frame_id in alphatims.utils.progress_callback(
             range(1, frame_indptr.shape[0] - 1)
         ):
@@ -272,7 +282,6 @@ def read_bruker_scans(
                 calibrated_mzs=calibrated_mzs,
                 calibrated_ccs=calibrated_ccs,
             )
-        logging.info(f"Found {frame_indptr[-1]} TOF arrivals")
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
     return (
@@ -292,6 +301,7 @@ class TimsTOF(object):
         bruker_calibrated_mz_values:bool=False,
         bruker_calibrated_mobility_values:bool=False,
     ):
+        bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if bruker_d_folder_name.endswith(".d"):
             self.import_data_from_d_folder(
                 bruker_d_folder_name,
@@ -310,6 +320,7 @@ class TimsTOF(object):
         bruker_calibrated_mobility_values:bool,
     ):
         logging.info(f"Importing data for {bruker_d_folder_name}")
+        self.bruker_d_folder_name = bruker_d_folder_name
         (
             self.acquisition_mode,
             global_meta_data,
@@ -338,7 +349,7 @@ class TimsTOF(object):
         self.frame_max_index = self.frames.shape[0]
         self.scan_max_index = int(self.frames.NumScans.max())
         self.tof_max_index = int(self.meta_data["DigitizerNumSamples"])
-        self.rt_values = self.frames.Time.values
+        self.rt_values = self.frames.Time.values.astype(np.float64)
         self.mobility_min_value = float(
             self.meta_data["OneOverK0AcqRangeLower"]
         )
@@ -372,11 +383,46 @@ class TimsTOF(object):
         )
         self.quad_max_index = np.max(self.quad_high_values)
 
+    def save_as_hdf(
+        self,
+        directory:str="",
+        file_name:str="",
+        overwrite:bool=False,
+    ):
+        if directory == "":
+            directory = os.path.dirname(self.bruker_d_folder_name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        if file_name == "":
+            file_name = os.path.basename(self.bruker_d_folder_name)
+            file_name = f"{'.'.join(file_name.split('.'))}.hdf"
+        full_file_name = os.path.join(
+            directory,
+            file_name
+        )
+        if overwrite:
+            hdf_mode = "w"
+        else:
+            hdf_mode = "a"
+        logging.info(
+            f"Writing TimsTOF data to {full_file_name}"
+        )
+        with h5py.File(full_file_name, hdf_mode) as hdf_root:
+            del self.__dict__["frames"]  # TODO!!!!!!!!
+            alphatims.utils.create_hdf_group_from_dict(
+                hdf_root,
+                {"raw": self.__dict__},
+                overwrite
+            )
+
     def import_data_from_hdf_file(
         self,
         bruker_d_folder_name:str,
     ):
-        raise NotImplementedError
+        with h5py.File(bruker_d_folder_name, "r") as hdf_root:
+            self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
+                hdf_root["raw"]
+            )
 
     def convert_from_indices(
         self,
