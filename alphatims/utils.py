@@ -17,7 +17,7 @@ MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
 PROGRESS_CALLBACK_STYLE_NONE = 0
 PROGRESS_CALLBACK_STYLE_TEXT = 1
 PROGRESS_CALLBACK_STYLE_PLOT = 2
-PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_NONE
+PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
 
 
 def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
@@ -41,7 +41,17 @@ def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
             log_file_name = LOG_PATH
         log_file_name = os.path.abspath(log_file_name)
         if os.path.isdir(log_file_name):
-            current_time = "".join([str(i) for i in time.localtime()])
+            current_time = time.localtime()
+            current_time = "".join(
+                [
+                    f'{current_time.tm_year:04}',
+                    f'{current_time.tm_mon:02}',
+                    f'{current_time.tm_mday:02}',
+                    f'{current_time.tm_hour:02}',
+                    f'{current_time.tm_min:02}',
+                    f'{current_time.tm_sec:02}',
+                ]
+            )
             log_file_name = os.path.join(
                 log_file_name,
                 f"log_{current_time}.txt"
