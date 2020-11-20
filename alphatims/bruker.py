@@ -16,6 +16,10 @@ if sys.platform[:5] == "win32":
 elif sys.platform[:5] == "linux":
     BRUKER_DLL_FILE_NAME = "timsdata.so"
 else:
+    logging.warning(
+        "No Bruker libraries are available for MacOS. "
+        "Raw data import/conversion will not be possible."
+    )
     BRUKER_DLL_FILE_NAME = ""
     # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
@@ -259,7 +263,7 @@ def read_bruker_scans(
         BRUKER_DLL_FILE_NAME,
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
-        logging.info(f"Reading scans for {bruker_d_folder_name}")
+        logging.info(f"Reading tof_indices for {bruker_d_folder_name}")
         for frame_id in alphatims.utils.progress_callback(
             range(1, frame_indptr.shape[0] - 1)
         ):
@@ -379,16 +383,17 @@ class TimsTOF(object):
 
     def save_as_hdf(
         self,
-        directory=None,
-        file_name=None,
-        overwrite=False,
+        directory:str="",
+        file_name:str="",
+        overwrite:bool=False,
     ):
-        if directory is None:
-            directory = os.dirname(self.bruker_d_folder_name)
+        if directory == "":
+            directory = os.path.dirname(self.bruker_d_folder_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        if file_name is None:
+        if file_name == "":
             file_name = os.path.basename(self.bruker_d_folder_name)
+            file_name = f"{'.'.join(file_name.split('.'))}.hdf"
         full_file_name = os.path.join(
             directory,
             file_name
@@ -397,7 +402,12 @@ class TimsTOF(object):
             hdf_mode = "w"
         else:
             hdf_mode = "a"
+        logging.info(
+            f"Writing TimsTOF data to {full_file_name}"
+        )
         with h5py.File(full_file_name, hdf_mode) as hdf_root:
+            # TODO!!!!!!!!
+            del self.__dict__["frames"]
             alphatims.utils.create_hdf_group_from_dict(
                 hdf_root,
                 {"raw": self.__dict__},
