@@ -83,7 +83,7 @@ def run():
 )
 def settings_pane(dataset_name):
     global DATASET
-    if not dataset_name.endswith(".d"):
+    if not (dataset_name.endswith(".d") or dataset_name.endswith(".hdf")):
         DATASET = None
         return pn.Column(
             dataset_selection,
@@ -156,7 +156,7 @@ def browser_pane(
             width=480,
             height=350,
             ylabel=labels[y_coor],
-            # tools=['hover', 'box_select'],
+            tools=['hover', 'box_select', 'tap'],
         #     agg='mean',
             ylim=(
                 df[y_coor].min(),
@@ -208,3 +208,5 @@ def button_event(event):
 #
 # sine = Sine(name='ASCII Sine Wave')
 # pn.Row(sine.param, sine.view)
+
+# https://panel.holoviz.org/user_guide/Param.html

@@ -15,6 +15,9 @@ if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = "timsdata.dll"
 elif sys.platform[:5] == "linux":
     BRUKER_DLL_FILE_NAME = "timsdata.so"
+else:
+    BRUKER_DLL_FILE_NAME = ""
+    # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
     alphatims.utils.EXT_PATH,
     BRUKER_DLL_FILE_NAME
@@ -292,6 +295,7 @@ class TimsTOF(object):
         bruker_calibrated_mz_values:bool=False,
         bruker_calibrated_mobility_values:bool=False,
     ):
+        bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if bruker_d_folder_name.endswith(".d"):
             self.import_data_from_d_folder(
                 bruker_d_folder_name,
@@ -339,7 +343,7 @@ class TimsTOF(object):
         self.frame_max_index = self.frames.shape[0]
         self.scan_max_index = int(self.frames.NumScans.max())
         self.tof_max_index = int(self.meta_data["DigitizerNumSamples"])
-        self.rt_values = self.frames.Time.values
+        self.rt_values = self.frames.Time.values.astype(np.float64)
         self.mobility_min_value = float(
             self.meta_data["OneOverK0AcqRangeLower"]
         )
@@ -373,11 +377,41 @@ class TimsTOF(object):
         )
         self.quad_max_index = np.max(self.quad_high_values)
 
+    def save_as_hdf(
+        self,
+        directory=None,
+        file_name=None,
+        overwrite=False,
+    ):
+        if directory is None:
+            directory = os.dirname(self.bruker_d_folder_name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        if file_name is None:
+            file_name = os.path.basename(self.bruker_d_folder_name)
+        full_file_name = os.path.join(
+            directory,
+            file_name
+        )
+        if overwrite:
+            hdf_mode = "w"
+        else:
+            hdf_mode = "a"
+        with h5py.File(full_file_name, hdf_mode) as hdf_root:
+            alphatims.utils.create_hdf_group_from_dict(
+                hdf_root,
+                {"raw": self.__dict__},
+                overwrite
+            )
+
     def import_data_from_hdf_file(
         self,
         bruker_d_folder_name:str,
     ):
-        raise NotImplementedError
+        with h5py.File(bruker_d_folder_name, "r") as hdf_root:
+            self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
+                hdf_root["raw"]
+            )
 
     def convert_from_indices(
         self,

@@ -168,3 +168,92 @@ def progress_callback(iterable, style=None):
         return tqdm.gui.tqdm(iterable)
     else:
         raise ValueError("Not a valid progress callback style")
+
+
+def create_hdf_group_from_dict(hdf_group, data_dict, overwrite=False):
+    """
+    Save dict to opened hdf_group.
+    All keys are expected to be strings.
+    Values are converted as follows:
+        np.ndarray, pd.core.frame.DataFrame => dataset
+        bool, int, float, str => attr
+        dict => group (recursive)
+    Nothing is overwritten, unless otherwise defined
+    """
+    import pandas as pd
+    import numpy as np
+    import h5py
+    for key, value in data_dict.items():
+        if not isinstance(key, str):
+            raise ValueError(f"Key {key} is not a string.")
+        if isinstance(value, pd.core.frame.DataFrame):
+            new_dict = {key: dict(value)}
+            new_dict[key]["is_pd_dataframe"] = True
+            create_hdf_group_from_dict(hdf_group, new_dict, overwrite)
+        elif isinstance(value, (np.ndarray, pd.core.series.Series)):
+            if isinstance(value, (pd.core.series.Series)):
+                value = value.values
+            if overwrite and (key in hdf_group):
+                del hdf_group[key]
+            if key not in hdf_group:
+                if value.dtype.type == np.str_:
+                    value = value.astype(np.dtype('O'))
+                if value.dtype == np.dtype('O'):
+                    hdf_group.create_dataset(
+                        key,
+                        data=value,
+                        dtype=h5py.string_dtype()
+                    )
+                else:
+                    hdf_group.create_dataset(
+                        key,
+                        data=value,
+                    )
+        elif isinstance(value, (bool, int, float, str)):
+            if overwrite or (key not in hdf_group.attrs):
+                hdf_group.attrs[key] = value
+        elif isinstance(value, dict):
+            if key not in hdf_group:
+                hdf_group.create_group(key)
+            create_hdf_group_from_dict(hdf_group[key], value, overwrite)
+        else:
+            raise ValueError(
+                f"The type of {key} is {type(value)}, which "
+                "cannot be converted to an HDF value."
+            )
+
+
+def create_dict_from_hdf_group(hdf_group):
+    import h5py
+    import pandas as pd
+    import numpy as np
+    result = {}
+    for key in hdf_group.attrs:
+        value = hdf_group.attrs[key]
+        if isinstance(value, np.integer):
+            result[key] = int(value)
+        elif isinstance(value, np.float64):
+            result[key] = float(value)
+        elif isinstance(value, (str, bool)):
+            result[key] = value
+        else:
+            raise ValueError(
+                f"The type of {key} is {type(value)}, which "
+                "cannot be converted properly."
+            )
+    for key in hdf_group:
+        subgroup = hdf_group[key]
+        if isinstance(subgroup, h5py.Dataset):
+            result[key] = subgroup[:]
+        else:
+            if "is_pd_dataframe" in subgroup.attrs:
+                result[key] = pd.DataFrame(
+                    {
+                        column: subgroup[column][:] for column in sorted(
+                            subgroup
+                        )
+                    }
+                )
+            else:
+                result[key] = create_dict_from_hdf_group(hdf_group[key])
+    return result
