@@ -41,9 +41,11 @@ Three types of installation are possible:
 
 ### Jupyter notebook
 
-In an existing Jupyter notebook with Python 3 (and git installed), run the following:
+In an existing Jupyter notebook with Python 3, run the following:
 
 ```bash
+# # If git is not installed, run the following command first:
+# !conda install git -y
 !pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
 ```
 
@@ -52,10 +54,16 @@ In an existing Jupyter notebook with Python 3 (and git installed), run the follo
 It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal (copy-paste per individual line):
 
 ```bash
+# # It is not advised to install alphatims in the home directory.
+# # Navigate to the folder where you want to install it
+# # An alphatims folder is created automatically,
+# # so a general software folder suffices
 # mkdir folder/where/to/install/downloaded/software
-cd folder/where/to/install/downloaded/software
+# cd folder/where/to/install/downloaded/software
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
+# # If git is not installed, run the following command:
+# conda install git -y
 git clone https://github.com/MannLabs/alphatims.git
 pip install -e ./alphatims --use-feature=2020-resolver
 conda deactivate
@@ -68,9 +76,9 @@ To avoid calling `conda activate alphatims` and `conda deactivate` every time Al
 ```bash
 conda activate alphatims
 alphatims_bin="$(which alphatims)"
-# With bash
+# # With bash
 echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
-# With zsh
+# # With zsh
 # echo "alias alphatims='"${alphatims_bin}"'" >> ~/.zshrc
 conda deactivate
 ```
@@ -80,9 +88,9 @@ On Windows, this can be done with e.g.:
 ```bash
 conda activate alphatims
 where alphatims
-# The result should be something like:
-# C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
-# This directory can then be permanently added to e.g. PATH with:
+# # The result should be something like:
+# # C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
+# # This directory can then be permanently added to e.g. PATH with:
 # setx PATH=%PATH%;C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
 conda deactivate
 ```
