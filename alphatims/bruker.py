@@ -300,6 +300,8 @@ class TimsTOF(object):
         bruker_d_folder_name:str,
         bruker_calibrated_mz_values:bool=False,
         bruker_calibrated_mobility_values:bool=False,
+        mz_estimation_from_frame:int=1,
+        mobility_estimation_from_frame:int=1,
     ):
         bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if bruker_d_folder_name.endswith(".d"):
@@ -307,6 +309,8 @@ class TimsTOF(object):
                 bruker_d_folder_name,
                 bruker_calibrated_mz_values,
                 bruker_calibrated_mobility_values,
+                mz_estimation_from_frame,
+                mobility_estimation_from_frame,
             )
         elif bruker_d_folder_name.endswith(".hdf"):
             self.import_data_from_hdf_file(
@@ -318,6 +322,8 @@ class TimsTOF(object):
         bruker_d_folder_name:str,
         bruker_calibrated_mz_values:bool,
         bruker_calibrated_mobility_values:bool,
+        mz_estimation_from_frame:int,
+        mobility_estimation_from_frame:int,
     ):
         logging.info(f"Importing data for {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
@@ -356,18 +362,60 @@ class TimsTOF(object):
         self.mobility_max_value = float(
             self.meta_data["OneOverK0AcqRangeUpper"]
         )
-        self.mobility_values = self.mobility_max_value - (
-            self.mobility_max_value - self.mobility_min_value
-        ) / self.scan_max_index * np.arange(self.scan_max_index)
+        if mobility_estimation_from_frame == 0:
+            self.mobility_values = self.mobility_max_value - (
+                self.mobility_max_value - self.mobility_min_value
+            ) / self.scan_max_index * np.arange(self.scan_max_index)
+        else:
+            import ctypes
+            with alphatims.bruker.open_bruker_d_folder(
+                alphatims.bruker.BRUKER_DLL_FILE_NAME,
+                bruker_d_folder_name
+            ) as (bruker_dll, bruker_d_folder_handle):
+                indices = np.arange(self.scan_max_index).astype(np.float64)
+                self.mobility_values = np.empty_like(indices)
+                bruker_dll.tims_index_to_mz(
+                    bruker_d_folder_handle,
+                    mobility_estimation_from_frame,
+                    indices.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_double)
+                    ),
+                    self.mobility_values.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_double)
+                    ),
+                    self.scan_max_index
+                )
         self.mz_min_value = float(self.meta_data["MzAcqRangeLower"])
         self.mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
         self.tof_intercept = np.sqrt(self.mz_min_value)
         self.tof_slope = (
             np.sqrt(self.mz_max_value) - self.tof_intercept
         ) / self.tof_max_index
-        self.mz_values = (
-            self.tof_intercept + self.tof_slope * np.arange(self.tof_max_index)
-        )**2
+        if mz_estimation_from_frame == 0:
+            self.mz_values = (
+                self.tof_intercept + self.tof_slope * np.arange(
+                    self.tof_max_index
+                )
+            )**2
+        else:
+            import ctypes
+            with alphatims.bruker.open_bruker_d_folder(
+                alphatims.bruker.BRUKER_DLL_FILE_NAME,
+                bruker_d_folder_name
+            ) as (bruker_dll, bruker_d_folder_handle):
+                indices = np.arange(self.tof_max_index).astype(np.float64)
+                self.mz_values = np.empty_like(indices)
+                bruker_dll.tims_index_to_mz(
+                    bruker_d_folder_handle,
+                    mz_estimation_from_frame,
+                    indices.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_double)
+                    ),
+                    self.mz_values.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_double)
+                    ),
+                    self.tof_max_index
+                )
         (
             self.quad_indptr,
             self.quad_low_values,
