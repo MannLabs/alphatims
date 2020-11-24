@@ -179,7 +179,12 @@ def progress_callback(iterable, style=None):
         raise ValueError("Not a valid progress callback style")
 
 
-def create_hdf_group_from_dict(hdf_group, data_dict, overwrite=False):
+def create_hdf_group_from_dict(
+    hdf_group,
+    data_dict,
+    overwrite=False,
+    recursed=False
+):
     """
     Save dict to opened hdf_group.
     All keys are expected to be strings.
@@ -192,13 +197,22 @@ def create_hdf_group_from_dict(hdf_group, data_dict, overwrite=False):
     import pandas as pd
     import numpy as np
     import h5py
-    for key, value in data_dict.items():
+    if recursed:
+        iterable_dict = data_dict.items()
+    else:
+        iterable_dict = progress_callback(data_dict.items())
+    for key, value in iterable_dict:
         if not isinstance(key, str):
             raise ValueError(f"Key {key} is not a string.")
         if isinstance(value, pd.core.frame.DataFrame):
             new_dict = {key: dict(value)}
             new_dict[key]["is_pd_dataframe"] = True
-            create_hdf_group_from_dict(hdf_group, new_dict, overwrite)
+            create_hdf_group_from_dict(
+                hdf_group,
+                new_dict,
+                overwrite,
+                recursed=True
+            )
         elif isinstance(value, (np.ndarray, pd.core.series.Series)):
             if isinstance(value, (pd.core.series.Series)):
                 value = value.values
@@ -224,7 +238,12 @@ def create_hdf_group_from_dict(hdf_group, data_dict, overwrite=False):
         elif isinstance(value, dict):
             if key not in hdf_group:
                 hdf_group.create_group(key)
-            create_hdf_group_from_dict(hdf_group[key], value, overwrite)
+            create_hdf_group_from_dict(
+                hdf_group[key],
+                value,
+                overwrite,
+                recursed=True
+            )
         else:
             raise ValueError(
                 f"The type of {key} is {type(value)}, which "

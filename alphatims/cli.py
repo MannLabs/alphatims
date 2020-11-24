@@ -84,6 +84,7 @@ def run():
     alphatims.utils.set_logger()
     overview.add_command(gui_command)
     overview.add_command(convert_command)
+    overview.add_command(featurefind_command)
     overview()
 
 
@@ -113,3 +114,14 @@ def convert_command(**kwargs):
             overwrite=True,
             directory=kwargs["output_folder"]
         )
+
+
+@click.command("featurefind", help="Find features (NotImplemented yet).")
+@click_option("bruker_d_folder")
+@click_option("threads")
+@click_option("log_file")
+@click_option("output_folder")
+# @click_option("no_log_stream")
+def featurefind_command(**kwargs):
+    with cli_logging("convert", **kwargs):
+        raise NotImplementedError

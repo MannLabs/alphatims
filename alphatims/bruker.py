@@ -67,6 +67,11 @@ def init_bruker_dll(bruker_dll_file_name):
         ctypes.c_uint32
     ]
     bruker_dll.tims_scannum_to_oneoverk0.restype = ctypes.c_uint32
+    bruker_dll.tims_set_num_threads.argtypes = [ctypes.c_uint64]
+    bruker_dll.tims_set_num_threads.restype = None
+    # TODO: multiple threads is equally fast as just 1 for io?
+    # bruker_dll.tims_set_num_threads(alphatims.utils.MAX_THREADS)
+    bruker_dll.tims_set_num_threads(1)
     return bruker_dll
 
 
@@ -86,10 +91,14 @@ def open_bruker_d_folder(bruker_dll, bruker_d_folder_name):
         bruker_dll.tims_close(bruker_d_folder_handle)
 
 
-def read_bruker_frames(bruker_d_folder_name, add_zeroth_frame=True,):
+def read_bruker_frames(
+    bruker_d_folder_name,
+    add_zeroth_frame=True,
+    drop_polarity=True,
+):
     import sqlite3
     import pandas as pd
-    logging.info(f"Reading frames for {bruker_d_folder_name}")
+    logging.info(f"Reading frame metadata for {bruker_d_folder_name}")
     with sqlite3.connect(
         os.path.join(bruker_d_folder_name, "analysis.tdf")
     ) as sql_database_connection:
@@ -137,6 +146,13 @@ def read_bruker_frames(bruker_d_folder_name, add_zeroth_frame=True,):
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
             fragment_frames.Frame += 1
+        frames = pd.DataFrame(
+            {
+                col: pd.to_numeric(
+                    frames[col]
+                ) for col in frames if col != "Polarity"
+            }
+        )
         return (
             acquisition_mode,
             global_meta_data,
@@ -367,6 +383,9 @@ class TimsTOF(object):
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         else:
+            logging.info(
+                f"Fetching mobility values from {bruker_d_folder_name}"
+            )
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
@@ -399,6 +418,9 @@ class TimsTOF(object):
             )**2
         else:
             import ctypes
+            logging.info(
+                f"Fetching mz values from {bruker_d_folder_name}"
+            )
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
@@ -443,7 +465,7 @@ class TimsTOF(object):
             os.makedirs(directory)
         if file_name == "":
             file_name = os.path.basename(self.bruker_d_folder_name)
-            file_name = f"{'.'.join(file_name.split('.'))[:-1]}.hdf"
+            file_name = f"{'.'.join(file_name.split('.'))[:-1]}hdf"
         full_file_name = os.path.join(
             directory,
             file_name
@@ -456,10 +478,9 @@ class TimsTOF(object):
             f"Writing TimsTOF data to {full_file_name}"
         )
         with h5py.File(full_file_name, hdf_mode) as hdf_root:
-            del self.__dict__["frames"]  # TODO!!!!!!!!
             alphatims.utils.create_hdf_group_from_dict(
-                hdf_root,
-                {"raw": self.__dict__},
+                hdf_root.create_group("raw"),
+                self.__dict__,
                 overwrite
             )
 
