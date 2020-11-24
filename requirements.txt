@@ -2,3 +2,4 @@ h5py==3.0.0
 numba==0.51.2
 numpy==1.19.4
 pandas==1.1.4
+tqdm==4.51.0
