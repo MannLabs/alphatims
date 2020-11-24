@@ -47,6 +47,8 @@ In an existing Jupyter notebook with Python 3, run the following:
 # # If git is not installed, run the following command first:
 # !conda install git -y
 !pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
+# # Extras can be installed, but are normally not needed for jupyter notebooks
+# pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui,cli,nbs]' --use-feature=2020-resolver
 ```
 
 ### Full
@@ -134,7 +136,7 @@ conda deactivate
 ```
 ### Python and jupyter notebooks
 
-AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) is present in the [nbs folder](nbs).
+AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) (with the extra option `gui` activated for all plotting capabilities) is present in the [nbs folder](nbs).
 
 ## Under the hood
 
