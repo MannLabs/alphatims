@@ -44,11 +44,17 @@ Three types of installation are possible:
 In an existing Jupyter notebook with Python 3, run the following:
 
 ```bash
-# # If git is not installed, run the following command first:
+# # If git is not installed,
+# # install git manually or run the following command first:
 # !conda install git -y
 !pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
 # # Extras can be installed, but are normally not needed for jupyter notebooks
 # pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui,cli,nbs]' --use-feature=2020-resolver
+```
+
+Once installed, the latest version can be downloaded with a simple upgrade:
+```bash
+!pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver --upgrade
 ```
 
 ### Full
