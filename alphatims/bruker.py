@@ -395,7 +395,7 @@ class TimsTOF(object):
             os.makedirs(directory)
         if file_name == "":
             file_name = os.path.basename(self.bruker_d_folder_name)
-            file_name = f"{'.'.join(file_name.split('.'))}.hdf"
+            file_name = f"{'.'.join(file_name.split('.'))[:-1]}.hdf"
         full_file_name = os.path.join(
             directory,
             file_name
