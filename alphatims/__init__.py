@@ -36,4 +36,9 @@ __urls__ = {
     "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",
     "GitHub:": __github__
 }
+__extra_requirements__ = {
+    "gui": "requirements_gui.txt",
+    "cli": "requirements_cli.txt",
+    "nbs": "requirements_nbs.txt",
+}
 __strict_requirements__ = False
