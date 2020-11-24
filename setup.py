@@ -20,6 +20,18 @@ with open("requirements.txt") as requirements_file:
         requirements.append(requirement)
 
 
+extra_requirements = {}
+for extra, file_name in package_to_install.__extra_requirements__.items():
+    with open(file_name) as requirements_file:
+        extra_requirements[extra] = []
+        for line in requirements_file:
+            if package_to_install.__strict_requirements__:
+                requirement = line.strip()
+            else:
+                requirement, version = line.split("==")
+            extra_requirements[extra].append(requirement)
+
+
 setuptools.setup(
     name=package_to_install.__project__,
     version=package_to_install.__version__,
@@ -42,5 +54,6 @@ setuptools.setup(
         # TODO Remove hardcoded requirement?
         "pywin32==225; sys_platform=='win32'"
     ],
+    extras_require=extra_requirements,
     python_requires=package_to_install.__python_version__,
 )

@@ -1,0 +1,3 @@
+ipykernel==5.3.4
+rise==5.7.1
+jupyter==1.0.0

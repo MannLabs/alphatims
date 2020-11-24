@@ -51,7 +51,7 @@ In an existing Jupyter notebook with Python 3, run the following:
 
 ### Full
 
-It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [dependancy requirements](requirements.txt) with the following commands in a terminal (copy-paste per individual line):
+It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements.txt) (extra options include [cli](requirements_cli.txt), [gui](requirements_gui.txt) and [nbs](requirements_nbs.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
 
 ```bash
 # # It is not advised to install alphatims in the home directory.
@@ -65,7 +65,10 @@ conda activate alphatims
 # # If git is not installed, run the following command:
 # conda install git -y
 git clone https://github.com/MannLabs/alphatims.git
-pip install -e ./alphatims --use-feature=2020-resolver
+# # While AlphaTims can be imported directly in other programs,
+# # a standalone version often requires additional packages for
+# # cli, gui and nbs usage. If not desired, they can be skipped.
+pip install -e './alphatims[cli,gui,nbs]' --use-feature=2020-resolver
 conda deactivate
 ```
 
