@@ -73,45 +73,46 @@ pyz = PYZ(
 		a.zipped_data,
 		cipher=block_cipher
 )
-# exe = EXE(
-# 		pyz,
-# 	  a.scripts,
-# 	  [],
-# 	  exclude_binaries=True,
-# 	  name=exe_name,
-# 	  debug=False,
-# 	  bootloader_ignore_signals=False,
-# 	  strip=False,
-# 	  upx=True,
-# 	  console=True
-# )
-# coll = COLLECT(
-# 		exe,
-# 		a.binaries,
-# 		a.zipfiles,
-# 		a.datas,
-# 		*pkg_data,
-# 		strip=False,
-# 		upx=True,
-# 		upx_exclude=[],
-# 		name=exe_name
-# )
-
 exe = EXE(
 		pyz,
-		a.scripts,
+	  a.scripts,
+	  [],
+	  exclude_binaries=True,
+	  name=exe_name,
+	  debug=False,
+	  bootloader_ignore_signals=False,
+	  strip=False,
+	  upx=True,
+	  console=True,
+		icon=icon
+)
+coll = COLLECT(
+		exe,
 		a.binaries,
 		a.zipfiles,
 		a.datas,
 		*pkg_data,
-		[],
-		name=exe_name,
-		debug=False,
-		bootloader_ignore_signals=False,
 		strip=False,
 		upx=True,
 		upx_exclude=[],
-		runtime_tmpdir=None,
-		console=True,
-		icon=icon
+		name=exe_name
 )
+
+# exe = EXE(
+# 		pyz,
+# 		a.scripts,
+# 		a.binaries,
+# 		a.zipfiles,
+# 		a.datas,
+# 		*pkg_data,
+# 		[],
+# 		name=exe_name,
+# 		debug=False,
+# 		bootloader_ignore_signals=False,
+# 		strip=False,
+# 		upx=True,
+# 		upx_exclude=[],
+# 		runtime_tmpdir=None,
+# 		console=True,
+# 		icon=icon
+# )
