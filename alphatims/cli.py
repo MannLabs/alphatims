@@ -13,10 +13,21 @@ import alphatims.utils
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+def parse_args_with_default_help(self, ctx, args):
+    if not args:
+        args = ["-h"]
+    return self.original_parse_args(ctx, args)
+
+
+click.Command.original_parse_args = click.Command.parse_args
+click.Command.parse_args = parse_args_with_default_help
+
+
 @contextlib.contextmanager
 def cli_logging(command_name, **kwargs):
     import logging
     import time
+    import platform
     try:
         start_time = time.time()
         if "threads" in kwargs:
@@ -34,6 +45,13 @@ def cli_logging(command_name, **kwargs):
         logging.info(f"* AlphaTims {alphatims.__version__} *")
         logging.info("************************")
         logging.info("")
+        logging.info("Detected platform:")
+        logging.info(f"System    - {platform.system()}")
+        logging.info(f"Release   - {platform.release()}")
+        logging.info(f"Version   - {platform.version()}")
+        logging.info(f"Machine   - {platform.machine()}")
+        logging.info(f"Processor - {platform.processor()}")
+        logging.info("")
         logging.info(
             f"Running command `alphatims {command_name}` with parameters:"
         )
@@ -42,14 +60,17 @@ def cli_logging(command_name, **kwargs):
             logging.info(f"{key:<{max_len}} - {value}")
         logging.info("")
         yield
-    finally:
+    except Exception:
+        logging.exception("Something went wrong, execution incomplete!")
+    else:
         logging.info(
             f"Analysis done in {time.time() - start_time:.2f} seconds"
         )
+    finally:
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def click_option(parameter_name):
+def cli_option(parameter_name):
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
     if "type" in parameters:
         if parameters["type"] == "int":
@@ -80,33 +101,27 @@ def click_option(parameter_name):
         )
 
 
-def run():
-    alphatims.utils.set_logger()
-    overview.add_command(gui_command)
-    overview.add_command(convert_command)
-    overview.add_command(featurefind_command)
-    overview()
-
-
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(alphatims.__version__)
-def overview(**kwargs):
+def run(**kwargs):
+    alphatims.utils.set_logger()
     pass
 
 
-@click.command("gui", help="Start graphical user interface.")
-def gui_command():
+@run.command("gui", help="Start graphical user interface.")
+def gui():
     import alphatims.gui
     alphatims.gui.run()
 
 
-@click.command("convert", help="Convert raw data to an HDF file.")
-@click_option("bruker_d_folder")
-@click_option("threads")
-@click_option("log_file")
-@click_option("output_folder")
-# @click_option("no_log_stream")
-def convert_command(**kwargs):
+@run.command("convert")
+@cli_option("bruker_d_folder")
+@cli_option("threads")
+@cli_option("log_file")
+@cli_option("output_folder")
+# @cli_option("no_log_stream")
+def convert(**kwargs):
+    """Convert raw data to an HDF file."""
     with cli_logging("convert", **kwargs):
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(kwargs["bruker_d_folder"])
@@ -116,12 +131,42 @@ def convert_command(**kwargs):
         )
 
 
-@click.command("featurefind", help="Find features (NotImplemented yet).")
-@click_option("bruker_d_folder")
-@click_option("threads")
-@click_option("log_file")
-@click_option("output_folder")
-# @click_option("no_log_stream")
-def featurefind_command(**kwargs):
-    with cli_logging("convert", **kwargs):
+@run.group(
+    "detect",
+    help="Detect data structures.",
+    context_settings=CONTEXT_SETTINGS
+)
+def detect(**kwargs):
+    pass
+
+
+@detect.command("ions", help="Detect ions (NotImplemented yet).")
+@cli_option("bruker_d_folder")
+@cli_option("threads")
+@cli_option("log_file")
+@cli_option("output_folder")
+# @cli_option("no_log_stream")
+def detect_ions(**kwargs):
+    with cli_logging("detect ions", **kwargs):
+        raise NotImplementedError
+
+@detect.command("features", help="Detect features (NotImplemented yet).")
+@cli_option("bruker_d_folder")
+@cli_option("threads")
+@cli_option("log_file")
+@cli_option("output_folder")
+# @cli_option("no_log_stream")
+def detect_features(**kwargs):
+    with cli_logging("detect features", **kwargs):
+        raise NotImplementedError
+
+
+@detect.command("analytes", help="Detect analytes (NotImplemented yet).")
+@cli_option("bruker_d_folder")
+@cli_option("threads")
+@cli_option("log_file")
+@cli_option("output_folder")
+# @cli_option("no_log_stream")
+def detect_analytes(**kwargs):
+    with cli_logging("detect analytes", **kwargs):
         raise NotImplementedError
