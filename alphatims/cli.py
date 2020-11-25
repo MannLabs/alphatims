@@ -13,14 +13,14 @@ import alphatims.utils
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-def parse_args_with_default_help(self, ctx, args):
-    if not args:
-        args = ["-h"]
-    return self.original_parse_args(ctx, args)
-
-
-click.Command.original_parse_args = click.Command.parse_args
-click.Command.parse_args = parse_args_with_default_help
+# def parse_args_with_default_help(self, ctx, args):
+#     if not args:
+#         args = ["-h"]
+#     return self.original_parse_args(ctx, args)
+#
+#
+# click.Command.original_parse_args = click.Command.parse_args
+# click.Command.parse_args = parse_args_with_default_help
 
 
 @contextlib.contextmanager
