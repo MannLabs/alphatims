@@ -393,7 +393,7 @@ class TimsTOF(object):
             ) as (bruker_dll, bruker_d_folder_handle):
                 indices = np.arange(self.scan_max_index).astype(np.float64)
                 self.mobility_values = np.empty_like(indices)
-                bruker_dll.tims_index_to_mz(
+                bruker_dll.tims_scannum_to_oneoverk0(
                     bruker_d_folder_handle,
                     mobility_estimation_from_frame,
                     indices.ctypes.data_as(
