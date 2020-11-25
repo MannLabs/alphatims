@@ -35,11 +35,11 @@ Three types of installation are possible:
 
 ### One-click GUI
 
-* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/download/latest/alphatims_installer.exe).
+* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer.exe).
 * **Linux:** TODO.
 * **MacOS:** Unavailable due to availability of Bruker libraries.
 
-Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [**Jupyter**](#jupyter-notebook) and [**full**](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
+Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [Jupyter](#jupyter-notebook) and [full](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
 
 ### Jupyter notebook
 
