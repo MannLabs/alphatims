@@ -210,8 +210,7 @@ def set_progress_callback_style(style=None, set_global=True):
         global PROGRESS_CALLBACK_STYLE
     if style is not None:
         PROGRESS_CALLBACK_STYLE = style
-    if not set_global:
-        return PROGRESS_CALLBACK_STYLE
+    return PROGRESS_CALLBACK_STYLE
 
 
 def progress_callback(iterable, style=None):

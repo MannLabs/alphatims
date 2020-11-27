@@ -10,8 +10,10 @@ with open("README.md", "r") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 
-with open("requirements.txt") as requirements_file:
-    requirements = []
+requirements = []
+
+requirement_file_name = package_to_install.__requirements__.pop("")
+with open(requirement_file_name) as requirements_file:
     for line in requirements_file:
         if package_to_install.__strict_requirements__:
             requirement = line.strip()
@@ -21,8 +23,8 @@ with open("requirements.txt") as requirements_file:
 
 
 extra_requirements = {}
-for extra, file_name in package_to_install.__extra_requirements__.items():
-    with open(file_name) as requirements_file:
+for extra, requirement_file_name in package_to_install.__requirements__.items():
+    with open(requirement_file_name) as requirements_file:
         extra_requirements[extra] = []
         for line in requirements_file:
             if package_to_install.__strict_requirements__:

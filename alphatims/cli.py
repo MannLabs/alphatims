@@ -50,7 +50,8 @@ def parse_cli_settings(command_name, **kwargs):
         alphatims.utils.show_python_info()
         if kwargs:
             logging.info(
-                f"Running command `alphatims {command_name}` with parameters:"
+                f"Running CLI command `alphatims "
+                f"{command_name}` with parameters:"
             )
             max_len = max(len(key) for key in kwargs)
             for key, value in sorted(kwargs.items()):

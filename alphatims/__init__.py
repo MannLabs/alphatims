@@ -16,7 +16,7 @@ __keywords__ = [
     "proteomics",
     "bioinformatics"
 ]
-__python_version__ = ">=3.6,<3.9"
+__python_version__ = ">=3.8,<3.9"
 __classifiers__ = [
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",
@@ -35,9 +35,10 @@ __urls__ = {
     "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",
     "GitHub:": __github__
 }
-__extra_requirements__ = {
-    "gui": "requirements_gui.txt",
-    "cli": "requirements_cli.txt",
-    "nbs": "requirements_nbs.txt",
+__requirements__ = {
+    "": "requirements/requirements.txt",
+    "gui": "requirements/requirements_gui.txt",
+    "cli": "requirements/requirements_cli.txt",
+    "nbs": "requirements/requirements_nbs.txt",
 }
 __strict_requirements__ = False
