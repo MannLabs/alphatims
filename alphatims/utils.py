@@ -78,7 +78,7 @@ def show_platform_info():
     logging.info("Platform information:")
     logging.info(f"system    - {platform.system()}")
     logging.info(f"release   - {platform.release()}")
-    # logging.info(f"Version   - {platform.version()}")
+    logging.info(f"Version   - {platform.version()}")
     logging.info(f"machine   - {platform.machine()}")
     logging.info(f"processor - {platform.processor()}")
     logging.info("")

@@ -32,7 +32,7 @@ MSMSTYPE_DIAPASEF = 9
 
 def init_bruker_dll(bruker_dll_file_name):
     import ctypes
-    logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
+    # logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
     bruker_dll = ctypes.cdll.LoadLibrary(
         os.path.realpath(bruker_dll_file_name)
     )
@@ -260,6 +260,10 @@ def read_bruker_scans(
     bruker_calibrated_mz_values:bool=False,
     bruker_calibrated_mobility_values:bool=False,
 ):
+    logging.info(
+        f"Reading {frame_indptr[-1]:,} TOF arrivals for "
+        f"{bruker_d_folder_name}"
+    )
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
@@ -279,10 +283,6 @@ def read_bruker_scans(
         BRUKER_DLL_FILE_NAME,
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
-        logging.info(
-            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
-            f"{bruker_d_folder_name}"
-        )
         for frame_id in alphatims.utils.progress_callback(
             range(1, frame_indptr.shape[0] - 1)
         ):
@@ -341,7 +341,7 @@ class TimsTOF(object):
         mz_estimation_from_frame:int,
         mobility_estimation_from_frame:int,
     ):
-        logging.info(f"Importing data for {bruker_d_folder_name}")
+        logging.info(f"Importing data from {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
         (
             self.acquisition_mode,
@@ -455,17 +455,10 @@ class TimsTOF(object):
 
     def save_as_hdf(
         self,
-        directory:str="",
-        file_name:str="",
+        directory:str,
+        file_name:str,
         overwrite:bool=False,
     ):
-        if directory == "":
-            directory = os.path.dirname(self.bruker_d_folder_name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        if file_name == "":
-            file_name = os.path.basename(self.bruker_d_folder_name)
-            file_name = f"{'.'.join(file_name.split('.'))[:-1]}hdf"
         full_file_name = os.path.join(
             directory,
             file_name
