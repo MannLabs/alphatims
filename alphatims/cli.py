@@ -12,7 +12,7 @@ import alphatims.utils
 
 
 @contextlib.contextmanager
-def parse_cli_parameters(command_name, **kwargs):
+def parse_cli_settings(command_name, **kwargs):
     import logging
     import time
     try:
@@ -114,7 +114,7 @@ def run(ctx, **kwargs):
 
 @run.command("gui", help="Start graphical user interface.")
 def gui():
-    with parse_cli_parameters("gui") as parameters:
+    with parse_cli_settings("gui") as parameters:
         import logging
         logging.info("Loading GUI..")
         import alphatims.gui
@@ -139,7 +139,7 @@ def detect(**kwargs):
 @cli_option("no_log_stream")
 @cli_option("parameter_file")
 def export_raw_as_hdf(**kwargs):
-    with parse_cli_parameters("export raw_as_hdf", **kwargs) as parameters:
+    with parse_cli_settings("export raw_as_hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
         data.save_as_hdf(
@@ -166,7 +166,7 @@ def export_parameters(**kwargs):
     kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
     with open(kwargs["parameter_file"], "w") as truncated_file:
         json.dump({}, truncated_file, indent=4, sort_keys=True)
-    with parse_cli_parameters("export parameters", **kwargs) as parameters:
+    with parse_cli_settings("export parameters", **kwargs) as parameters:
         parameter_file_name = parameters.pop("parameter_file")
         alphatims.utils.save_parameters(
             parameter_file_name,
@@ -182,7 +182,7 @@ def export_parameters(**kwargs):
 @cli_option("no_log_stream")
 @cli_option("parameter_file")
 def detect_ions(**kwargs):
-    with parse_cli_parameters("detect ions", **kwargs) as parameters:
+    with parse_cli_settings("detect ions", **kwargs) as parameters:
         raise NotImplementedError
 
 
@@ -194,7 +194,7 @@ def detect_ions(**kwargs):
 @cli_option("no_log_stream")
 @cli_option("parameter_file")
 def detect_features(**kwargs):
-    with parse_cli_parameters("detect features", **kwargs) as parameters:
+    with parse_cli_settings("detect features", **kwargs) as parameters:
         raise NotImplementedError
 
 
@@ -206,5 +206,5 @@ def detect_features(**kwargs):
 @cli_option("no_log_stream")
 @cli_option("parameter_file")
 def detect_analytes(**kwargs):
-    with parse_cli_parameters("detect analytes", **kwargs) as parameters:
+    with parse_cli_settings("detect analytes", **kwargs) as parameters:
         raise NotImplementedError
