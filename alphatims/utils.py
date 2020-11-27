@@ -78,7 +78,10 @@ def show_platform_info():
     logging.info("Platform information:")
     logging.info(f"system    - {platform.system()}")
     logging.info(f"release   - {platform.release()}")
-    logging.info(f"Version   - {platform.version()}")
+    if platform.system() == "Darwin":
+        logging.info(f"version   - {platform.mac_ver()[0]}")
+    else:
+        logging.info(f"version   - {platform.version()}")
     logging.info(f"machine   - {platform.machine()}")
     logging.info(f"processor - {platform.processor()}")
     logging.info("")

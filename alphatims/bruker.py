@@ -20,6 +20,7 @@ else:
         "No Bruker libraries are available for MacOS. "
         "Raw data import/conversion will not be possible."
     )
+    logging.info("")
     BRUKER_DLL_FILE_NAME = ""
     # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
