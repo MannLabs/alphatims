@@ -260,10 +260,6 @@ def read_bruker_scans(
     bruker_calibrated_mz_values:bool=False,
     bruker_calibrated_mobility_values:bool=False,
 ):
-    logging.info(
-        f"Reading {frame_indptr[-1]:,} TOF arrivals for "
-        f"{bruker_d_folder_name}"
-    )
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
@@ -283,6 +279,10 @@ def read_bruker_scans(
         BRUKER_DLL_FILE_NAME,
         bruker_d_folder_name
     ) as (bruker_dll, bruker_d_folder_handle):
+        logging.info(
+            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
+            f"{bruker_d_folder_name}"
+        )
         for frame_id in alphatims.utils.progress_callback(
             range(1, frame_indptr.shape[0] - 1)
         ):
@@ -383,14 +383,14 @@ class TimsTOF(object):
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         else:
-            logging.info(
-                f"Fetching mobility values from {bruker_d_folder_name}"
-            )
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
+                logging.info(
+                    f"Fetching mobility values from {bruker_d_folder_name}"
+                )
                 indices = np.arange(self.scan_max_index).astype(np.float64)
                 self.mobility_values = np.empty_like(indices)
                 bruker_dll.tims_scannum_to_oneoverk0(
@@ -418,13 +418,13 @@ class TimsTOF(object):
             )**2
         else:
             import ctypes
-            logging.info(
-                f"Fetching mz values from {bruker_d_folder_name}"
-            )
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
+                logging.info(
+                    f"Fetching mz values from {bruker_d_folder_name}"
+                )
                 indices = np.arange(self.tof_max_index).astype(np.float64)
                 self.mz_values = np.empty_like(indices)
                 bruker_dll.tims_index_to_mz(
