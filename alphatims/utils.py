@@ -105,6 +105,17 @@ def show_python_info():
     logging.info("")
 
 
+def save_parameters(parameter_file_name, paramaters):
+    logging.info(f"Saving parameters to {parameter_file_name}")
+    with open(parameter_file_name, "w") as outfile:
+        json.dump(paramaters, outfile, indent=4, sort_keys=True)
+
+
+def load_parameters(parameter_file_name):
+    with open(parameter_file_name, "r") as infile:
+        return json.load(infile)
+
+
 def set_threads(threads, set_global=True):
     import multiprocessing
     if set_global:

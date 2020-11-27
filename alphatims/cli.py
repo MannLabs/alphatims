@@ -3,6 +3,7 @@
 
 # builtin
 import contextlib
+import os
 # external
 import click
 # local
@@ -16,6 +17,15 @@ def parse_cli_parameters(command_name, **kwargs):
     import time
     try:
         start_time = time.time()
+        kwargs = {key: arg for key, arg in kwargs.items() if arg is not None}
+        if ("parameter_file" in kwargs):
+            kwargs["parameter_file"] = os.path.abspath(
+                kwargs["parameter_file"]
+            )
+            parameters = alphatims.utils.load_parameters(
+                kwargs["parameter_file"]
+            )
+            kwargs.update(parameters)
         if "threads" not in kwargs:
             kwargs["threads"] = alphatims.utils.INTERFACE_PARAMETERS[
                 "threads"
@@ -59,9 +69,10 @@ def parse_cli_parameters(command_name, **kwargs):
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def cli_option(parameter_name):
+def cli_option(parameter_name, **kwargs):
     names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
+    parameters.update(kwargs)
     if "type" in parameters:
         if parameters["type"] == "int":
             parameters["type"] = int
@@ -93,7 +104,7 @@ def cli_option(parameter_name):
 )
 @click.pass_context
 @click.version_option(alphatims.__version__, "-v", "--version")
-def run(ctx):
+def run(ctx, **kwargs):
     click.echo("************************")
     click.echo(f"* AlphaTims {alphatims.__version__} *")
     click.echo("************************")
@@ -110,15 +121,25 @@ def gui():
         alphatims.gui.run()
 
 
-@run.command("convert")
+@run.group("export", help="Export information.")
+def export(**kwargs):
+    pass
+
+
+@run.group("detect", help="Detect data structures.")
+def detect(**kwargs):
+    pass
+
+
+@export.command("raw_as_hdf", help="Export raw file as hdf file.")
 @cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
 @cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
 @cli_option("no_log_stream")
-def convert(**kwargs):
-    """Convert raw data to an HDF file."""
-    with parse_cli_parameters("convert", **kwargs) as parameters:
+@cli_option("parameter_file")
+def export_raw_as_hdf(**kwargs):
+    with parse_cli_parameters("export raw_as_hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
         data.save_as_hdf(
@@ -127,17 +148,39 @@ def convert(**kwargs):
         )
 
 
-@run.group("detect", help="Detect data structures.")
-def detect(**kwargs):
-    pass
-
-
-@detect.command("ions", help="Detect ions (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@export.command("parameters", help="Export (non-required) parameters as json")
+@cli_option(
+    "parameter_file",
+    required=True,
+    type={
+      "name": "path",
+      "dir_okay": False,
+    }
+)
 @cli_option("threads")
 @cli_option("log_file")
 @cli_option("output_folder")
 @cli_option("no_log_stream")
+def export_parameters(**kwargs):
+    import json
+    kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
+    with open(kwargs["parameter_file"], "w") as truncated_file:
+        json.dump({}, truncated_file, indent=4, sort_keys=True)
+    with parse_cli_parameters("export parameters", **kwargs) as parameters:
+        parameter_file_name = parameters.pop("parameter_file")
+        alphatims.utils.save_parameters(
+            parameter_file_name,
+            parameters
+        )
+
+
+@detect.command("ions", help="Detect ions (NotImplemented yet).")
+@cli_option("bruker_d_folder")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_ions(**kwargs):
     with parse_cli_parameters("detect ions", **kwargs) as parameters:
         raise NotImplementedError
@@ -145,10 +188,11 @@ def detect_ions(**kwargs):
 
 @detect.command("features", help="Detect features (NotImplemented yet).")
 @cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
 @cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
 @cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_features(**kwargs):
     with parse_cli_parameters("detect features", **kwargs) as parameters:
         raise NotImplementedError
@@ -156,10 +200,11 @@ def detect_features(**kwargs):
 
 @detect.command("analytes", help="Detect analytes (NotImplemented yet).")
 @cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
 @cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
 @cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_analytes(**kwargs):
     with parse_cli_parameters("detect analytes", **kwargs) as parameters:
         raise NotImplementedError
