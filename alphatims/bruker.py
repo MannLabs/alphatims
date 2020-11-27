@@ -71,8 +71,8 @@ def init_bruker_dll(bruker_dll_file_name):
     bruker_dll.tims_set_num_threads.argtypes = [ctypes.c_uint64]
     bruker_dll.tims_set_num_threads.restype = None
     # TODO: multiple threads is equally fast as just 1 for io?
-    # bruker_dll.tims_set_num_threads(alphatims.utils.MAX_THREADS)
-    bruker_dll.tims_set_num_threads(1)
+    bruker_dll.tims_set_num_threads(alphatims.utils.MAX_THREADS)
+    # bruker_dll.tims_set_num_threads(1)
     return bruker_dll
 
 

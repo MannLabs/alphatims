@@ -31,13 +31,13 @@ Three types of installation are possible:
 * [**Jupyter notebook installer:**](#jupyter-notebook) Choose this installation if you only work in Jupyter Notebooks and just want to use AlphaTims as an extension.
 * [**Full installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
 
-***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, it is only compatible with Windows and Linux. This is true for all installation types.***
+***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, reading raw data is only compatible with Windows and Linux. This is true for all installation types. All other functionality is platform independent.***
 
 ### One-click GUI
 
 * **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer.exe).
 * **Linux:** TODO.
-* **MacOS:** Unavailable due to availability of Bruker libraries.
+* **MacOS:** TODO. Note that reading raw data is not possible due to availability of Bruker libraries.
 
 Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [Jupyter](#jupyter-notebook) and [full](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
 
@@ -84,7 +84,7 @@ conda deactivate
 
 By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.
 
-To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution can be added as an alias. On linux, this can be done with e.g.:
+To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution can be added as an alias. On linux and MacOS, this can be done with e.g.:
 
 ```bash
 conda activate alphatims
