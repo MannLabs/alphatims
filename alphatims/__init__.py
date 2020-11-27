@@ -30,7 +30,6 @@ __classifiers__ = [
 ]
 __console_scripts__ = [
     "alphatims=alphatims.cli:run",
-    "alphatims_gui=alphatims.gui:run",
 ]
 __urls__ = {
     "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",
