@@ -4,8 +4,7 @@
 import panel as pn
 import time
 # local
-import alphatims.utils
-import alphatims.bruker
+# import alphatims.utils
 
 import holoviews as hv
 # from holoviews.operation.datashader import datashade
@@ -82,6 +81,7 @@ def run():
     watch=True
 )
 def settings_pane(dataset_name):
+    import alphatims.bruker
     global DATASET
     if not (dataset_name.endswith(".d") or dataset_name.endswith(".hdf")):
         DATASET = None
@@ -183,8 +183,9 @@ def browser_pane(
 
 @pn.depends(exit_button.param.clicks, watch=True)
 def button_event(event):
+    import logging
     global CONTINUE_RUNNING
-    print("Quitting server...")
+    logging.info("Quitting server...")
     CONTINUE_RUNNING = False
 
 

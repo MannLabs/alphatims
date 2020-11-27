@@ -20,6 +20,7 @@ else:
         "No Bruker libraries are available for MacOS. "
         "Raw data import/conversion will not be possible."
     )
+    logging.info("")
     BRUKER_DLL_FILE_NAME = ""
     # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
@@ -32,7 +33,7 @@ MSMSTYPE_DIAPASEF = 9
 
 def init_bruker_dll(bruker_dll_file_name):
     import ctypes
-    logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
+    # logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
     bruker_dll = ctypes.cdll.LoadLibrary(
         os.path.realpath(bruker_dll_file_name)
     )
@@ -341,7 +342,7 @@ class TimsTOF(object):
         mz_estimation_from_frame:int,
         mobility_estimation_from_frame:int,
     ):
-        logging.info(f"Importing data for {bruker_d_folder_name}")
+        logging.info(f"Importing data from {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
         (
             self.acquisition_mode,
@@ -383,14 +384,14 @@ class TimsTOF(object):
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         else:
-            logging.info(
-                f"Fetching mobility values from {bruker_d_folder_name}"
-            )
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
+                logging.info(
+                    f"Fetching mobility values from {bruker_d_folder_name}"
+                )
                 indices = np.arange(self.scan_max_index).astype(np.float64)
                 self.mobility_values = np.empty_like(indices)
                 bruker_dll.tims_scannum_to_oneoverk0(
@@ -418,13 +419,13 @@ class TimsTOF(object):
             )**2
         else:
             import ctypes
-            logging.info(
-                f"Fetching mz values from {bruker_d_folder_name}"
-            )
             with alphatims.bruker.open_bruker_d_folder(
                 alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
+                logging.info(
+                    f"Fetching mz values from {bruker_d_folder_name}"
+                )
                 indices = np.arange(self.tof_max_index).astype(np.float64)
                 self.mz_values = np.empty_like(indices)
                 bruker_dll.tims_index_to_mz(
@@ -455,17 +456,10 @@ class TimsTOF(object):
 
     def save_as_hdf(
         self,
-        directory:str="",
-        file_name:str="",
+        directory:str,
+        file_name:str,
         overwrite:bool=False,
     ):
-        if directory == "":
-            directory = os.path.dirname(self.bruker_d_folder_name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        if file_name == "":
-            file_name = os.path.basename(self.bruker_d_folder_name)
-            file_name = f"{'.'.join(file_name.split('.'))[:-1]}hdf"
         full_file_name = os.path.join(
             directory,
             file_name

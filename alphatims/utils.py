@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 import json
+# local
+import alphatims
 
 
 BASE_PATH = os.path.dirname(__file__)
@@ -20,7 +22,12 @@ PROGRESS_CALLBACK_STYLE_PLOT = 2
 PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
 
 
-def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
+def set_logger(
+    *,
+    log_file_name="",
+    stream=True,
+    log_level=logging.INFO,
+):
     import time
     root = logging.getLogger()
     formatter = logging.Formatter(
@@ -29,8 +36,8 @@ def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
     root.setLevel(log_level)
     while root.hasHandlers():
         root.removeHandler(root.handlers[0])
-    if stream is not None:
-        stream_handler = logging.StreamHandler(stream)
+    if stream:
+        stream_handler = logging.StreamHandler(sys.stdout)
         stream_handler.setLevel(log_level)
         stream_handler.setFormatter(formatter)
         root.addHandler(stream_handler)
@@ -63,6 +70,53 @@ def set_logger(*, log_file_name="", stream=sys.stdout, log_level=logging.INFO):
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
+    return log_file_name
+
+
+def show_platform_info():
+    import platform
+    logging.info("Platform information:")
+    logging.info(f"system    - {platform.system()}")
+    logging.info(f"release   - {platform.release()}")
+    if platform.system() == "Darwin":
+        logging.info(f"version   - {platform.mac_ver()[0]}")
+    else:
+        logging.info(f"version   - {platform.version()}")
+    logging.info(f"machine   - {platform.machine()}")
+    logging.info(f"processor - {platform.processor()}")
+    logging.info("")
+
+
+def show_python_info():
+    import importlib.metadata
+    import platform
+    module_versions = {
+        "python": platform.python_version(),
+        "alphatims": alphatims.__version__
+    }
+    for requirement in importlib.metadata.requires("alphatims"):
+        module_name = requirement.split(";")[0].split("==")[0]
+        try:
+            module_version = importlib.metadata.version(module_name)
+        except importlib.metadata.PackageNotFoundError:
+            module_version = "?"
+        module_versions[module_name] = module_version
+    max_len = max(len(key) for key in module_versions)
+    logging.info("Python information:")
+    for key, value in sorted(module_versions.items()):
+        logging.info(f"{key:<{max_len}} - {value}")
+    logging.info("")
+
+
+def save_parameters(parameter_file_name, paramaters):
+    logging.info(f"Saving parameters to {parameter_file_name}")
+    with open(parameter_file_name, "w") as outfile:
+        json.dump(paramaters, outfile, indent=4, sort_keys=True)
+
+
+def load_parameters(parameter_file_name):
+    with open(parameter_file_name, "r") as infile:
+        return json.load(infile)
 
 
 def set_threads(threads, set_global=True):
@@ -159,8 +213,7 @@ def set_progress_callback_style(style=None, set_global=True):
         global PROGRESS_CALLBACK_STYLE
     if style is not None:
         PROGRESS_CALLBACK_STYLE = style
-    if not set_global:
-        return PROGRESS_CALLBACK_STYLE
+    return PROGRESS_CALLBACK_STYLE
 
 
 def progress_callback(iterable, style=None):

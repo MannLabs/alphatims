@@ -3,6 +3,7 @@
 
 # builtin
 import contextlib
+import os
 # external
 import click
 # local
@@ -10,56 +11,55 @@ import alphatims
 import alphatims.utils
 
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-# def parse_args_with_default_help(self, ctx, args):
-#     if not args:
-#         args = ["-h"]
-#     return self.original_parse_args(ctx, args)
-#
-#
-# click.Command.original_parse_args = click.Command.parse_args
-# click.Command.parse_args = parse_args_with_default_help
-
-
 @contextlib.contextmanager
-def cli_logging(command_name, **kwargs):
+def parse_cli_settings(command_name, **kwargs):
     import logging
     import time
-    import platform
     try:
         start_time = time.time()
-        if "threads" in kwargs:
-            kwargs["threads"] = alphatims.utils.set_threads(
-                kwargs["threads"]
+        kwargs = {key: arg for key, arg in kwargs.items() if arg is not None}
+        if ("parameter_file" in kwargs):
+            kwargs["parameter_file"] = os.path.abspath(
+                kwargs["parameter_file"]
             )
-        if ("log_file" in kwargs):
-            alphatims.utils.set_logger(
-                log_file_name=kwargs["log_file"],
+            parameters = alphatims.utils.load_parameters(
+                kwargs["parameter_file"]
             )
-            for handler in logging.getLogger().handlers:
-                if isinstance(handler, logging.FileHandler):
-                    kwargs["log_file"] = handler.baseFilename
-        logging.info("************************")
-        logging.info(f"* AlphaTims {alphatims.__version__} *")
-        logging.info("************************")
-        logging.info("")
-        logging.info("Detected platform:")
-        logging.info(f"System    - {platform.system()}")
-        logging.info(f"Release   - {platform.release()}")
-        logging.info(f"Version   - {platform.version()}")
-        logging.info(f"Machine   - {platform.machine()}")
-        logging.info(f"Processor - {platform.processor()}")
-        logging.info("")
-        logging.info(
-            f"Running command `alphatims {command_name}` with parameters:"
+            kwargs.update(parameters)
+        if "threads" not in kwargs:
+            kwargs["threads"] = alphatims.utils.INTERFACE_PARAMETERS[
+                "threads"
+            ]["default"]
+        kwargs["threads"] = alphatims.utils.set_threads(
+            kwargs["threads"]
         )
-        max_len = max(len(key) for key in kwargs)
-        for key, value in sorted(kwargs.items()):
-            logging.info(f"{key:<{max_len}} - {value}")
+        if "log_file" not in kwargs:
+            kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
+                "log_file"
+            ]["default"]
+        if "no_log_stream" not in kwargs:
+            kwargs["no_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
+                "no_log_stream"
+            ]["default"]
+        kwargs["log_stream"] = not kwargs.pop("no_log_stream")
+        kwargs["log_file"] = alphatims.utils.set_logger(
+            log_file_name=kwargs["log_file"],
+            stream=kwargs["log_stream"],
+        )
+        alphatims.utils.show_platform_info()
+        alphatims.utils.show_python_info()
+        if kwargs:
+            logging.info(
+                f"Running CLI command `alphatims "
+                f"{command_name}` with parameters:"
+            )
+            max_len = max(len(key) for key in kwargs)
+            for key, value in sorted(kwargs.items()):
+                logging.info(f"{key:<{max_len}} - {value}")
+        else:
+            logging.info(f"Running command `alphatims {command_name}`.")
         logging.info("")
-        yield
+        yield kwargs
     except Exception:
         logging.exception("Something went wrong, execution incomplete!")
     else:
@@ -70,8 +70,10 @@ def cli_logging(command_name, **kwargs):
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def cli_option(parameter_name):
+def cli_option(parameter_name, **kwargs):
+    names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
+    parameters.update(kwargs)
     if "type" in parameters:
         if parameters["type"] == "int":
             parameters["type"] = int
@@ -88,85 +90,129 @@ def cli_option(parameter_name):
     if "default" in parameters:
         parameters["show_default"] = True
     if "short_name" in parameters:
-        short_name = parameters.pop("short_name")
-        return click.option(
-            short_name,
-            f"--{parameter_name}",
-            **parameters,
-        )
-    else:
-        return click.option(
-            f"--{parameter_name}",
-            **parameters,
-        )
+        names.append(parameters.pop("short_name"))
+    return click.option(
+        f"--{parameter_name}",
+        **parameters,
+    )
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option(alphatims.__version__)
-def run(**kwargs):
-    alphatims.utils.set_logger()
-    pass
+@click.group(
+    context_settings=dict(
+        help_option_names=['-h', '--help'],
+    ),
+    invoke_without_command=True
+)
+@click.pass_context
+@click.version_option(alphatims.__version__, "-v", "--version")
+def run(ctx, **kwargs):
+    click.echo("************************")
+    click.echo(f"* AlphaTims {alphatims.__version__} *")
+    click.echo("************************")
+    if ctx.invoked_subcommand is None:
+        click.echo(run.get_help(ctx))
 
 
 @run.command("gui", help="Start graphical user interface.")
 def gui():
-    import alphatims.gui
-    alphatims.gui.run()
+    with parse_cli_settings("gui") as parameters:
+        import logging
+        logging.info("Loading GUI..")
+        import alphatims.gui
+        alphatims.gui.run()
 
 
-@run.command("convert")
-@cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
-@cli_option("output_folder")
-# @cli_option("no_log_stream")
-def convert(**kwargs):
-    """Convert raw data to an HDF file."""
-    with cli_logging("convert", **kwargs):
-        import alphatims.bruker
-        data = alphatims.bruker.TimsTOF(kwargs["bruker_d_folder"])
-        data.save_as_hdf(
-            overwrite=True,
-            directory=kwargs["output_folder"]
-        )
+@run.group("export", help="Export information.")
+def export(**kwargs):
+    pass
 
 
-@run.group(
-    "detect",
-    help="Detect data structures.",
-    context_settings=CONTEXT_SETTINGS
-)
+@run.group("detect", help="Detect data structures.")
 def detect(**kwargs):
     pass
 
 
-@detect.command("ions", help="Detect ions (NotImplemented yet).")
+@export.command("raw_as_hdf", help="Export raw file as hdf file.")
 @cli_option("bruker_d_folder")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("no_log_stream")
+@cli_option("parameter_file")
+def export_raw_as_hdf(**kwargs):
+    if kwargs["output_folder"] is None:
+        kwargs["output_folder"] = os.path.dirname(kwargs["bruker_d_folder"])
+    if not os.path.exists(kwargs["output_folder"]):
+        os.makedirs(kwargs["output_folder"])
+    with parse_cli_settings("export raw_as_hdf", **kwargs) as parameters:
+        import alphatims.bruker
+        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        file_name = os.path.basename(data.bruker_d_folder_name)
+        file_name = f"{'.'.join(file_name.split('.')[:-1])}.hdf"
+        data.save_as_hdf(
+            overwrite=True,
+            directory=parameters["output_folder"],
+            file_name=file_name
+        )
+
+
+@export.command("parameters", help="Export (non-required) parameters as json")
+@cli_option(
+    "parameter_file",
+    required=True,
+    type={
+      "name": "path",
+      "dir_okay": False,
+    }
+)
 @cli_option("threads")
 @cli_option("log_file")
 @cli_option("output_folder")
-# @cli_option("no_log_stream")
+@cli_option("no_log_stream")
+def export_parameters(**kwargs):
+    import json
+    kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
+    with open(kwargs["parameter_file"], "w") as truncated_file:
+        json.dump({}, truncated_file, indent=4, sort_keys=True)
+    with parse_cli_settings("export parameters", **kwargs) as parameters:
+        parameter_file_name = parameters.pop("parameter_file")
+        alphatims.utils.save_parameters(
+            parameter_file_name,
+            parameters
+        )
+
+
+@detect.command("ions", help="Detect ions (NotImplemented yet).")
+@cli_option("bruker_d_folder")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_ions(**kwargs):
-    with cli_logging("detect ions", **kwargs):
+    with parse_cli_settings("detect ions", **kwargs) as parameters:
         raise NotImplementedError
+
 
 @detect.command("features", help="Detect features (NotImplemented yet).")
 @cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
 @cli_option("output_folder")
-# @cli_option("no_log_stream")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_features(**kwargs):
-    with cli_logging("detect features", **kwargs):
+    with parse_cli_settings("detect features", **kwargs) as parameters:
         raise NotImplementedError
 
 
 @detect.command("analytes", help="Detect analytes (NotImplemented yet).")
 @cli_option("bruker_d_folder")
-@cli_option("threads")
-@cli_option("log_file")
 @cli_option("output_folder")
-# @cli_option("no_log_stream")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("no_log_stream")
+@cli_option("parameter_file")
 def detect_analytes(**kwargs):
-    with cli_logging("detect analytes", **kwargs):
+    with parse_cli_settings("detect analytes", **kwargs) as parameters:
         raise NotImplementedError
