@@ -63,7 +63,7 @@ Once installed, the latest version can be downloaded with a simple upgrade:
 
 ### Full
 
-It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements.txt) (extra options include [cli](requirements_cli.txt), [gui](requirements_gui.txt) and [nbs](requirements_nbs.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
+It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements/requirements.txt) (extra options include [cli](requirements/requirements_cli.txt), [gui](requirements/requirements_gui.txt) and [nbs](requirements/requirements_nbs.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
 
 ```bash
 # # It is not advised to install alphatims in the home directory.
