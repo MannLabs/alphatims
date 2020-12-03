@@ -20,13 +20,13 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=..\LICENSE.txt
+LicenseFile=..\..\LICENSE.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=dist
-OutputBaseFilename=alphatims_installer
-SetupIconFile=alpha_logo.ico
+OutputBaseFilename=alphatims_installer_windows
+SetupIconFile=..\alpha_logo.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

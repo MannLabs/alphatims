@@ -1,7 +1,9 @@
 if __name__ == "__main__":
     import alphatims.utils
     log_file_name = alphatims.utils.set_logger(
-        alphatims.utils.INTERFACE_PARAMETERS["log_file"]["default"]
+        log_file_name=alphatims.utils.INTERFACE_PARAMETERS["log_file"][
+            "default"
+        ]
     )
     threads = alphatims.utils.set_threads(
         alphatims.utils.INTERFACE_PARAMETERS["threads"]["default"]

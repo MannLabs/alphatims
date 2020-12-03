@@ -132,3 +132,4 @@ dmypy.json
 *.DS_Store
 logs
 *sandbox*
+misc/one_click_windows/alphatims_installer.exe
