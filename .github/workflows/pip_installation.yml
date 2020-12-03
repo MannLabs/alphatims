@@ -37,4 +37,4 @@ jobs:
       - name: Run a multi-line script
         run: |
           pip install pip==20.2
-          pip install -e './alphatims[cli,gui,nbs]'
+          pip install -e '.[cli,gui,nbs]'
