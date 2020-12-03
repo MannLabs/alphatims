@@ -2,7 +2,7 @@
 
 name: Pip installation
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -32,7 +32,8 @@ jobs:
           python-version: '3.8'
 
       # Runs a set of commands using the runners shell
-      - name: Test pip installation with akll dependancies
+      - name: Test pip installation with all dependancies
         run: |
           pip install pip==20.2
           pip install -e '.[cli,gui,nbs]'
+          alphatims

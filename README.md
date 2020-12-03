@@ -1,3 +1,5 @@
+![CI](https://github.com/MannLabs/alphatims/workflows/Pip%20installation/badge.svg)
+
 # AlphaTims
 
 A python package for Bruker TimsTOF raw data analysis and feature finding from the [Mann department at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
