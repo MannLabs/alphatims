@@ -1,19 +1,20 @@
-![CI](https://github.com/MannLabs/alphatims/workflows/Pip%20installation/badge.svg)
+![Pip installation](https://github.com/MannLabs/alphatims/workflows/Pip%20installation/badge.svg)
 
 # AlphaTims
 
-A python package for Bruker TimsTOF raw data analysis and feature finding from the [Mann department at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
-
-## Table of contents
+An open-source python package for efficient accession and analysis of Bruker TimsTOF raw data from the [Mann department at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
 
 * [**AlphaTims**](#alphatims)
-  * [**Table of contents**](#table-of-contents)
+  * [**About**](#about)
   * [**License**](#license)
   * [**Installation**](#installation)
      * [**One-click GUI**](#one-click-gui)
      * [**Jupyter notebook installer**](#jupyter-notebook)
      * [**Full installer**](#full)
+     * [**Installation issues**](#installation-issues)
   * [**Test data**](#test-data)
+    * [**DDA**](#dda)
+    * [**DIA**](#dia)
   * [**Usage**](#usage)
     * [**GUI**](#gui)
     * [**CLI**](#cli)
@@ -21,17 +22,21 @@ A python package for Bruker TimsTOF raw data analysis and feature finding from t
   * [**Under the hood**](#under-the-hood)
   * [**Future perspectives**](#future-perspectives)
 
+## About
+
+With the introduction of the Bruker TimsTOF, the inclusion of ion mobility separation (IMS) between liquid chromatography (LC) and mass spectrometry (MS) instruments has gained popularity. However, the additional dimension in LC-IMS-MSMS data has also increased file sizes and complexity. Efficient accession and analysis of Bruker TimsTOF data is therefore imperative. AlphaTims is an open-source python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within python.
+
 ## License
 
-Get a copy of the [MIT license](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed at the [Mann department at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [MIT license](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ## Installation
 
 Three types of installation are possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
-* [**Jupyter notebook installer:**](#jupyter-notebook) Choose this installation if you only work in Jupyter Notebooks and just want to use AlphaTims as an extension.
-* [**Full installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools and python and want access to all available features and/or require development mode with modifiable AlphaTims source code.
+* [**Jupyter notebook installer:**](#jupyter-notebook) Choose this installation if you only work in Jupyter Notebooks and just want to use AlphaTims as an external python module.
+* [**Full installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools, [conda](https://docs.conda.io/en/latest/) and python. This installation allows access to all available features and development with modifiable AlphaTims source code.
 
 ***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, reading raw data is only compatible with Windows and Linux. This is true for all installation types. All other functionality is platform independent.***
 
@@ -45,14 +50,14 @@ Older releases are available on the [release page](https://github.com/MannLabs/a
 
 ### Jupyter notebook
 
-In an existing Jupyter notebook with Python 3, run the following:
+In an existing Jupyter notebook with Python 3, copy and run the following:
 
 ```bash
 # # If git is not installed,
 # # install git manually or run the following command first:
 # !conda install git -y
 !pip install git+https://github.com/MannLabs/alphatims.git
-# # Extras can be installed, but are normally not needed for jupyter notebooks
+# # Extras (see full installation) can be installed with:
 # pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui,cli,nbs]'
 ```
 
@@ -114,9 +119,29 @@ Note that this binary still reflects all changes to the [source code folder](alp
 
 When using Jupyter notebooks and multiple conda environments, it is recommended to `conda install nb_conda_kernels` in the conda base environment. The AlphaTims conda environment can then be installed as a kernel with `conda install ipykernel` in the AlphaTims environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `Python [conda env: alphatims]` kernel available.
 
+### Installation issues
+
+Common issues include:
+
+* **Always make sure you have activate the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
+* **Wrong python version.** AlphaTims is only compatible with python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **Dependancy conflicts.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` could solve this issue.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing extras such as e.g. `pip install ./alphatims[gui]` require you to use single quotes `'`, e.g. `pip install './alphatims'`.
+* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
+* **Numpy not working properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
+
 ## Test data
 
-A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc). Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+AlphaTims is compatible with both data-dependant acquisition (DDA) and data-independant acquisition (DIA). Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+
+### DDA
+
+A small Bruker TimsTOF DDA dataset with a 5 minute gradient containing only iRT peptides is available for [download](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download).
+
+### DIA
+
+A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc/download).
 
 ## Usage
 
@@ -135,6 +160,7 @@ conda activate alphatims
 alphatims gui
 conda deactivate
 ```
+
 ### CLI
 
 The CLI can be run with the following commands in a terminal:
@@ -144,6 +170,9 @@ conda activate alphatims
 alphatims
 conda deactivate
 ```
+
+It is possible to get help about each function and their (required) parameters by using the `-h` flag, such as e.g. `alphatims detect ions -h`.
+
 ### Python and jupyter notebooks
 
 AlphaTims can be imported as a python package into any python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) (with the extra option `gui` activated for all plotting capabilities) is present in the [nbs folder](nbs).
@@ -158,4 +187,7 @@ Slicing the total dataset happens with a magic `__getitem__` function and automa
 
 ## Future perspectives
 
-Implementation of feature finding has not been started yet.
+* Detection of:
+  * Precorsor and fragment ions
+  * Isotopic envelopes (i.e. features)
+  * Fragment clusters (i.e. pseudo MSMS spectra)
