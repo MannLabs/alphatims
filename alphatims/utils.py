@@ -94,13 +94,15 @@ def show_python_info():
         "python": platform.python_version(),
         "alphatims": alphatims.__version__
     }
-    for requirement in importlib.metadata.requires("alphatims"):
-        module_name = requirement.split(";")[0].split("==")[0]
+    requirements = importlib.metadata.requires("alphatims")
+    for requirement in requirements:
+        module_name = requirement.split(";")[0].strip().split("==")[0].strip()
         try:
             module_version = importlib.metadata.version(module_name)
         except importlib.metadata.PackageNotFoundError:
-            module_version = "?"
-        module_versions[module_name] = module_version
+            module_version = ""
+        else:
+            module_versions[module_name] = module_version
     max_len = max(len(key) for key in module_versions)
     logging.info("Python information:")
     for key, value in sorted(module_versions.items()):
