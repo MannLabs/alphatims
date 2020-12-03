@@ -137,11 +137,11 @@ AlphaTims is compatible with both data-dependant acquisition (DDA) and data-inde
 
 ### DDA
 
-A small Bruker TimsTOF DDA dataset with a 5 minute gradient containing only iRT peptides is available for [download](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download).
+A small Bruker TimsTOF DDA dataset with a 5 minute gradient containing only [iRT peptides](https://www.biognosys.com/shop/irt-kit) is available for [download here](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download).
 
 ### DIA
 
-A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available for [download](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc/download).
+A small Bruker TimsTOF DIA dataset with a 5 minute gradient containing tryptic HeLa peptides is available for [download here](https://datashare.biochem.mpg.de/s/DyIenLA2SLDz2sc/download).
 
 ## Usage
 
@@ -188,6 +188,6 @@ Slicing the total dataset happens with a magic `__getitem__` function and automa
 ## Future perspectives
 
 * Detection of:
-  * Precorsor and fragment ions
-  * Isotopic envelopes (i.e. features)
-  * Fragment clusters (i.e. pseudo MSMS spectra)
+  * precursor and fragment ions
+  * isotopic envelopes (i.e. features)
+  * fragment clusters (i.e. pseudo MSMS spectra)
