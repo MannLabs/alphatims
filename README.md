@@ -49,14 +49,14 @@ In an existing Jupyter notebook with Python 3, run the following:
 # # If git is not installed,
 # # install git manually or run the following command first:
 # !conda install git -y
-!pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver
+!pip install git+https://github.com/MannLabs/alphatims.git
 # # Extras can be installed, but are normally not needed for jupyter notebooks
-# pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui,cli,nbs]' --use-feature=2020-resolver
+# pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui,cli,nbs]'
 ```
 
 Once installed, the latest version can be downloaded with a simple upgrade:
 ```bash
-!pip install git+https://github.com/MannLabs/alphatims.git --use-feature=2020-resolver --upgrade
+!pip install git+https://github.com/MannLabs/alphatims.git --upgrade
 ```
 
 ### Full
@@ -78,7 +78,7 @@ git clone https://github.com/MannLabs/alphatims.git
 # # While AlphaTims can be imported directly in other programs,
 # # a standalone version often requires additional packages for
 # # cli, gui and nbs usage. If not desired, they can be skipped.
-pip install -e './alphatims[cli,gui,nbs]' --use-feature=2020-resolver
+pip install -e './alphatims[cli,gui,nbs]'
 conda deactivate
 ```
 
@@ -120,9 +120,9 @@ A small Bruker TimsTOF HeLa DIA dataset with a 5 minute gradient is available fo
 
 There are three ways to use the software:
 
-* [**GUI**](#gui)
-* [**CLI**](#cli)
-* [**Python**](#python-and-jupyter-notebooks)
+* [**GUI:**](#gui) This is mostly used as a data browser.
+* [**CLI:**](#cli) This is mostly used to process data and can be incorporated in automated workflows.
+* [**Python:**](#python-and-jupyter-notebooks) This is mostly used as a python package in other python projects.
 
 ### GUI
 
