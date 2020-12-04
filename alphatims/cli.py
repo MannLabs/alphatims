@@ -132,19 +132,20 @@ def detect(**kwargs):
     pass
 
 
-@export.command("raw_as_hdf", help="Export raw file as hdf file.")
+@export.command("hdf", help="Export raw file as hdf file.")
 @cli_option("bruker_d_folder")
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
 @cli_option("no_log_stream")
 @cli_option("parameter_file")
-def export_raw_as_hdf(**kwargs):
+@cli_option("compress")
+def export_hdf(**kwargs):
     if kwargs["output_folder"] is None:
         kwargs["output_folder"] = os.path.dirname(kwargs["bruker_d_folder"])
     if not os.path.exists(kwargs["output_folder"]):
         os.makedirs(kwargs["output_folder"])
-    with parse_cli_settings("export raw_as_hdf", **kwargs) as parameters:
+    with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
         file_name = os.path.basename(data.bruker_d_folder_name)
@@ -152,7 +153,8 @@ def export_raw_as_hdf(**kwargs):
         data.save_as_hdf(
             overwrite=True,
             directory=parameters["output_folder"],
-            file_name=file_name
+            file_name=file_name,
+            compress=parameters["compress"],
         )
 
 
