@@ -42,7 +42,10 @@ while requirements:
 	):
 		continue
 	try:
-		datas_, binaries_, hidden_imports_ = collect_all(requirement)
+		datas_, binaries_, hidden_imports_ = collect_all(
+			requirement,
+			include_py_files=True
+		)
 	except ImportError:
 		continue
 	datas += datas_

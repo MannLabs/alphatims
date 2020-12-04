@@ -10,9 +10,9 @@ hidden_imports = [
 	i[1] for i in pkgutil.iter_modules() if i[2]
 ]
 exe_name = 'alphatims'
-script_name = '../alphatims_pyinstaller.py'
+script_name = 'alphatims_pyinstaller.py'
 add_datashader_glyphs = True
-icon = '../alpha_logo.ico'
+icon = 'alpha_logo.ico'
 #####################
 
 
@@ -54,11 +54,24 @@ block_cipher = None
 
 location = os.getcwd()
 
+from PyInstaller.utils.hooks import copy_metadata
+import importlib.metadata
+
+datas = copy_metadata("alphatims")
+requirements = importlib.metadata.requires("alphatims")
+for requirement in requirements:
+	module_name = requirement.split()[0].split(";")[0].split("=")[0]
+	try:
+		datas += copy_metadata(module_name)
+	except:
+		pass
+
+
 a = Analysis(
 		[script_name],
 		pathex=[location],
 		binaries=[],
-		datas=[],
+		datas=datas,
 		hiddenimports=hidden_imports,
 		hookspath=[],
 		runtime_hooks=[],
