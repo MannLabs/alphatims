@@ -126,8 +126,8 @@ Common issues include:
 * **Always make sure you have activate the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong python version.** AlphaTims is only compatible with python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing extras such as e.g. `pip install ./alphatims[gui]` require you to use single quotes `'`, e.g. `pip install './alphatims'`.
+* **Dependancy conflicts.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing extras such as e.g. `pip install ./alphatims[gui]` require you to specifically (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims'`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
 * **Numpy not working properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 
@@ -171,7 +171,7 @@ alphatims
 conda deactivate
 ```
 
-It is possible to get help about each function and their (required) parameters by using the `-h` flag, such as e.g. `alphatims detect ions -h`.
+It is possible to get help about each function and their (required) parameters by using the `-h` flag, such as e.g. `alphatims export hdf -h`.
 
 ### Python and jupyter notebooks
 
