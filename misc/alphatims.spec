@@ -65,6 +65,11 @@ if remove_tests:
 else:
 	hidden_imports = sorted(hidden_imports)
 
+
+hidden_imports = [h for h in hidden_imports if "__pycache__" not in h]
+datas = [d for d in datas if "__pycache__" not in d[0]]
+
+
 a = Analysis(
 	[script_name],
 	pathex=[location],
@@ -73,7 +78,7 @@ a = Analysis(
 	hiddenimports=hidden_imports,
 	hookspath=[],
 	runtime_hooks=[],
-	excludes=[],
+	excludes=[h for h in hidden_imports if "datashader" in h],
 	win_no_prefer_redirects=False,
 	win_private_assemblies=False,
 	cipher=block_cipher,
@@ -87,7 +92,9 @@ pyz = PYZ(
 exe = EXE(
 	pyz,
 	a.scripts,
-	[],
+	# a.binaries,
+	a.zipfiles,
+	# a.datas,
 	exclude_binaries=True,
 	name=exe_name,
 	debug=False,
@@ -100,7 +107,7 @@ exe = EXE(
 coll = COLLECT(
 	exe,
 	a.binaries,
-	a.zipfiles,
+	# a.zipfiles,
 	a.datas,
 	strip=False,
 	upx=True,

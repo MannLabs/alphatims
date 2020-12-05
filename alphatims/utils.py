@@ -322,7 +322,7 @@ def create_dict_from_hdf_group(hdf_group):
             result[key] = int(value)
         elif isinstance(value, np.float64):
             result[key] = float(value)
-        elif isinstance(value, (str, bool)):
+        elif isinstance(value, (str, bool, np.bool_)):
             result[key] = value
         else:
             raise ValueError(
