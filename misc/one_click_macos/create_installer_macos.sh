@@ -6,5 +6,5 @@ conda activate alphatimsinstaller
 # brew install freetype
 pip install '../../.[gui]'
 pip install pyinstaller
-pyinstaller ../alphatims_macos.spec -y
+pyinstaller ../alphatims.spec -y
 conda deactivate

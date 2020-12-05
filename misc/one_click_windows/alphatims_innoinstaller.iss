@@ -5,7 +5,7 @@
 #define MyAppVersion "0.0.201127"
 #define MyAppPublisher "Max Planck Institute of Biochemistry, Mann department"
 #define MyAppURL "https://github.com/MannLabs/alphatims"
-#define MyAppExeName "alphatims.exe"
+#define MyAppExeName "alphatims_gui.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -38,8 +38,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\alphatims\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\alphatims\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\alphatims_gui\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\alphatims_gui\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
