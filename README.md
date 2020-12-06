@@ -42,9 +42,9 @@ Three types of installation are possible:
 
 ### One-click GUI
 
-* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer.exe).
+* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions.
 * **Linux:** TODO.
-* **MacOS:** TODO. Note that reading raw data is not possible due to availability of Bruker libraries.
+* **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app). No installation is needed, just drop it into your applications folder (by using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)). Note that the AlphaTims application takes a long time to load upon first opening on, this should be significantly faster the second time. Also note that reading of raw data is not possible due to availability of Bruker libraries, we advise to export raw data as hdf on Windows or Linux.
 
 Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [Jupyter](#jupyter-notebook) and [full](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
 
@@ -77,7 +77,7 @@ It is highly recommended to use a [conda virtual environment](https://docs.conda
 # # so a general software folder suffices
 # mkdir folder/where/to/install/downloaded/software
 # cd folder/where/to/install/downloaded/software
-conda create -n alphatims python=3.8 -y
+conda create -n alphatims python=3.8 pip=20.2 -y
 conda activate alphatims
 # # If git is not installed, run the following command:
 # conda install git -y
@@ -126,8 +126,8 @@ Common issues include:
 * **Always make sure you have activate the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong python version.** AlphaTims is only compatible with python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing extras such as e.g. `pip install ./alphatims[gui]` require you to specifically (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims'`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing require you to specifically (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
 * **Numpy not working properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 

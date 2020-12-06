@@ -4,18 +4,25 @@ import pkgutil
 import os
 import sys
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, BUNDLE, TOC
-from PyInstaller.utils.hooks import get_package_paths, remove_prefix, PY_IGNORE_EXTENSIONS, copy_metadata, collect_all
+import PyInstaller.utils.hooks
 import pkg_resources
 import importlib.metadata
+import alphatims
+
 
 ##################### User definitions
 exe_name = 'alphatims_gui'
 script_name = 'alphatims_pyinstaller.py'
-icon = 'alpha_logo.ico'
+if sys.platform[:6] == "darwin":
+	icon = 'alpha_logo.icns'
+else:
+	icon = 'alpha_logo.ico'
 block_cipher = None
 location = os.getcwd()
 project = "alphatims"
 remove_tests = True
+bundle_name = "alphatims"
+bundle_identifier = f"{bundle_name}.{alphatims.__version__}"
 #####################
 
 
@@ -42,7 +49,7 @@ while requirements:
 	):
 		continue
 	try:
-		datas_, binaries_, hidden_imports_ = collect_all(
+		datas_, binaries_, hidden_imports_ = PyInstaller.utils.hooks.collect_all(
 			requirement,
 			include_py_files=True
 		)
@@ -115,20 +122,11 @@ coll = COLLECT(
 	name=exe_name
 )
 
-# exe = EXE(
-# 		pyz,
-# 		a.scripts,
-# 		a.binaries,
-# 		a.zipfiles,
-# 		a.datas,
-# 		[],
-# 		name=exe_name,
-# 		debug=False,
-# 		bootloader_ignore_signals=False,
-# 		strip=False,
-# 		upx=True,
-# 		upx_exclude=[],
-# 		runtime_tmpdir=None,
-# 		console=True,
-# 		icon=icon
-# )
+if sys.platform[:6] == "darwin":
+	app = BUNDLE(
+		coll,
+		name=bundle_name,
+		icon=icon,
+		bundle_identifier=bundle_identifier,
+		console=True
+	)

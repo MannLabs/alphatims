@@ -7,4 +7,7 @@ conda activate alphatimsinstaller
 pip install '../../.[gui]'
 pip install pyinstaller
 pyinstaller ../alphatims.spec -y
+mv dist/alphatims dist/alphatims.app
+# chmod +x dist/alphatims.app
+# TODO No console is opened and program not blocked untill close, meaning loose threads!
 conda deactivate
