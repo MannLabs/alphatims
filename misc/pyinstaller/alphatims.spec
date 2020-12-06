@@ -14,9 +14,9 @@ import alphatims
 exe_name = 'alphatims_gui'
 script_name = 'alphatims_pyinstaller.py'
 if sys.platform[:6] == "darwin":
-	icon = 'alpha_logo.icns'
+	icon = '../alpha_logo.icns'
 else:
-	icon = 'alpha_logo.ico'
+	icon = '../alpha_logo.ico'
 block_cipher = None
 location = os.getcwd()
 project = "alphatims"
