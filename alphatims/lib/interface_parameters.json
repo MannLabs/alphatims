@@ -10,7 +10,7 @@
     },
     "required": false
   },
-  "no_log_stream": {
+  "disable_log_stream": {
     "help": "Disable streaming of log data.",
     "default": false,
     "is_flag": true,

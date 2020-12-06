@@ -37,11 +37,10 @@ def parse_cli_settings(command_name, **kwargs):
             kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
                 "log_file"
             ]["default"]
-        if "no_log_stream" not in kwargs:
-            kwargs["no_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
-                "no_log_stream"
+        if "disable_log_stream" not in kwargs:
+            kwargs["disable_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
+                "disable_log_stream"
             ]["default"]
-        kwargs["log_stream"] = not kwargs.pop("no_log_stream")
         kwargs["log_file"] = alphatims.utils.set_logger(
             log_file_name=kwargs["log_file"],
             stream=kwargs["log_stream"],
@@ -137,7 +136,7 @@ def detect(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 @cli_option("compress")
 def export_hdf(**kwargs):
@@ -170,7 +169,7 @@ def export_hdf(**kwargs):
 @cli_option("threads")
 @cli_option("log_file")
 @cli_option("output_folder")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 def export_parameters(**kwargs):
     import json
     kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
@@ -189,7 +188,7 @@ def export_parameters(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_ions(**kwargs):
     with parse_cli_settings("detect ions", **kwargs) as parameters:
@@ -201,7 +200,7 @@ def detect_ions(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_features(**kwargs):
     with parse_cli_settings("detect features", **kwargs) as parameters:
@@ -213,7 +212,7 @@ def detect_features(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_analytes(**kwargs):
     with parse_cli_settings("detect analytes", **kwargs) as parameters:
