@@ -8,7 +8,7 @@ call pip install ../../.[gui]
 call pip install pyinstaller
 call pip install numpy==1.19.3
 REM
-call pyinstaller ../alphatims.spec -y
+call pyinstaller ../pyinstaller/alphatims.spec -y
 call conda deactivate
 call "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
 REM call iscc alphatims_innoinstaller.iss
