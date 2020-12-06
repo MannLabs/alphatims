@@ -128,5 +128,5 @@ if sys.platform[:6] == "darwin":
 		name=bundle_name,
 		icon=icon,
 		bundle_identifier=bundle_identifier,
-		console=True
+		# console=True
 	)
