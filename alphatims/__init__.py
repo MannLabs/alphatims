@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.0.201203"
+__version__ = "0.0.201206"
 __license__ = "MIT"
 __description__ = "A python package for Bruker TimsTOF raw data analysis and feature finding"
 __author__ = "Sander Willems"

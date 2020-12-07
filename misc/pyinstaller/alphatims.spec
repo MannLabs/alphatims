@@ -4,18 +4,25 @@ import pkgutil
 import os
 import sys
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, BUNDLE, TOC
-from PyInstaller.utils.hooks import get_package_paths, remove_prefix, PY_IGNORE_EXTENSIONS, copy_metadata, collect_all
+import PyInstaller.utils.hooks
 import pkg_resources
 import importlib.metadata
+import alphatims
+
 
 ##################### User definitions
 exe_name = 'alphatims_gui'
 script_name = 'alphatims_pyinstaller.py'
-icon = 'alpha_logo.ico'
+if sys.platform[:6] == "darwin":
+	icon = '../alpha_logo.icns'
+else:
+	icon = '../alpha_logo.ico'
 block_cipher = None
 location = os.getcwd()
 project = "alphatims"
 remove_tests = True
+bundle_name = "alphatims"
+bundle_identifier = f"{bundle_name}.{alphatims.__version__}"
 #####################
 
 
@@ -42,7 +49,10 @@ while requirements:
 	):
 		continue
 	try:
-		datas_, binaries_, hidden_imports_ = collect_all(requirement)
+		datas_, binaries_, hidden_imports_ = PyInstaller.utils.hooks.collect_all(
+			requirement,
+			include_py_files=True
+		)
 	except ImportError:
 		continue
 	datas += datas_
@@ -62,6 +72,11 @@ if remove_tests:
 else:
 	hidden_imports = sorted(hidden_imports)
 
+
+hidden_imports = [h for h in hidden_imports if "__pycache__" not in h]
+datas = [d for d in datas if "__pycache__" not in d[0]]
+
+
 a = Analysis(
 	[script_name],
 	pathex=[location],
@@ -70,7 +85,7 @@ a = Analysis(
 	hiddenimports=hidden_imports,
 	hookspath=[],
 	runtime_hooks=[],
-	excludes=[],
+	excludes=[h for h in hidden_imports if "datashader" in h],
 	win_no_prefer_redirects=False,
 	win_private_assemblies=False,
 	cipher=block_cipher,
@@ -81,44 +96,54 @@ pyz = PYZ(
 	a.zipped_data,
 	cipher=block_cipher
 )
-exe = EXE(
-	pyz,
-	a.scripts,
-	[],
-	exclude_binaries=True,
-	name=exe_name,
-	debug=False,
-	bootloader_ignore_signals=False,
-	strip=False,
-	upx=True,
-	console=True,
-	icon=icon
-)
-coll = COLLECT(
-	exe,
-	a.binaries,
-	a.zipfiles,
-	a.datas,
-	strip=False,
-	upx=True,
-	upx_exclude=[],
-	name=exe_name
-)
 
-# exe = EXE(
-# 		pyz,
-# 		a.scripts,
-# 		a.binaries,
-# 		a.zipfiles,
-# 		a.datas,
-# 		[],
-# 		name=exe_name,
-# 		debug=False,
-# 		bootloader_ignore_signals=False,
-# 		strip=False,
-# 		upx=True,
-# 		upx_exclude=[],
-# 		runtime_tmpdir=None,
-# 		console=True,
-# 		icon=icon
-# )
+if sys.platform[:5] == "linux":
+	exe = EXE(
+		pyz,
+		a.scripts,
+		a.binaries,
+		a.zipfiles,
+		a.datas,
+		name=bundle_name,
+		debug=False,
+		bootloader_ignore_signals=False,
+		strip=False,
+		upx=True,
+		console=True,
+		upx_exclude=[],
+		icon=icon
+	)
+else:
+	exe = EXE(
+		pyz,
+		a.scripts,
+		# a.binaries,
+		a.zipfiles,
+		# a.datas,
+		exclude_binaries=True,
+		name=exe_name,
+		debug=False,
+		bootloader_ignore_signals=False,
+		strip=False,
+		upx=True,
+		console=True,
+		icon=icon
+	)
+	coll = COLLECT(
+		exe,
+		a.binaries,
+		# a.zipfiles,
+		a.datas,
+		strip=False,
+		upx=True,
+		upx_exclude=[],
+		name=exe_name
+	)
+	if sys.platform[:6] == "darwin":
+		app = BUNDLE(
+			coll,
+			name=bundle_name,
+			icon=icon,
+			bundle_identifier=bundle_identifier,
+			# console=True
+		)

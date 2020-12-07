@@ -37,11 +37,10 @@ def parse_cli_settings(command_name, **kwargs):
             kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
                 "log_file"
             ]["default"]
-        if "no_log_stream" not in kwargs:
-            kwargs["no_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
-                "no_log_stream"
+        if "disable_log_stream" not in kwargs:
+            kwargs["disable_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
+                "disable_log_stream"
             ]["default"]
-        kwargs["log_stream"] = not kwargs.pop("no_log_stream")
         kwargs["log_file"] = alphatims.utils.set_logger(
             log_file_name=kwargs["log_file"],
             stream=kwargs["log_stream"],
@@ -132,19 +131,20 @@ def detect(**kwargs):
     pass
 
 
-@export.command("raw_as_hdf", help="Export raw file as hdf file.")
+@export.command("hdf", help="Export raw file as hdf file.")
 @cli_option("bruker_d_folder")
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
-def export_raw_as_hdf(**kwargs):
+@cli_option("compress")
+def export_hdf(**kwargs):
     if kwargs["output_folder"] is None:
         kwargs["output_folder"] = os.path.dirname(kwargs["bruker_d_folder"])
     if not os.path.exists(kwargs["output_folder"]):
         os.makedirs(kwargs["output_folder"])
-    with parse_cli_settings("export raw_as_hdf", **kwargs) as parameters:
+    with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
         file_name = os.path.basename(data.bruker_d_folder_name)
@@ -152,7 +152,8 @@ def export_raw_as_hdf(**kwargs):
         data.save_as_hdf(
             overwrite=True,
             directory=parameters["output_folder"],
-            file_name=file_name
+            file_name=file_name,
+            compress=parameters["compress"],
         )
 
 
@@ -168,7 +169,7 @@ def export_raw_as_hdf(**kwargs):
 @cli_option("threads")
 @cli_option("log_file")
 @cli_option("output_folder")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 def export_parameters(**kwargs):
     import json
     kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
@@ -187,7 +188,7 @@ def export_parameters(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_ions(**kwargs):
     with parse_cli_settings("detect ions", **kwargs) as parameters:
@@ -199,7 +200,7 @@ def detect_ions(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_features(**kwargs):
     with parse_cli_settings("detect features", **kwargs) as parameters:
@@ -211,7 +212,7 @@ def detect_features(**kwargs):
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
-@cli_option("no_log_stream")
+@cli_option("disable_log_stream")
 @cli_option("parameter_file")
 def detect_analytes(**kwargs):
     with parse_cli_settings("detect analytes", **kwargs) as parameters:

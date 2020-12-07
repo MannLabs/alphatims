@@ -10,8 +10,8 @@
     },
     "required": false
   },
-  "no_log_stream": {
-    "help": "Do not stream log data.",
+  "disable_log_stream": {
+    "help": "Disable streaming of log data.",
     "default": false,
     "is_flag": true,
     "required": false
@@ -49,6 +49,12 @@
       "dir_okay": false,
       "exists": true
     },
+    "required": false
+  },
+  "compress": {
+    "help": "Compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 3-6 longer accession times.",
+    "default": false,
+    "is_flag": true,
     "required": false
   }
 }

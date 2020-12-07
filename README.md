@@ -42,9 +42,12 @@ Three types of installation are possible:
 
 ### One-click GUI
 
-* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer.exe).
-* **Linux:** TODO.
-* **MacOS:** TODO. Note that reading raw data is not possible due to availability of Bruker libraries.
+* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions.
+* **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***
+* **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app). No installation is needed, just drop it into your applications folder. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***. Also note the following for MacOS:
+  * The AlphaTims application takes a long time to load upon first opening on, this should be significantly faster the second time. Even so, AlphaTims provides a much faster GUI if the user is willing to go through the [full installation](#full).
+  * Reading of raw data is not possible due to availability of Bruker libraries, we advise to export raw data as hdf on Windows or Linux.
+  * Logging to a console is currently disabled. If you just close the browser tab and do not press the "Quit" button, AlphaTims will keep running in the background (potentially using a significant amount of RAM memory).
 
 Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [Jupyter](#jupyter-notebook) and [full](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
 
@@ -77,7 +80,7 @@ It is highly recommended to use a [conda virtual environment](https://docs.conda
 # # so a general software folder suffices
 # mkdir folder/where/to/install/downloaded/software
 # cd folder/where/to/install/downloaded/software
-conda create -n alphatims python=3.8 -y
+conda create -n alphatims python=3.8 pip=20.2 -y
 conda activate alphatims
 # # If git is not installed, run the following command:
 # conda install git -y
@@ -126,8 +129,8 @@ Common issues include:
 * **Always make sure you have activate the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong python version.** AlphaTims is only compatible with python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing extras such as e.g. `pip install ./alphatims[gui]` require you to use single quotes `'`, e.g. `pip install './alphatims'`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing require you to specifically (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
 * **Numpy not working properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 
@@ -171,7 +174,7 @@ alphatims
 conda deactivate
 ```
 
-It is possible to get help about each function and their (required) parameters by using the `-h` flag, such as e.g. `alphatims detect ions -h`.
+It is possible to get help about each function and their (required) parameters by using the `-h` flag, such as e.g. `alphatims export hdf -h`.
 
 ### Python and jupyter notebooks
 

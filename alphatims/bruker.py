@@ -125,6 +125,10 @@ def read_bruker_frames(
                 fragment_frame_groups,
                 how="left"
             )
+            fragment_frames.rename(
+                columns={"WindowGroup": "Precursor"},
+                inplace=True
+            )
         elif MSMSTYPE_PASEF in frames.MsMsType.values:
             acquisition_mode = "PASEF"
             fragment_frames = pd.read_sql_query(
@@ -443,12 +447,14 @@ class TimsTOF(object):
             self.quad_indptr,
             self.quad_low_values,
             self.quad_high_values,
+            self.precursor_indices
         ) = parse_quad_indptr(
             self.fragment_frames.Frame.values,
             self.fragment_frames.ScanNumBegin.values,
             self.fragment_frames.ScanNumEnd.values,
             self.fragment_frames.IsolationMz.values,
             self.fragment_frames.IsolationWidth.values,
+            self.fragment_frames.Precursor.values,
             self.scan_max_index,
             self.frame_max_index,
         )
@@ -459,6 +465,7 @@ class TimsTOF(object):
         directory:str,
         file_name:str,
         overwrite:bool=False,
+        compress:bool=False
     ):
         full_file_name = os.path.join(
             directory,
@@ -471,11 +478,13 @@ class TimsTOF(object):
         logging.info(
             f"Writing TimsTOF data to {full_file_name}"
         )
-        with h5py.File(full_file_name, hdf_mode) as hdf_root:
+        self.compress = compress
+        with h5py.File(full_file_name, hdf_mode, swmr=True) as hdf_root:
             alphatims.utils.create_hdf_group_from_dict(
                 hdf_root.create_group("raw"),
                 self.__dict__,
-                overwrite
+                overwrite=overwrite,
+                compress=compress,
             )
 
     def import_data_from_hdf_file(
@@ -785,12 +794,14 @@ def parse_quad_indptr(
     scan_ends,
     isolation_mzs,
     isolation_widths,
+    precursors,
     scan_max_index,
     frame_max_index,
 ):
     quad_indptr = [0]
     quad_low_values = []
     quad_high_values = []
+    precursor_indices = []
     high = -1
     for (
         frame_id,
@@ -798,31 +809,37 @@ def parse_quad_indptr(
         scan_end,
         isolation_mz,
         isolation_width,
+        precursor
     ) in zip(
         frame_ids - 1,
         scan_begins,
         scan_ends,
         isolation_mzs,
         isolation_widths / 2,
+        precursors
     ):
         low = frame_id * scan_max_index + scan_begin - 1
         if low > high:
             quad_indptr.append(low)
             quad_low_values.append(-1)
             quad_high_values.append(-1)
+            precursor_indices.append(-1)
         high = frame_id * scan_max_index + scan_end
         quad_indptr.append(high)
         quad_low_values.append(isolation_mz - isolation_width)
         quad_high_values.append(isolation_mz + isolation_width)
+        precursor_indices.append(precursor)
     quad_max_index = scan_max_index * frame_max_index
     if high < quad_max_index:
         quad_indptr.append(quad_max_index)
         quad_low_values.append(-1)
         quad_high_values.append(-1)
+        precursor_indices.append(-1)
     return (
         np.array(quad_indptr),
         np.array(quad_low_values),
         np.array(quad_high_values),
+        np.array(precursor_indices),
     )
 
 

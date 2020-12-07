@@ -96,7 +96,7 @@ def show_python_info():
     }
     requirements = importlib.metadata.requires("alphatims")
     for requirement in requirements:
-        module_name = requirement.split()[0]
+        module_name = requirement.split()[0].split(";")[0].split("=")[0]
         try:
             module_version = importlib.metadata.version(module_name)
         except importlib.metadata.PackageNotFoundError:
@@ -236,8 +236,10 @@ def progress_callback(iterable, style=None):
 def create_hdf_group_from_dict(
     hdf_group,
     data_dict,
+    *,
     overwrite=False,
-    recursed=False
+    compress=False,
+    recursed=False,
 ):
     """
     Save dict to opened hdf_group.
@@ -264,8 +266,9 @@ def create_hdf_group_from_dict(
             create_hdf_group_from_dict(
                 hdf_group,
                 new_dict,
-                overwrite,
-                recursed=True
+                overwrite=overwrite,
+                recursed=True,
+                compress=compress,
             )
         elif isinstance(value, (np.ndarray, pd.core.series.Series)):
             if isinstance(value, (pd.core.series.Series)):
@@ -285,6 +288,8 @@ def create_hdf_group_from_dict(
                     hdf_group.create_dataset(
                         key,
                         data=value,
+                        compression="lzf" if compress else None,
+                        shuffle=compress,
                     )
         elif isinstance(value, (bool, int, float, str)):
             if overwrite or (key not in hdf_group.attrs):
@@ -295,8 +300,9 @@ def create_hdf_group_from_dict(
             create_hdf_group_from_dict(
                 hdf_group[key],
                 value,
-                overwrite,
-                recursed=True
+                overwrite=overwrite,
+                recursed=True,
+                compress=compress,
             )
         else:
             raise ValueError(
@@ -316,7 +322,7 @@ def create_dict_from_hdf_group(hdf_group):
             result[key] = int(value)
         elif isinstance(value, np.float64):
             result[key] = float(value)
-        elif isinstance(value, (str, bool)):
+        elif isinstance(value, (str, bool, np.bool_)):
             result[key] = value
         else:
             raise ValueError(
