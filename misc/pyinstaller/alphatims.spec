@@ -96,37 +96,54 @@ pyz = PYZ(
 	a.zipped_data,
 	cipher=block_cipher
 )
-exe = EXE(
-	pyz,
-	a.scripts,
-	# a.binaries,
-	a.zipfiles,
-	# a.datas,
-	exclude_binaries=True,
-	name=exe_name,
-	debug=False,
-	bootloader_ignore_signals=False,
-	strip=False,
-	upx=True,
-	console=True,
-	icon=icon
-)
-coll = COLLECT(
-	exe,
-	a.binaries,
-	# a.zipfiles,
-	a.datas,
-	strip=False,
-	upx=True,
-	upx_exclude=[],
-	name=exe_name
-)
 
-if sys.platform[:6] == "darwin":
-	app = BUNDLE(
-		coll,
+if sys.platform[:5] == "linux":
+	exe = EXE(
+		pyz,
+		a.scripts,
+		a.binaries,
+		a.zipfiles,
+		a.datas,
 		name=bundle_name,
-		icon=icon,
-		bundle_identifier=bundle_identifier,
-		# console=True
+		debug=False,
+		bootloader_ignore_signals=False,
+		strip=False,
+		upx=True,
+		console=True,
+		upx_exclude=[],
+		icon=icon
 	)
+else:
+	exe = EXE(
+		pyz,
+		a.scripts,
+		# a.binaries,
+		a.zipfiles,
+		# a.datas,
+		exclude_binaries=True,
+		name=exe_name,
+		debug=False,
+		bootloader_ignore_signals=False,
+		strip=False,
+		upx=True,
+		console=True,
+		icon=icon
+	)
+	coll = COLLECT(
+		exe,
+		a.binaries,
+		# a.zipfiles,
+		a.datas,
+		strip=False,
+		upx=True,
+		upx_exclude=[],
+		name=exe_name
+	)
+	if sys.platform[:6] == "darwin":
+		app = BUNDLE(
+			coll,
+			name=bundle_name,
+			icon=icon,
+			bundle_identifier=bundle_identifier,
+			# console=True
+		)
