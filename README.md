@@ -42,12 +42,17 @@ Three types of installation are possible:
 
 ### One-click GUI
 
-* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions.
-* **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***
+* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions. Note the following for Windows:
+  * File download or runnning might be disabled by your virus scanner.
+  * Running with internet explorer might not update results properly. If so, copy-paste the `localhost:...` url to a chrome tab and continue working from there.
+  * If you install AlphaTims for all users, you might need admin priveleges to run it (right click AlphaTims logo and "run as admin").
+* **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)*** Note the following for Linuc:
+  * If permissions are wrong, run `chmod +x alphatims` in a terminal (at the right location).
 * **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app.zip). No installation is needed, just drop it into your applications folder. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***. Also note the following for MacOS:
-  * The AlphaTims application takes a long time to load upon first opening on, this should be significantly faster the second time. Even so, AlphaTims provides a much faster GUI if the user is willing to go through the [full installation](#full).
+  * The AlphaTims application takes a long time to load upon first opening on, this should be significantly faster the second time. Even so, AlphaTims provides a much faster GUI if the user is willing to go through the [full installation](#full) and run the command `alphatims gui` from a terminal afterwards.
   * Reading of raw data is not possible due to availability of Bruker libraries, we advise to export raw data as hdf on Windows or Linux.
   * Logging to a console is currently disabled. If you just close the browser tab and do not press the "Quit" button, AlphaTims will keep running in the background (potentially using a significant amount of RAM memory).
+  * If nothing happens when you launch AlphaTims, you might need to grant it permissions by going to the MacOS menu "System Preferences | Security & Privacy | General". If the problem still persists, it is possible that MacOS already quarantined the AlphaTims app. It can be removed from quarantine by running `xattr -dr com.apple.quarantine alphatims.app` in a terminal (in the appropriate folder).
 
 Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that even the latest release might be behind the latest [Jupyter](#jupyter-notebook) and [full](#full) installers. Furthermore, there is no guarantee about backwards compatibility between releases.
 
