@@ -2,7 +2,7 @@
 
 # AlphaTims
 
-An open-source python package for efficient accession and analysis of Bruker TimsTOF raw data from the [Mann department at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
+An open-source python package for efficient accession and analysis of Bruker TimsTOF raw data from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -43,9 +43,9 @@ Three types of installation are possible:
 ### One-click GUI
 
 * **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions. Note the following for Windows:
-  * File download or runnning might be disabled by your virus scanner.
+  * File download or launching might be disabled by your virus scanner.
   * Running with internet explorer might not update results properly. If so, copy-paste the `localhost:...` url to a chrome tab and continue working from there.
-  * If you install AlphaTims for all users, you might need admin priveleges to run it (right click AlphaTims logo and "run as admin").
+  * If you install AlphaTims for all users, you might need admin privileges to run it (right click AlphaTims logo and "run as admin").
 * **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)*** Note the following for Linuc:
   * If permissions are wrong, run `chmod +x alphatims` in a terminal (at the right location).
 * **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app.zip). No installation is needed, just drop it into your applications folder. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***. Also note the following for MacOS:
