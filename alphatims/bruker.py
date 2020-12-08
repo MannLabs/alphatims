@@ -9,6 +9,7 @@ import logging
 import numpy as np
 import h5py
 # local
+import alphatims
 import alphatims.utils
 
 if sys.platform[:5] == "win32":
@@ -18,11 +19,10 @@ elif sys.platform[:5] == "linux":
 else:
     logging.warning(
         "No Bruker libraries are available for MacOS. "
-        "Raw data import/conversion will not be possible."
+        "Raw data import will not be possible."
     )
     logging.info("")
     BRUKER_DLL_FILE_NAME = ""
-    # TODO Raise error?
 BRUKER_DLL_FILE_NAME = os.path.join(
     alphatims.utils.EXT_PATH,
     BRUKER_DLL_FILE_NAME
@@ -337,6 +337,14 @@ class TimsTOF(object):
             self.import_data_from_hdf_file(
                 bruker_d_folder_name,
             )
+        if not hasattr(self, "version"):
+            self.version = "none"
+        if self.version != alphatims.__version__:
+            logging.info(
+                f"Version {self.version} was used to create "
+                f"{bruker_d_folder_name}, while the current version of "
+                f"AlphaTims is {alphatims.__version__}."
+            )
 
     def import_data_from_d_folder(
         self,
@@ -348,6 +356,7 @@ class TimsTOF(object):
     ):
         logging.info(f"Importing data from {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
+        self.version = alphatims.__version__
         (
             self.acquisition_mode,
             global_meta_data,
@@ -458,7 +467,8 @@ class TimsTOF(object):
             self.scan_max_index,
             self.frame_max_index,
         )
-        self.quad_max_index = np.max(self.quad_high_values)
+        self.quad_max_index = int(np.max(self.quad_high_values))
+        self.precursor_max_index = int(np.max(self.precursor_indices))
 
     def save_as_hdf(
         self,
@@ -511,6 +521,7 @@ class TimsTOF(object):
         return_rt_values:bool=False,
         return_mobility_values:bool=False,
         return_quad_mz_values:bool=False,
+        return_precursor_indices:bool=False,
         return_mz_values:bool=False,
         return_intensity_values:bool=False,
         return_as_dict:bool=False,
@@ -524,6 +535,7 @@ class TimsTOF(object):
                 return_rt_values,
                 return_mobility_values,
                 return_quad_mz_values,
+                return_precursor_indices
             ]
         ):
             parsed_indices = np.searchsorted(
@@ -535,7 +547,9 @@ class TimsTOF(object):
             frame_indices = parsed_indices // self.scan_max_index
         if (return_scan_indices or return_mobility_values) and scan_indices is None:
             scan_indices = parsed_indices % self.scan_max_index
-        if (return_quad_indices or return_quad_mz_values) and quad_indices is None:
+        if (
+            return_quad_indices or return_quad_mz_values or return_precursor_indices
+        ) and quad_indices is None:
             quad_indices = np.searchsorted(
                 self.quad_indptr,
                 parsed_indices,
@@ -549,6 +563,8 @@ class TimsTOF(object):
             result["scan_indices"] = scan_indices
         if return_quad_indices:
             result["quad_indices"] = quad_indices
+        if return_precursor_indices:
+            result["precursor_indices"] = self.precursor_indices[quad_indices]
         if return_tof_indices:
             result["tof_indices"] = tof_indices
         if return_rt_values:
@@ -590,7 +606,7 @@ class TimsTOF(object):
                 self.mobility_max_value - self.mobility_min_value
             ) * (values - self.mobility_min_value)
         elif return_tof_indices:
-            indices = (np.sqrt(values) - self.tof_intercept) / self.tof_slope
+            indices = np.searchsorted(self.mz_values, values)
         if not return_frame_indices:
             if side == "left":
                 indices = np.floor(indices).astype(np.int32)
@@ -652,6 +668,16 @@ class TimsTOF(object):
         quad_stop = keys[-2].stop
         if quad_stop is None:
             quad_stop = np.inf
+        if isinstance(quad_start, int):
+            precursor_low_index = quad_start
+            quad_start = -np.inf
+        else:
+            precursor_low_index = -1
+        if isinstance(quad_stop, int):
+            precursor_high_index = quad_stop
+            quad_stop = np.inf
+        else:
+            precursor_high_index = self.precursor_max_index + 1
         return tof_slicer(
             self.tof_indices,
             slice_start,
@@ -664,6 +690,9 @@ class TimsTOF(object):
             self.quad_high_values,
             quad_start,
             quad_stop,
+            self.precursor_indices,
+            precursor_low_index,
+            precursor_high_index,
         )
 
     def bin_intensities(self, indices, axis):
@@ -704,8 +733,9 @@ class TimsTOF(object):
         *,
         frame_indices=True,
         scan_indices=True,
-        quad_indices=True,
+        quad_indices=False,
         tof_indices=True,
+        precursor_indices=True,
         rt_values=True,
         mobility_values=True,
         quad_mz_values=True,
@@ -719,6 +749,7 @@ class TimsTOF(object):
                 return_frame_indices=frame_indices,
                 return_scan_indices=scan_indices,
                 return_quad_indices=quad_indices,
+                return_precursor_indices=precursor_indices,
                 return_tof_indices=tof_indices,
                 return_rt_values=rt_values,
                 return_mobility_values=mobility_values,
@@ -742,7 +773,10 @@ def tof_slicer(
     quad_low_values,
     quad_high_values,
     quad_low,
-    quad_high
+    quad_high,
+    precursor_values,
+    precursor_low_value,
+    precursor_high_value,
 ):
     result = []
     quad_index = 0
@@ -751,7 +785,11 @@ def tof_slicer(
             quad_index += 1
         if quad_high_values[quad_index] < quad_low:
             continue
-        if quad_low_values[quad_index] > quad_high:
+        if quad_low_values[quad_index] >= quad_high:
+            continue
+        if precursor_values[quad_index] < precursor_low_value:
+            continue
+        if precursor_values[quad_index] >= precursor_high_value:
             continue
         if (
             sparse_start == sparse_end
