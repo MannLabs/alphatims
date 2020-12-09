@@ -47,6 +47,7 @@ def parse_cli_settings(command_name, **kwargs):
         )
         alphatims.utils.show_platform_info()
         alphatims.utils.show_python_info()
+        alphatims.utils.check_github_version()
         if kwargs:
             logging.info(
                 f"Running CLI command `alphatims "
