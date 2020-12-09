@@ -43,7 +43,7 @@ def parse_cli_settings(command_name, **kwargs):
             ]["default"]
         kwargs["log_file"] = alphatims.utils.set_logger(
             log_file_name=kwargs["log_file"],
-            stream=kwargs["disable_log_stream"],
+            stream=not kwargs["disable_log_stream"],
         )
         alphatims.utils.show_platform_info()
         alphatims.utils.show_python_info()
