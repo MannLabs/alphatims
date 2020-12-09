@@ -10,6 +10,7 @@ if __name__ == "__main__":
     )
     alphatims.utils.show_platform_info()
     alphatims.utils.show_python_info()
+    alphatims.utils.check_github_version()
     import logging
     logging.info("Running one-click GUI with parameters:")
     logging.info(f"log_file_name - {log_file_name}")

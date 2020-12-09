@@ -43,10 +43,11 @@ def parse_cli_settings(command_name, **kwargs):
             ]["default"]
         kwargs["log_file"] = alphatims.utils.set_logger(
             log_file_name=kwargs["log_file"],
-            stream=kwargs["log_stream"],
+            stream=not kwargs["disable_log_stream"],
         )
         alphatims.utils.show_platform_info()
         alphatims.utils.show_python_info()
+        alphatims.utils.check_github_version()
         if kwargs:
             logging.info(
                 f"Running CLI command `alphatims "

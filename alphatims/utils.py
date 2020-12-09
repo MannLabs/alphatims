@@ -20,6 +20,7 @@ PROGRESS_CALLBACK_STYLE_NONE = 0
 PROGRESS_CALLBACK_STYLE_TEXT = 1
 PROGRESS_CALLBACK_STYLE_PLOT = 2
 PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
+LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py"
 
 
 def set_logger(
@@ -75,15 +76,26 @@ def set_logger(
 
 def show_platform_info():
     import platform
+    import psutil
     logging.info("Platform information:")
-    logging.info(f"system    - {platform.system()}")
-    logging.info(f"release   - {platform.release()}")
+    logging.info(f"system     - {platform.system()}")
+    logging.info(f"release    - {platform.release()}")
     if platform.system() == "Darwin":
-        logging.info(f"version   - {platform.mac_ver()[0]}")
+        logging.info(f"version    - {platform.mac_ver()[0]}")
     else:
-        logging.info(f"version   - {platform.version()}")
-    logging.info(f"machine   - {platform.machine()}")
-    logging.info(f"processor - {platform.processor()}")
+        logging.info(f"version    - {platform.version()}")
+    logging.info(f"machine    - {platform.machine()}")
+    logging.info(f"processor  - {platform.processor()}")
+    logging.info(
+        f"cpu count  - {psutil.cpu_count()}"
+        # f" ({100 - psutil.cpu_percent()}% unused)"
+    )
+    logging.info(
+        f"ram memory - "
+        f"{psutil.virtual_memory().available/1024**3:.1f}/"
+        f"{psutil.virtual_memory().total/1024**3:.1f} Gb "
+        f"(available/total)"
+    )
     logging.info("")
 
 
@@ -107,6 +119,35 @@ def show_python_info():
     for key, value in sorted(module_versions.items()):
         logging.info(f"{key:<{max_len}} - {value}")
     logging.info("")
+
+
+def check_github_version():
+    import urllib.request
+    import urllib.error
+    try:
+        with urllib.request.urlopen(LATEST_GITHUB_INIT_FILE) as version_file:
+            for line in version_file.read().decode('utf-8').split("\n"):
+                if line.startswith("__version__"):
+                    github_version = line.split()[2]
+                    logging.info(
+                        f"A newer version of AlphaTims is available at "
+                        f"GitHub: {github_version}")
+                    logging.info("")
+                    return github_version
+            else:
+                return None
+    except IndexError:
+        logging.info(
+            "Could not check GitHub for the latest AlphaTims release."
+        )
+        logging.info("")
+        return None
+    except urllib.error.URLError:
+        logging.info(
+            "Could not check GitHub for the latest AlphaTims release."
+        )
+        logging.info("")
+        return None
 
 
 def save_parameters(parameter_file_name, paramaters):
@@ -136,7 +177,9 @@ def set_threads(threads, set_global=True):
 
 def njit(*args, **kwargs):
     import numba
-    return numba.njit(*args, **kwargs)
+    if "cache" in kwargs:
+        kwargs.pop("cache")
+    return numba.njit(*args, cache=True, **kwargs)
 
 
 def pjit(
@@ -150,8 +193,9 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True)(func)
+        numba_func = numba.njit(nogil=True, cache=True)(func)
 
+        @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
             iterable,
             start,
@@ -165,7 +209,6 @@ def pjit(
             else:
                 for i in iterable:
                     numba_func(i, *args)
-        numba_func_parallel = numba.njit(nogil=True)(numba_func_parallel)
 
         def wrapper(iterable, *args):
             if thread_count is None:

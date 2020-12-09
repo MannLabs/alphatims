@@ -2,9 +2,9 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.0.201206"
+__version__ = "0.0.201209"
 __license__ = "MIT"
-__description__ = "A python package for Bruker TimsTOF raw data analysis and feature finding"
+__description__ = "A python package for Bruker TimsTOF raw data accession and visualization"
 __author__ = "Sander Willems"
 __author_email__ = "willems@biochem.mpg.de"
 __github__ = "https://github.com/MannLabs/alphatims"
@@ -32,7 +32,7 @@ __console_scripts__ = [
     "alphatims=alphatims.cli:run",
 ]
 __urls__ = {
-    "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",
+    "Mann Labs at MPIB": "https://www.biochem.mpg.de/mann",
     "GitHub:": __github__
 }
 __requirements__ = {
