@@ -84,6 +84,14 @@ DATASET = None
 CONTINUE_RUNNING = True
 whole_title = str()
 
+### PATHS
+
+_current_file = os.path.abspath(__file__)
+_current_directory = os.path.dirname(_current_file)
+
+biochem_logo_path = os.path.join(_current_directory, "img", "mpi_logo.png")
+mpi_logo_path = os.path.join(_current_directory, "img", "max-planck-gesellschaft.jpg")
+github_logo_path = os.path.join(_current_directory, "img", "github.png")
 
 ### HEADER
 
@@ -92,14 +100,14 @@ header_titel = pn.pane.Markdown(
     width=1250
 )
 mpi_biochem_logo = pn.pane.PNG(
-    'img/mpi_logo.png',
+    biochem_logo_path,
     link_url='https://www.biochem.mpg.de/en',
     width=60,
     height=60,
     align='start'
 )
 mpi_logo = pn.pane.JPG(
-    'img/max-planck-gesellschaft.jpg',
+    mpi_logo_path,
     link_url='https://www.biochem.mpg.de/en',
     height=62,
     embed=True,
@@ -108,7 +116,7 @@ mpi_logo = pn.pane.JPG(
     css_classes=['opt']
 )
 github_logo = pn.pane.PNG(
-    'img/github.png',
+    github_logo_path,
     link_url='https://github.com/MannLabs/alphatims',
     height=70,
 )
@@ -299,7 +307,8 @@ def visualize_chrom():
     data['RT'] = data['Time'] / 60
     chrom = hv.Curve(
         data=data,
-        kdims=['RT', 'SummedIntensities'],
+        kdims=['RT'],
+        vdims=['SummedIntensities'],
     ).opts(
         chrom_opts,
         opts.Curve(
@@ -417,18 +426,18 @@ def button_event(_):
     logging.info("Quitting server...")
     CONTINUE_RUNNING = False
 
-if __name__ == "__main__":
-    def run():
-        global CONTINUE_RUNNING
-        layout = pn.Column(
-            header,
-            main_part,
-            pn.Row(
-                show_settings,
-                show_plots,
-            ),
-        )
-        server = layout.show(threaded=True)
-        while CONTINUE_RUNNING:
-            time.sleep(1)
-        server.stop()
+
+def run():
+    global CONTINUE_RUNNING
+    layout = pn.Column(
+        header,
+        main_part,
+        pn.Row(
+            show_settings,
+            show_plots,
+        ),
+    )
+    server = layout.show(threaded=True)
+    while CONTINUE_RUNNING:
+        time.sleep(1)
+    server.stop()
