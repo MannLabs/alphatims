@@ -1,3 +1,6 @@
+rm -rf dist
+rm -rf build
+conda env remove -n alphatimsinstaller
 conda create -n alphatimsinstaller python=3.8 pip=20.2 -y
 # conda create -n alphatimsinstaller python=3.8
 conda activate alphatimsinstaller

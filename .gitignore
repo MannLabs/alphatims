@@ -130,6 +130,6 @@ dmypy.json
 
 # Misc
 *.DS_Store
-logs
+logs/*
 *sandbox*
-misc/one_click_windows/alphatims_installer.exe
+misc/releases/*

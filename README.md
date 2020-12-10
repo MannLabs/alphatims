@@ -24,6 +24,7 @@ An open-source python package for efficient accession and analysis of Bruker Tim
     * [**TimsTOF objects in python**](#timstof-objects-in-python)
     * [**Slicing timsTOF objects**](#slicing-timstof-objects)
   * [**Future perspectives**](#future-perspectives)
+  * [**How to contribute**](#how-to-contribute)
 
 ## About
 
@@ -128,7 +129,7 @@ conda deactivate
 
 Note that this binary still reflects all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
 
-When using Jupyter notebooks and multiple conda environments, it is recommended to `conda install nb_conda_kernels` in the conda base environment. The AlphaTims conda environment can then be installed as a kernel with `conda install ipykernel` in the AlphaTims environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `Python [conda env: alphatims]` kernel available.
+When using Jupyter notebooks and multiple conda environments, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `Python [conda env: alphatims]` kernel available.
 
 ### Installation issues
 
@@ -283,3 +284,5 @@ Slicing the total dataset happens with a magic `__getitem__` function and automa
   * precursor and fragment ions
   * isotopic envelopes (i.e. features)
   * fragment clusters (i.e. pseudo MSMS spectra)
+
+## How to contribute
