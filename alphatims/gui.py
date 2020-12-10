@@ -181,6 +181,7 @@ main_part = pn.Column(
         upload_file,
         upload_button,
         upload_spinner,
+        exit_button,
         align='center'
     ),
     upload_error,
@@ -251,7 +252,6 @@ settings = pn.layout.WidgetBox(
     scan_slider,
     quad_slider,
     tof_slider,
-    exit_button,
     width=460,
     align='start',
     margin=(0,0,0,0),
