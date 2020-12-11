@@ -70,7 +70,7 @@ def parse_cli_settings(command_name, **kwargs):
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def cli_option(parameter_name, **kwargs):
+def cli_option(parameter_name, as_argument=False, **kwargs):
     names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
     parameters.update(kwargs)
@@ -91,10 +91,16 @@ def cli_option(parameter_name, **kwargs):
         parameters["show_default"] = True
     if "short_name" in parameters:
         names.append(parameters.pop("short_name"))
-    return click.option(
-        f"--{parameter_name}",
-        **parameters,
-    )
+    if not as_argument:
+        return click.option(
+            f"--{parameter_name}",
+            **parameters,
+        )
+    else:
+        return click.argument(
+            parameter_name,
+            type=parameters["type"],
+        )
 
 
 @click.group(
@@ -132,8 +138,8 @@ def detect(**kwargs):
     pass
 
 
-@export.command("hdf", help="Export raw file as hdf file.")
-@cli_option("bruker_d_folder")
+@export.command("hdf", help="Export BRUKER_D_FOLDER as hdf file.")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -158,10 +164,13 @@ def export_hdf(**kwargs):
         )
 
 
-@export.command("parameters", help="Export (non-required) parameters as json")
+@export.command(
+    "parameters",
+    help="Export (non-required) parameters as PARAMETER_FILE"
+)
 @cli_option(
     "parameter_file",
-    required=True,
+    as_argument=True,
     type={
       "name": "path",
       "dir_okay": False,
@@ -185,7 +194,7 @@ def export_parameters(**kwargs):
 
 
 @detect.command("ions", help="Detect ions (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -197,7 +206,7 @@ def detect_ions(**kwargs):
 
 
 @detect.command("features", help="Detect features (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -209,7 +218,7 @@ def detect_features(**kwargs):
 
 
 @detect.command("analytes", help="Detect analytes (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
