@@ -32,7 +32,7 @@ With the introduction of the Bruker TimsTOF, the inclusion of ion mobility separ
 
 ## License
 
-AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [MIT license](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ## Installation
 
@@ -185,41 +185,38 @@ conda deactivate
 
 It is possible to get help about each function and their (required) parameters by using the `-h` flag. For instance,the command `alphatims export hdf -h` will produce the following output:
 
-```bash
+```
 ************************
 * AlphaTims 0.0.201209 *
 ************************
-Usage: alphatims export hdf [OPTIONS]
+Usage: alphatims export hdf [OPTIONS] BRUKER_D_FOLDER
 
-  Export raw file as hdf file.
+  Export BRUKER_D_FOLDER as hdf file.
 
 Options:
-  --bruker_d_folder DIRECTORY  A Bruker .d folder with raw data.  [required]
-  --output_folder DIRECTORY    A directory for all output (blank means
-                               `bruker_d_folder` root is used).
+  --output_folder DIRECTORY  A directory for all output (blank means
+                             `bruker_d_folder` root is used).
 
-  --log_file PATH              Save all log data to a file (blank means
-                               'log_[date].txt' with data format yymmddhhmmss
-                               in 'log' folder of AlphaTims directory).
-                               [default: ]
+  --log_file PATH            Save all log data to a file (blank means
+                             'log_[date].txt' with date format yymmddhhmmss in
+                             'log' folder of AlphaTims directory).  [default:
+                             ]
 
-  --threads INTEGER            The number of threads to use (0 means all,
-                               negative means how many threads to leave
-                               available).  [default: -1]
+  --threads INTEGER          The number of threads to use (0 means all,
+                             negative means how many threads to leave
+                             available).  [default: -1]
 
-  --disable_log_stream         Disable streaming of log data.  [default:
-                               False]
+  --disable_log_stream       Disable streaming of log data.  [default: False]
+  --parameter_file FILE      A .json file with (non-required) parameters
+                             (blank means default parameters are used). This
+                             overrides all default and CLI parameters.
 
-  --parameter_file FILE        A .json file with (non-required) parameters
-                               (blank means default parameters are used). This
-                               overrides all default and CLI parameters.
+  --compress                 Compression of hdf files. If set, this roughly
+                             halves files sizes (on-disk), at the cost of
+                             taking 3-6 longer accession times.  [default:
+                             False]
 
-  --compress                   Compression of hdf files. If set, this roughly
-                               halves files sizes (on-disk), at the cost of
-                               taking 3-6 longer accession times.  [default:
-                               False]
-
-  -h, --help                   Show this message and exit.
+  -h, --help                 Show this message and exit.
 ```
 
 ### Python and jupyter notebooks
