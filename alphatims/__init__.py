@@ -32,7 +32,7 @@ __console_scripts__ = [
     "alphatims=alphatims.cli:run",
 ]
 __urls__ = {
-    "Mann Department at MPIB": "https://www.biochem.mpg.de/mann",
+    "Mann Labs at MPIB": "https://www.biochem.mpg.de/mann",
     "GitHub:": __github__
 }
 __requirements__ = {

@@ -136,7 +136,9 @@ def set_threads(threads, set_global=True):
 
 def njit(*args, **kwargs):
     import numba
-    return numba.njit(*args, **kwargs)
+    if "cache" in kwargs:
+        kwargs.pop("cache")
+    return numba.njit(*args, cache=True, **kwargs)
 
 
 def pjit(
@@ -150,8 +152,9 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True)(func)
+        numba_func = numba.njit(nogil=True, cache=True)(func)
 
+        @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
             iterable,
             start,
@@ -165,7 +168,6 @@ def pjit(
             else:
                 for i in iterable:
                     numba_func(i, *args)
-        numba_func_parallel = numba.njit(nogil=True)(numba_func_parallel)
 
         def wrapper(iterable, *args):
             if thread_count is None:

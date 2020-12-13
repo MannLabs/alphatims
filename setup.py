@@ -9,18 +9,6 @@ import alphatims as package2install
 with open("README.md", "r") as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
-
-requirements = []
-requirement_file_name = package2install.__requirements__.pop("")
-with open(requirement_file_name) as requirements_file:
-    for line in requirements_file:
-        if package2install.__strict_requirements__:
-            requirement = line.strip()
-        else:
-            requirement, version = line.split("==")
-        requirements.append(requirement)
-
-
 extra_requirements = {}
 for extra, requirement_file_name in package2install.__requirements__.items():
     with open(requirement_file_name) as requirements_file:
@@ -32,6 +20,7 @@ for extra, requirement_file_name in package2install.__requirements__.items():
                 requirement, version = line.split("==")
             extra_requirements[extra].append(requirement)
 
+requirements = extra_requirements.pop("")
 
 setuptools.setup(
     name=package2install.__project__,
