@@ -163,7 +163,7 @@ upload_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(30,20,0,15),
+    margin=(30,15,0,15),
     width=40,
     height=40
 )
@@ -172,6 +172,14 @@ upload_error = pn.pane.Alert(
     width=400,
     alert_type="danger",
     margin=(-15,0,10,260),
+)
+
+exit_button = pn.widgets.Button(
+    name='Quit',
+    button_type='primary',
+    height=31,
+    width=100,
+    margin=(34,20,0,0)
 )
 
 main_part = pn.Column(
@@ -237,11 +245,6 @@ tof_slider = pn.widgets.IntRangeSlider(
     start=1,
     step=1,
     margin=(5, 20)
-)
-
-exit_button = pn.widgets.Button(
-    name='Quit',
-    button_type='primary'
 )
 
 settings = pn.layout.WidgetBox(
