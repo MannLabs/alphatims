@@ -7,6 +7,7 @@ import contextlib
 import logging
 # external
 import numpy as np
+import pandas as pd
 import h5py
 # local
 import alphatims
@@ -98,7 +99,6 @@ def read_bruker_frames(
     drop_polarity=True,
 ):
     import sqlite3
-    import pandas as pd
     logging.info(f"Reading frame metadata for {bruker_d_folder_name}")
     with sqlite3.connect(
         os.path.join(bruker_d_folder_name, "analysis.tdf")
@@ -341,7 +341,7 @@ class TimsTOF(object):
             self.version = "none"
         if self.version != alphatims.__version__:
             logging.info(
-                f"Version {self.version} was used to create "
+                f"AlphaTims version {self.version} was used to initialize "
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
@@ -591,34 +591,56 @@ class TimsTOF(object):
         return_frame_indices:bool=False,
         return_scan_indices:bool=False,
         return_tof_indices:bool=False,
-        side:str="right"
+        side:str="right",
+        return_type:str="",
     ):
-        if side not in ("left", "right"):
-            raise KeyError("Invalid side")
         if return_frame_indices:
-            indices = np.searchsorted(
-                self.rt_values,
-                values,
-                side=side
-            )
+            return_type = "frame"
         elif return_scan_indices:
-            indices = self.scan_max_index / (
-                self.mobility_max_value - self.mobility_min_value
-            ) * (values - self.mobility_min_value)
+            return_type = "scan"
         elif return_tof_indices:
-            indices = np.searchsorted(self.mz_values, values)
-        if not return_frame_indices:
-            if side == "left":
-                indices = np.floor(indices).astype(np.int32)
-            elif side == "right":
-                indices = np.ceil(indices).astype(np.int32)
-        return indices
+            return_type = "tof"
+        if return_type == "frame":
+            return np.searchsorted(self.rt_values, values, side)
+        elif return_type == "scan":
+            return self.mobility_values.size - np.searchsorted(
+                self.mobility_values[::-1],
+                values,
+                side
+            )
+        elif return_type == "tof":
+            return np.searchsorted(self.mz_values, values, side)
+        elif return_type == "precursor":
+            try:
+                if values not in [-np.inf, np.inf]:
+                    raise PrecursorValueError(
+                        "Can not convert values to precursor_indices"
+                    )
+            except ValueError:
+                raise PrecursorValueError(
+                    "Can not convert values to precursor_indices"
+                )
+            if values == -np.inf:
+                return 0
+            elif values == np.inf:
+                return self.precursor_max_index + 1
+        else:
+            raise KeyError(f"return_type '{return_type}' is invalid")
 
     def __getitem__(self, keys):
-        try:
-            frame_slice, scan_slice, quad_slice, tof_slice = keys
-        except ValueError:
-            raise ValueError("Slice 4-tuple expected")
+        if len(keys) > 5:
+            raise ValueError(
+                "Slicing LC-IMS-MSMS can be done in maximum 5 dimensions: "
+                "frame_index/rt_value, scan_index/mobility_value, "
+                "precursor_index/quad_mz_value, TOF_index/tof_mz_value "
+                "and intensity. Integers are assumed to be indices, while "
+                "floats are assumed as values. Intensity is always assumed "
+                "as a float"
+            )
+        else:
+            keys = list(keys)
+            while len(keys) < 5:
+                keys.append(slice(None))
         stretch_starts = self.tof_indptr[:-1].reshape(
             self.frame_max_index,
             self.scan_max_index
@@ -629,10 +651,7 @@ class TimsTOF(object):
         )
         new_keys = []
         for i, key in enumerate(keys):
-            if i == 2:
-                new_keys.append(key)
-                continue
-            if isinstance(key, slice):
+            if (i in [0, 1, 3]) and isinstance(key, slice):
                 slice_start = key.start
                 slice_stop = key.stop
                 slice_step = key.step
@@ -652,20 +671,22 @@ class TimsTOF(object):
                         side="right"
                     )
                 new_keys.append(slice(slice_start, slice_stop, slice_step))
+            else:
+                new_keys.append(key)
         keys = tuple(new_keys)
-        slice_start = keys[-1].start
+        slice_start = keys[-2].start
         if slice_start is None:
             slice_start = -np.inf
-        slice_stop = keys[-1].stop
+        slice_stop = keys[-2].stop
         if slice_stop is None:
             slice_stop = np.inf
-        slice_step = keys[-1].step
+        slice_step = keys[-2].step
         if slice_step is None:
             slice_step = 1
-        quad_start = keys[-2].start
+        quad_start = keys[-3].start
         if quad_start is None:
             quad_start = -np.inf
-        quad_stop = keys[-2].stop
+        quad_stop = keys[-3].stop
         if quad_stop is None:
             quad_stop = np.inf
         if isinstance(quad_start, int):
@@ -678,7 +699,7 @@ class TimsTOF(object):
             quad_stop = np.inf
         else:
             precursor_high_index = self.precursor_max_index + 1
-        return tof_slicer(
+        raw_indices = tof_slicer(
             self.tof_indices,
             slice_start,
             slice_stop,
@@ -694,6 +715,15 @@ class TimsTOF(object):
             precursor_low_index,
             precursor_high_index,
         )
+        if keys[-1].start is not None:
+            raw_indices = raw_indices[
+                self.intensities[raw_indices] >= keys[-1].start
+            ]
+        if keys[-1].stop is not None:
+            raw_indices = raw_indices[
+                self.intensities[raw_indices] < keys[-1].stop
+            ]
+        return raw_indices
 
     def bin_intensities(self, indices, axis):
         intensities = self.intensities[indices].astype(np.float64)
@@ -742,7 +772,6 @@ class TimsTOF(object):
         mz_values=True,
         intensity_values=True
     ):
-        import pandas as pd
         return pd.DataFrame(
            self.convert_from_indices(
                 indices,
@@ -759,6 +788,233 @@ class TimsTOF(object):
                 return_as_dict=True,
             )
         )
+
+    def parse_keys(self, keys):
+        """
+        Keys is at most a 5-tuple, with selection criteria for the
+        LC-IMS-MSMS dimensions:
+            (
+                'frame_index/rt_value',
+                'scan_index/mobility_value',
+                'precursor_index/quad_mz_value',
+                'TOF_index/tof_mz_value',
+                'intensity_values',
+            )
+        Each element of this tuple can be either:
+            A slice
+                slice.start and slice.stop can be either integer, float or None,
+                representing respectively a value or an index.
+                For the intensity dimension, both integers and floats are
+                interpreted as a value
+                slice.step can only be None or an integer.
+            An iterable with sorted indices
+        NOTE: Negative slicing is not supported
+        """
+        dimensions = [
+            "frame",
+            "scan",
+            "precursor",
+            "tof",
+        ]
+        dimension_slices = {}
+        if len(keys) > (len(dimensions) + 1):
+            raise KeyError(
+                "LC-IMS-MSMS data can be sliced in maximum 5 dimensions. "
+                "Integers are assumed to be indices, while "
+                "floats are assumed as values. Intensity is always casted "
+                "to integer values, regardless of input type."
+            )
+        for i, dimension in enumerate(dimensions):
+            try:
+                dimension_slices[dimension] = self.convert_slice_key_to_integer(
+                    keys[i] if (i < len(keys)) else slice(None),
+                    dimension
+                )
+            except PrecursorValueError:
+                dimension_slices["precursor"] = self.convert_slice_key_to_integer(
+                    slice(None),
+                    "precursor"
+                )
+                dimension_slices["quad_values"] = self.convert_slice_key_to_float(
+                    keys[i]
+                )
+        dimension_slices["intensity_values"] = self.convert_slice_key_to_float(
+            keys[-1] if (len(keys) > len(dimensions)) else slice(None)
+        )
+        if "quad_values" not in dimension_slices:
+            dimension_slices["quad_values"] = np.array(
+                [-np.inf, np.inf],
+                dtype=np.float
+            )
+        return dimension_slices
+
+    def convert_slice_key_to_float(self, key):
+        try:
+            iter(key)
+        except TypeError:
+            if key is None:
+                key = slice(None)
+            if isinstance(key, slice):
+                start = key.start
+                if start is None:
+                    start = -np.inf
+                stop = key.stop
+                if stop is None:
+                    stop = np.inf
+            else:
+                start = key
+                stop = key
+            return np.array([start, stop], dtype=np.float)
+        else:
+            if not isinstance(key, np.ndarray):
+                key = np.array(key, dtype=np.float)
+            if not isinstance(key.ravel()[0], np.float):
+                raise ValueError
+            if len(key.shape) == 1:
+                return np.array([key, key]).T
+            elif len(key.shape) == 2:
+                if key.shape[1] != 2:
+                    raise ValueError
+                return key
+            else:
+                raise ValueError
+
+    def convert_slice_key_to_integer(self, key, dimension):
+        try:
+            iter(key)
+        except TypeError:
+            if key is None:
+                key = slice(None)
+            if isinstance(key, slice):
+                start = key.start
+                if not isinstance(start, (np.integer, int)):
+                    if start is None:
+                        start = -np.inf
+                    if not isinstance(start, (np.inexact, float)):
+                        raise ValueError
+                    start = self.convert_to_indices(
+                        start,
+                        return_type=dimension
+                    )
+                stop = key.stop
+                if not isinstance(stop, (np.integer, int)):
+                    if stop is None:
+                        stop = np.inf
+                    if not isinstance(stop, (np.inexact, float)):
+                        raise ValueError
+                    stop = self.convert_to_indices(
+                        stop,
+                        return_type=dimension
+                    )
+                step = key.step
+                if not isinstance(step, (np.integer, int)):
+                    if step is not None:
+                        raise ValueError
+                    step = 1
+                return np.array([[start, stop, step]])
+            elif isinstance(key, (np.integer, int)):
+                return np.array([[key, key + 1, 1]])
+            else:
+                raise ValueError
+        else:
+            if not isinstance(key, np.ndarray):
+                key = np.array(key)
+            if not isinstance(key.ravel()[0], np.integer):
+                key = self.convert_to_indices(key, return_type=dimension)
+            if len(key.shape) == 1:
+                return np.array([key, key + 1, np.repeat(1, key.size)]).T
+            elif len(key.shape) == 2:
+                if key.shape[1] != 3:
+                    raise ValueError
+                return key
+            else:
+                raise ValueError
+
+
+class PrecursorValueError(ValueError):
+    pass
+
+
+@alphatims.utils.njit
+def filter_indices(
+    frame_slices,
+    scan_slices,
+    precursor_slices,
+    tof_slices,
+    quad_slices,
+    intensity_slices,
+    frame_max_index,
+    scan_max_index,
+    tof_indptr,
+    precursor_indices,
+    quad_values,
+    quad_indptr,
+    tof_indices,
+    intensities,
+):
+    result = []
+    starts = tof_indptr[:-1].reshape(
+        frame_max_index,
+        scan_max_index
+    )
+    ends = tof_indptr[1:].reshape(
+        frame_max_index,
+        scan_max_index
+    )
+    for frame_start, frame_stop, frame_step in frame_slices:
+        for scan_start, scan_stop, scan_step in scan_slices:
+            sparse_starts = starts[
+                slice(frame_start, frame_stop, frame_step),
+                slice(scan_start, scan_stop, scan_step)
+            ]
+            sparse_ends = ends[
+                slice(frame_start, frame_stop, frame_step),
+                slice(scan_start, scan_stop, scan_step)
+            ]
+            quad_index = 0
+            for sparse_start, sparse_end in zip(sparse_starts, sparse_ends):
+                while quad_indptr[quad_index + 1] < sparse_end:
+                    quad_index += 1
+                if quad_high_values[quad_index] < quad_low:
+                    continue
+                if quad_low_values[quad_index] >= quad_high:
+                    continue
+                if precursor_values[quad_index] < precursor_low_value:
+                    continue
+                if precursor_values[quad_index] >= precursor_high_value:
+                    continue
+                if (
+                    sparse_start == sparse_end
+                ) or (
+                    index_array[sparse_end - 1] < slice_start
+                ) or (
+                    index_array[sparse_start] > slice_stop
+                ):
+                    continue
+                if slice_start == -np.inf:
+                    idx_start = sparse_start
+                else:
+                    idx_start = sparse_start + np.searchsorted(
+                        index_array[sparse_start: sparse_end],
+                        slice_start,
+                        "left"
+                    )
+                if slice_stop == np.inf:
+                    idx_stop = sparse_end
+                else:
+                    idx_stop = idx_start + np.searchsorted(
+                        index_array[idx_start: sparse_end],
+                        slice_stop,
+                        "left"
+                    )
+                if slice_step == 1:
+                    for idx in range(idx_start, idx_stop):
+                        result.append(idx)
+                else:
+                    for idx in range(idx_start, idx_stop):
+                        if ((index_array[idx] - slice_start) % slice_step) == 0:
+                            result.append(idx)
+    return np.array(result)
 
 
 @alphatims.utils.njit
