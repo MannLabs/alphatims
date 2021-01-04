@@ -133,3 +133,4 @@ dmypy.json
 logs
 *sandbox*
 misc/one_click_windows/alphatims_installer.exe
+misc/releases
