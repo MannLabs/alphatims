@@ -13,6 +13,8 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
      * [**Full installer**](#full)
      * [**Installation issues**](#installation-issues)
   * [**Test data**](#test-data)
+    * [**Test sample**](#test-sample)
+    * [**LC**](#lc)  
     * [**DDA**](#dda)
     * [**DIA**](#dia)
   * [**Usage**](#usage)
@@ -28,7 +30,7 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
 
 ## About
 
-With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html), the inclusion of ion mobility separation (IMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data is therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
+With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) and [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900), the inclusion of ion mobility separation (IMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data is therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
 
 ## License
 
@@ -156,15 +158,24 @@ Common issues include:
 
 ## Test data
 
-AlphaTims is compatible with both data-dependant acquisition (DDA) and data-independant acquisition (DIA). Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+AlphaTims is compatible with both ddaPASEF and diaPASEF. Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+
+### Test sample
+
+A test sample of human cervical cancer cells (HeLa, S3, ATCC) is provided for AlphaTims. These cells were cultured in Dulbecco's modified Eagle's medium (all Life Technologies Ltd., UK). Subsequently, the cells were collected, washed, flash-frozen, and stored at -80 °C.
+Following the previously published [in-StageTip protocol](https://www.nature.com/articles/nmeth.2834), cell lysis, reduction, and alkylation with chloroacetamide were carried out simultaneously in a lysis buffer (PreOmics, Germany). The resultant dried peptides were reconstituted in water comprising 2 vol% acetonitrile and 0.1% vol% trifluoroacetic acid, yielding a 200 ng/µL solution. This solution was further diluted with water containing 0.1% vol% formic acid. The manufacturer's instructions were followed to load approximately 200ng peptides onto Evotips (Evosep, Denmark).
+
+### LC
+
+Single-run LC-MS analysis was executed via an [Evosep One liquid chromatography system (Evosep)](https://doi.org/10.1074/mcp.TIR118.000853). This was coupled online with a hybrid [TIMS quadrupole TOF mass spectrometer (Bruker timsTOF Pro, Germany)](https://doi.org/10.1074/mcp.TIR118.000900). A silica emitter (Bruker) was placed inside a nano-electrospray ion source (Captive spray source, Bruker) and connected to an 8 cm x 150 µm reverse phase column to perform liquid chromatography. The column was packed with 1.5 µm C18-beads (Pepsep, Denmark). Mobile phases were water and acetonitrile, buffered with 0.1% formic acid. The samples were separated with a predefined 60 samples per day method (Evosep).
 
 ### DDA
 
-A 21 min HeLA DDA dataset (803 Mb) is available for [download here](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download).
+A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download). Each topN acquisition cycle consisted of 10 PASEF MS/MS scans, and the accumulation and ramp times were set to 100 ms. Single-charged precursors were excluded using a polygon filter in the m/z-ion mobility plane. Furthermore, all precursors, which reached the target value of 20000, were excluded for 0.4 min from the acquisition. Precursors were isolated with a quadrupole window of 2 Th for m/z <700 and 3 Th for m/z >700.
 
 ### DIA
 
-A small Bruker TimsTOF DIA dataset with a 5 minute gradient containing tryptic HeLa peptides is available for [download here](https://datashare.biochem.mpg.de/s/s7zuTMilCOkYb2K/download).
+The same sample was also acquired with diaPASEF and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed” method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
 ## Usage
 
