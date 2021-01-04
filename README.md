@@ -277,12 +277,12 @@ After reading the `PasefFrameMSMSInfo` or `DiaFrameMsMsWindows` table from the `
 * A `quad_high_values` array, similar to `quad_low_values`.
 * A `precursor_indices` array of `len(quad_indptr) - 1`. For PASEF this array stores the index of the selected precursor. For diaPASEF, this array stores the `WindowGroup` of the fragment frame. As with the `quad_low_values` and `quad_high_values`, a value of -1 indicates a precursor without quadrupole selection.
 
-After processing this summarising information from the `analysis.tdf` SQL database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays. This is done with the `tims_read_scans_v2` function from Bruker's `libtimsdata.dll` library (available in the [alphatims/ext](alphatims/ext) folder).
+After processing this summarising information from the `analysis.tdf` SQL database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays. This is done with the `tims_read_scans_v2` function from Bruker's `timsdata.dll` library (available in the [alphatims/ext](alphatims/ext) folder).
 
 Finally, three arrays are defined that allows quick translation of `frame_`, `scan_` and `tof_indices` to `rt_values`, `mobility_values` and `mz_values` arrays.
-* The `rt_values` array is read read directly from the `Frames` table in `analysis.tdf` and has a length equal to `frame_max_index + 1`.
-* The `mobility_values` array is defined by using the function `tims_scannum_to_oneoverk0` from `libtimsdata.dll` on the first frame and typically has a length of `1000`.
-* Similarly, the `mz_values` array is defined by using the function `tims_index_to_mz` from `libtimsdata.dll` on the first frame. Typically this has a length of `400000`.
+* The `rt_values` array is read read directly from the `Frames` table in `analysis.tdf` and has a length equal to `frame_max_index + 1`. Note that an empty zeroth frame with `rt = 0` is created to make Python's 0-indexing compatible with Bruker's 1-indexing.
+* The `mobility_values` array is defined by using the function `tims_scannum_to_oneoverk0` from `timsdata.dll` on the first frame and typically has a length of `1000`.
+* Similarly, the `mz_values` array is defined by using the function `tims_index_to_mz` from `timsdata.dll` on the first frame. Typically this has a length of `400000`.
 
 All these arrays can be loaded into memory, taking up roughly twice as much RAM as the `.d` folder on disk. This increase in RAM memory is mainly due to the compression used in the `analysis.tdf_bin` file. If the Python object is stored as an HDF5 file, the empty `tof_indices` and `intensity` arrays can be created and filled on-disk, thereby minimizing RAM memory usage to less than 1 GB even for files that take up several GB on-disk. The HDF5 file can also be compressed so that its size is roughly halved and thereby has the same size as the Bruker `.d` folder, but (de)compression reduces accession times by 3-6 fold.
 
