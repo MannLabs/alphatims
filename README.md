@@ -30,7 +30,7 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
 
 ## About
 
-With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) and [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900), the inclusion of ion mobility separation (IMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data is therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
+With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) and [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900), the inclusion of trapped ion mobility separation (TIMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data are therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
 
 ## License
 
@@ -40,25 +40,26 @@ AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochem
 
 Three types of installation are possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the graphical user interface (GUI) and/or keep things as simple as possible.
+* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installer:**](#pip) Choose this installation if you only want to use AlphaTims as a Python module in an already existing Python 3.8 environment such as a Jupyter notebook.
-* [**Full installer:**](#full) Choose this installation if you are familiar with command line interface (CLI) tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features and modifiable AlphaTims source code. Specific extensions (GUI, CLI and notebooks) can be included in this installation as well that generally outperform the precompiled versions.
+* [**Full installer:**](#full) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features and modifiable AlphaTims source code. Specific extensions (GUI, CLI and notebooks) can be included in this installation as well that generally outperform the precompiled versions.
 
-***Since this software is dependent on [Bruker libraries](alphatims/ext) to read the raw data, reading raw data is only compatible with Windows and Linux. This is true for all installation types. All other functionality is platform independent.***
+***Since this software is dependent on [Bruker libraries](alphatims/ext), reading raw data is only compatible with Windows and Linux. This is true for all installation types. All other functionality is platform independent.***
 
 ### One-click GUI
 
 * **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions. Note the following for Windows:
   * File download or launching might be disabled by your virus scanner.
-  * Running with Internet Explorer might not update results properly. If so, copy-paste the `localhost:...` url to Google Chrome and continue working from there.
+  * Running with Internet Explorer might not update results properly. If so, copy-paste the `localhost:...` url to an alternative browser (Google Chrome has been verified to work) and continue working from there.
   * If you install AlphaTims for all users, you might need admin privileges to run it (right click AlphaTims logo and "run as admin").
 * **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)*** Note the following for Linux:
   * If permissions are wrong, run `chmod +x alphatims` in a terminal (at the right location).
 * **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app.zip). No installation is needed, just unzip it and move it to your applications folder. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***. Also note the following for MacOS:
   * The AlphaTims application takes a long time to load upon first opening, this should be significantly faster the second time.
   * Reading of raw data is not possible due to availability of Bruker libraries, we advise to export raw data as .hdf files on Windows or Linux and use those directly.
-  * IMPORTANT WARNING! If you just close the browser tab and do not press the "Quit" button, AlphaTims will keep running in the background (potentially using a significant amount of RAM memory). This is because MacOS does not explicitly opens a terminal window when running the GUI.
   * If nothing happens when you launch AlphaTims, you might need to grant it permissions by going to the MacOS menu "System Preferences | Security & Privacy | General". If the problem still persists, it is possible that MacOS already quarantined the AlphaTims app. It can be removed from quarantine by running `xattr -dr com.apple.quarantine alphatims.app` in a terminal (in the applications folder where `alphatims.app` is located).
+
+IMPORTANT WARNING! If you just close the browser tab and do not press the "Quit" button, AlphaTims will keep running in the background (potentially using a significant amount of RAM memory). This is especially important for MacOS, which does not explicitly open a terminal window when running the GUI.
 
 Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that the one-click GUI is only compiled periodically and therefore even the latest release might be behind the latest [pip](#pip) and [full](#full) installers.
 
@@ -148,17 +149,17 @@ When using Jupyter notebooks and multiple conda environments, it is recommended 
 
 Common issues include:
 
-* **Always make sure you have activate the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **Always make sure you have activated the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installing require you to specifically (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
-* **Numpy not working properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
+* **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 
 ## Test data
 
-AlphaTims is compatible with both ddaPASEF and diaPASEF. Initial investigation of Bruker TimsTOF data files can be done by opening the the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+AlphaTims is compatible with both ddaPASEF and diaPASEF. Initial investigation of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 
 ### Test sample
 
@@ -167,15 +168,15 @@ Following the previously published [in-StageTip protocol](https://www.nature.com
 
 ### LC
 
-Single-run LC-MS analysis was executed via an [Evosep One liquid chromatography system (Evosep)](https://doi.org/10.1074/mcp.TIR118.000853). This was coupled online with a hybrid [TIMS quadrupole TOF mass spectrometer (Bruker timsTOF Pro, Germany)](https://doi.org/10.1074/mcp.TIR118.000900). A silica emitter (Bruker) was placed inside a nano-electrospray ion source (Captive spray source, Bruker) and connected to an 8 cm x 150 µm reverse phase column to perform liquid chromatography. The column was packed with 1.5 µm C18-beads (Pepsep, Denmark). Mobile phases were water and acetonitrile, buffered with 0.1% formic acid. The samples were separated with a predefined 60 samples per day method (Evosep).
+Single-run LC-MS analysis was executed via an [Evosep One LC system (Evosep)](https://doi.org/10.1074/mcp.TIR118.000853). This was coupled online with a hybrid [TIMS quadrupole TOF mass spectrometer (Bruker timsTOF Pro, Germany)](https://doi.org/10.1074/mcp.TIR118.000900). A silica emitter (Bruker) was placed inside a nano-electrospray ion source (Captive spray source, Bruker) and connected to an 8 cm x 150 µm reverse phase column to perform LC. The column was packed with 1.5 µm C18-beads (Pepsep, Denmark). Mobile phases were water and acetonitrile, buffered with 0.1% formic acid. The samples were separated with a predefined 60 samples per day method (Evosep).
 
 ### DDA
 
-A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.biochem.mpg.de/s/2sWNvImHwdELg55/download). Each topN acquisition cycle consisted of 10 PASEF MS/MS scans, and the accumulation and ramp times were set to 100 ms. Single-charged precursors were excluded using a polygon filter in the m/z-ion mobility plane. Furthermore, all precursors, which reached the target value of 20000, were excluded for 0.4 min from the acquisition. Precursors were isolated with a quadrupole window of 2 Th for m/z <700 and 3 Th for m/z >700.
+A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.biochem.mpg.de/s/s7zuTMilCOkYb2K/download). Each topN acquisition cycle consisted of 10 PASEF MS/MS scans, and the accumulation and ramp times were set to 100 ms. Single-charged precursors were excluded using a polygon filter in the m/z-ion mobility plane. Furthermore, all precursors, which reached the target value of 20000, were excluded for 0.4 min from the acquisition. Precursors were isolated with a quadrupole window of 2 Th for m/z <700 and 3 Th for m/z >700.
 
 ### DIA
 
-The same sample was also acquired with diaPASEF and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed” method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
+The same sample was also acquired with diaPASEF (1.96 Gb) and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed” method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
 ## Usage
 
@@ -250,40 +251,40 @@ AlphaTims can be imported as a Python package into any Python script or notebook
 The basic workflow of AlphaTims looks as follows:
 
 * Read data from a [Bruker `.d` folder](#bruker-raw-data).
-* Convert this to a [TimsTOF object in Python](#timstof-objects-in-python) and store this in a persistent HDF5 file.
-* Use Python's [slicing mechanism](#slicing-timstof-objects) to retrieve data from this object for e.g. visualisation.
+* Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and store them as a persistent HDF5 file.
+* Use Python's [slicing mechanism](#slicing-timstof-objects) to retrieve data from this object e.g. for visualisation.
 
 ### Bruker raw data
 
 Bruker stores TimsTOF raw data in a `.d` folder. The two main files in this folder are `analysis.tdf` and `analysis.tdf_bin`.
 
-The `analysis.tdf` file is an sql database, in which all metadata is stored together with summarised information. This includes the `Frames` table, wherein information about each individual TIMS cycle is summarised including the retention time, number of scans (i.e. a single TOF push related to a single ion mobility value), summed intensity and total number of ions that have hit the detector. More details about individual scans of the frames is available in the tables `PasefFrameMSMSInfo` (for PASEF acquisition) or `DiaFrameMsMsWindows` (for diaPASEF acquisition). This includes quadrupole and collision settings of the frame/scan combinations.
+The `analysis.tdf` file is an SQL database, in which all metadata are stored together with summarised information. This includes the `Frames` table, wherein information about each individual TIMS cycle is summarised including the retention time, the number of scans (i.e. a single TOF push is related to a single ion mobility value), the summed intensity and the total number of ions that have hit the detector. More details about individual scans of the frames are available in the `PasefFrameMSMSInfo` (for PASEF acquisition) or `DiaFrameMsMsWindows` (for diaPASEF acquisition) tables. This includes quadrupole and collision settings of the frame/scan combinations.
 
 The `analysis.tdf_bin` file is a binary file that contains the number of detected ions per individual scan, all detector arrival times and their intensity values. These values are grouped and compressed per frame (i.e. TIMS cycle), thereby allowing fast appendage during online acquisition.
 
 ### TimsTOF objects in Python
 
-AlphaTims first reads relevant metadata from the `analysis.tdf` sql database and uses this to initialise a Python object of the `bruker.TimsTOF` class. Next, AlphaTims reads the summary information from the `Frames` table and uses this to create three empty arrays:
+AlphaTims first reads relevant metadata from the `analysis.tdf` SQL database and creates a Python object of the `bruker.TimsTOF` class. Next, AlphaTims reads the summary information from the `Frames` table and creates three empty arrays:
 
-* An empty `tof_indices` array, in which all TOF arrival times of each individual detector hit can be stored. It's size is determined by summing the number of detector hits for all frames.
-* An empty `intensities` array of the same size, in which all the intensity values of each individual detector hit can be stored.
-* An empty `tof_indptr` array, that can store the number of detector hits per scan. It's size is equal to `(frame_max_index + 1) * scans_max_index + 1`. It includes one additional frame to compensate for the fact that Bruker arrays are 1-indexed, while Python uses 0-indexing. The final `+1` is because this array will be converted to an offset array, similar to the index pointer array of a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_%28CSR,_CRS_or_Yale_format%29). Typical values are `scans_max_index = 1000` and `frame_max_index = gradient_length_in_seconds * 10`, resulting in approximately `len(tof_indptr) = 10000 * gradient_length_in_seconds`.
+* An empty `tof_indices` array, in which all TOF arrival times of each individual detector hit will be stored. Its size is determined by summing the number of detector hits for all frames.
+* An empty `intensities` array of the same size, in which all intensity values of each individual detector hit will be stored.
+* An empty `tof_indptr` array, that will store the number of detector hits per scan. Its size is equal to `(frame_max_index + 1) * scans_max_index + 1`. It includes one additional frame to compensate for the fact that Bruker arrays are 1-indexed, while Python uses 0-indexing. The final `+1` is because this array will be converted to an offset array, similar to the index pointer array of a [compressed sparse row matrix](https://en.wikipedia.org/wiki/Sparse_matrix#Compressed_sparse_row_%28CSR,_CRS_or_Yale_format%29). Typical values are `scans_max_index = 1000` and `frame_max_index = gradient_length_in_seconds * 10`, resulting in approximately `len(tof_indptr) = 10000 * gradient_length_in_seconds`.
 
-Hereafter the `PasefFrameMSMSInfo` or `DiaFrameMsMsWindows` table from the `analysis.tdf` sql database is read and four arrays are created:
+After reading the `PasefFrameMSMSInfo` or `DiaFrameMsMsWindows` table from the `analysis.tdf` SQL database, four arrays are created:
 
 * A `quad_indptr` array that indexes the `tof_indptr` array. Each element points to an index of the `tof_indptr` where the voltage on the quadrupole and collision cell is adjusted. For PASEF acquisitions, this is typically 20 times per MSMS frame (turning on and off a value for 10 precursor selections) and once per change from an MS (precursor) frame to an MSMS (fragment) frame. For diaPASEF, this is typically twice to 10 times per frame and with a repetitive pattern over the frame cycle. This results in an array of approximately `len(quad_indptr) = 100 * gradient_length_in_seconds`. As with the `tof_indptr` array, this array is converted to an offset array with size `+1`.
 * A `quad_low_values` array of `len(quad_indptr) - 1`. This array stores the lower m/z boundary that is selected with the quadrupole. For precursors without quadrupole selection, this value is set to -1.
 * A `quad_high_values` array, similar to `quad_low_values`.
 * A `precursor_indices` array of `len(quad_indptr) - 1`. For PASEF this array stores the index of the selected precursor. For diaPASEF, this array stores the `WindowGroup` of the fragment frame. As with the `quad_low_values` and `quad_high_values`, a value of -1 indicates a precursor without quadrupole selection.
 
-After processing this summarising information from the `analysis.tdf` sql database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays. This is done with the `tims_read_scans_v2` function from Bruker's `libtimsdata.dll` library (available in the [alphatims/ext](alphatims/ext) folder).
+After processing this summarising information from the `analysis.tdf` SQL database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays. This is done with the `tims_read_scans_v2` function from Bruker's `libtimsdata.dll` library (available in the [alphatims/ext](alphatims/ext) folder).
 
-Finally, three arrays are created that allows translation of `frame_`, `scan_` and `tof_indices` to `rt_values`, `mobility_values` and `mz_values` arrays.
-* The `rt_values` array is read directly read from the `Frames` table in `analysis.tdf` and has a length equal to `frame_max_index + 1`.
+Finally, three arrays are defined that allows quick translation of `frame_`, `scan_` and `tof_indices` to `rt_values`, `mobility_values` and `mz_values` arrays.
+* The `rt_values` array is read read directly from the `Frames` table in `analysis.tdf` and has a length equal to `frame_max_index + 1`.
 * The `mobility_values` array is defined by using the function `tims_scannum_to_oneoverk0` from `libtimsdata.dll` on the first frame and typically has a length of `1000`.
 * Similarly, the `mz_values` array is defined by using the function `tims_index_to_mz` from `libtimsdata.dll` on the first frame. Typically this has a length of `400000`.
 
-All these arrays can be loaded into memory, taking up roughly twice as much RAM memory as the `.d` fodler does in disk. This increase in RAM memory is mainly due to the compression used in the `analysis.tdf_bin` file. If the Python object is stored as an HDF5 file, the empty `tof_indices` and `intensity` arrays can be created and filled on-disk, thereby minimizing RAM memory usage to less than 1 GB even for files that take up several GB on-disk. The HDF5 file can also be compressed, so that its sizes is roughly halved and thereby has the same size as the Bruker `.d` folder, but (de)compression reduces accession times by 3-6 fold.
+All these arrays can be loaded into memory, taking up roughly twice as much RAM as the `.d` folder on disk. This increase in RAM memory is mainly due to the compression used in the `analysis.tdf_bin` file. If the Python object is stored as an HDF5 file, the empty `tof_indices` and `intensity` arrays can be created and filled on-disk, thereby minimizing RAM memory usage to less than 1 GB even for files that take up several GB on-disk. The HDF5 file can also be compressed so that its size is roughly halved and thereby has the same size as the Bruker `.d` folder, but (de)compression reduces accession times by 3-6 fold.
 
 ### Slicing TimsTOF objects
 
