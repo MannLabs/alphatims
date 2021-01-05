@@ -178,8 +178,10 @@ def set_threads(threads, set_global=True):
 def njit(*args, **kwargs):
     import numba
     if "cache" in kwargs:
-        kwargs.pop("cache")
-    return numba.njit(*args, cache=True, **kwargs)
+        cache = kwargs.pop("cache")
+    else:
+        cache = True
+    return numba.njit(*args, cache=cache, **kwargs)
 
 
 def pjit(
