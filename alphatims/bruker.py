@@ -538,24 +538,28 @@ class TimsTOF(object):
                 return_precursor_indices
             ]
         ):
-            parsed_indices = np.searchsorted(
+            parsed_indices = indptr_lookup(
                 self.tof_indptr,
                 raw_indices,
-                "right"
-            ) - 1
-        if (return_frame_indices or return_rt_values) and frame_indices is None:
+            )
+        if (return_frame_indices or return_rt_values) and (
+            frame_indices is None
+        ):
             frame_indices = parsed_indices // self.scan_max_index
-        if (return_scan_indices or return_mobility_values) and scan_indices is None:
+        if (return_scan_indices or return_mobility_values) and (
+            scan_indices is None
+        ):
             scan_indices = parsed_indices % self.scan_max_index
         if (
             return_quad_indices or return_quad_mz_values or return_precursor_indices
-        ) and quad_indices is None:
-            quad_indices = np.searchsorted(
+        ) and (
+            quad_indices is None
+        ):
+            quad_indices = indptr_lookup(
                 self.quad_indptr,
                 parsed_indices,
-                "right"
-            ) - 1
-        if (return_tof_indices or return_mz_values) and tof_indices is None:
+            )
+        if (return_tof_indices or return_mz_values) and (tof_indices is None):
             tof_indices = self.tof_indices[raw_indices]
         if return_frame_indices:
             result["frame_indices"] = frame_indices
@@ -603,7 +607,7 @@ class TimsTOF(object):
         if return_type == "frame":
             return np.searchsorted(self.rt_values, values, side)
         elif return_type == "scan":
-            return self.mobility_values.size - np.searchsorted(
+            return np.searchsorted(
                 self.mobility_values[::-1],
                 values,
                 side
@@ -628,6 +632,27 @@ class TimsTOF(object):
             raise KeyError(f"return_type '{return_type}' is invalid")
 
     def __getitem__(self, keys):
+        parsed_keys = self.parse_keys(keys)
+        return filter_indices(
+            frame_slices=parsed_keys["frame"],
+            scan_slices=parsed_keys["scan"],
+            precursor_slices=parsed_keys["precursor"],
+            tof_slices=parsed_keys["tof"],
+            quad_slices=parsed_keys["quad_values"],
+            intensity_slices=parsed_keys["intensity_values"],
+            frame_max_index=self.frame_max_index,
+            scan_max_index=self.scan_max_index,
+            tof_indptr=self.tof_indptr,
+            precursor_indices=self.precursor_indices,
+            quad_values=np.stack(
+                [self.quad_low_values, self.quad_high_values]
+            ).T,
+            quad_indptr=self.tof_indptr[self.quad_indptr],
+            tof_indices=self.tof_indices,
+            intensities=self.intensities,
+        )
+
+    def getitem_DEPRECATED(self, keys):
         if len(keys) > 5:
             raise ValueError(
                 "Slicing LC-IMS-MSMS can be done in maximum 5 dimensions: "
@@ -699,7 +724,7 @@ class TimsTOF(object):
             quad_stop = np.inf
         else:
             precursor_high_index = self.precursor_max_index + 1
-        raw_indices = tof_slicer(
+        raw_indices = tof_slicer_DEPRECATED(
             self.tof_indices,
             slice_start,
             slice_stop,
@@ -843,7 +868,7 @@ class TimsTOF(object):
         )
         if "quad_values" not in dimension_slices:
             dimension_slices["quad_values"] = np.array(
-                [-np.inf, np.inf],
+                [[-np.inf, np.inf]],
                 dtype=np.float
             )
         return dimension_slices
@@ -864,14 +889,14 @@ class TimsTOF(object):
             else:
                 start = key
                 stop = key
-            return np.array([start, stop], dtype=np.float)
+            return np.array([[start, stop]], dtype=np.float)
         else:
             if not isinstance(key, np.ndarray):
                 key = np.array(key, dtype=np.float)
             if not isinstance(key.ravel()[0], np.float):
                 raise ValueError
             if len(key.shape) == 1:
-                return np.array([key, key]).T
+                return np.array([[key, key]]).T
             elif len(key.shape) == 2:
                 if key.shape[1] != 2:
                     raise ValueError
@@ -936,6 +961,50 @@ class PrecursorValueError(ValueError):
 
 
 @alphatims.utils.njit
+def valid_quad_mz(
+    quad_index,
+    quad_values,
+    quad_slices,
+):
+    """
+    Quad is assumed valid if there is at least some overlap
+    """
+    quad_low_value, quad_high_value = quad_values[quad_index]
+    slice_index = np.searchsorted(
+        quad_slices[:, 0].ravel(),
+        quad_high_value,
+        "right"
+    )
+    if slice_index == 0:
+        return False
+    if quad_low_value <= quad_slices[slice_index - 1, 1]:
+        return True
+    return False
+
+
+@alphatims.utils.njit
+def valid_precursor_index(
+    quad_index,
+    precursor_indices,
+    precursor_slices,
+):
+    precursor_index = precursor_indices[quad_index]
+    slice_index = np.searchsorted(
+        precursor_slices[:, 0].ravel(),
+        precursor_index,
+        side="right"
+    )
+    if slice_index == 0:
+        return False
+    if precursor_index < precursor_slices[slice_index - 1, 1]:
+        if (
+            precursor_index - precursor_slices[slice_index - 1, 0]
+        ) % precursor_slices[slice_index - 1, 2] == 0:
+            return True
+    return False
+
+
+@alphatims.utils.njit
 def filter_indices(
     frame_slices,
     scan_slices,
@@ -953,6 +1022,10 @@ def filter_indices(
     intensities,
 ):
     result = []
+    quad_index = 0
+    new_quad_index = -1
+    quad_end = quad_indptr[new_quad_index + 1]
+    is_valid_quad_index = True
     starts = tof_indptr[:-1].reshape(
         frame_max_index,
         scan_max_index
@@ -962,63 +1035,59 @@ def filter_indices(
         scan_max_index
     )
     for frame_start, frame_stop, frame_step in frame_slices:
-        for scan_start, scan_stop, scan_step in scan_slices:
-            sparse_starts = starts[
-                slice(frame_start, frame_stop, frame_step),
-                slice(scan_start, scan_stop, scan_step)
-            ]
-            sparse_ends = ends[
-                slice(frame_start, frame_stop, frame_step),
-                slice(scan_start, scan_stop, scan_step)
-            ]
-            quad_index = 0
-            for sparse_start, sparse_end in zip(sparse_starts, sparse_ends):
-                while quad_indptr[quad_index + 1] < sparse_end:
-                    quad_index += 1
-                if quad_high_values[quad_index] < quad_low:
-                    continue
-                if quad_low_values[quad_index] >= quad_high:
-                    continue
-                if precursor_values[quad_index] < precursor_low_value:
-                    continue
-                if precursor_values[quad_index] >= precursor_high_value:
-                    continue
-                if (
-                    sparse_start == sparse_end
-                ) or (
-                    index_array[sparse_end - 1] < slice_start
-                ) or (
-                    index_array[sparse_start] > slice_stop
+        for frame_start_slice, frame_end_slice in zip(
+            starts[slice(frame_start, frame_stop, frame_step)],
+            ends[slice(frame_start, frame_stop, frame_step)]
+        ):
+            for scan_start, scan_stop, scan_step in scan_slices:
+                for sparse_start, sparse_end in zip(
+                    frame_start_slice[slice(scan_start, scan_stop, scan_step)],
+                    frame_end_slice[slice(scan_start, scan_stop, scan_step)]
                 ):
-                    continue
-                if slice_start == -np.inf:
-                    idx_start = sparse_start
-                else:
-                    idx_start = sparse_start + np.searchsorted(
-                        index_array[sparse_start: sparse_end],
-                        slice_start,
-                        "left"
-                    )
-                if slice_stop == np.inf:
-                    idx_stop = sparse_end
-                else:
-                    idx_stop = idx_start + np.searchsorted(
-                        index_array[idx_start: sparse_end],
-                        slice_stop,
-                        "left"
-                    )
-                if slice_step == 1:
-                    for idx in range(idx_start, idx_stop):
-                        result.append(idx)
-                else:
-                    for idx in range(idx_start, idx_stop):
-                        if ((index_array[idx] - slice_start) % slice_step) == 0:
-                            result.append(idx)
+                    if (sparse_start == sparse_end):
+                        continue
+                    while quad_end < sparse_end:
+                        new_quad_index += 1
+                        quad_end = quad_indptr[new_quad_index + 1]
+                    if quad_index != new_quad_index:
+                        quad_index = new_quad_index
+                        if not valid_quad_mz(
+                            quad_index,
+                            quad_values,
+                            quad_slices
+                        ):
+                            is_valid_quad_index = False
+                        elif not valid_precursor_index(
+                            quad_index,
+                            precursor_indices,
+                            precursor_slices,
+                        ):
+                            is_valid_quad_index = False
+                        else:
+                            is_valid_quad_index = True
+                    if not is_valid_quad_index:
+                        continue
+                    idx = sparse_start
+                    for tof_start, tof_stop, tof_step in tof_slices:
+                        while (tof_indices[idx] < tof_stop) and (idx < sparse_end):
+                            if tof_indices[idx] in range(
+                                tof_start,
+                                tof_stop,
+                                tof_step
+                            ):
+                                intensity = intensities[idx]
+                                for low_intensity, high_intensity in intensity_slices:
+                                    if (low_intensity <= intensity):
+                                        if (intensity <= high_intensity):
+                                            result.append(idx)
+                                            break
+                            idx += 1
+    # TODO: check intensities
     return np.array(result)
 
 
 @alphatims.utils.njit
-def tof_slicer(
+def tof_slicer_DEPRECATED(
     index_array,
     slice_start,
     slice_stop,
@@ -1153,3 +1222,30 @@ def bin_intensities(
             parsed_indices[0][query],
             parsed_indices[1][query]
         ] += intensity
+
+
+@alphatims.utils.njit
+def indptr_lookup(targets, queries, momentum_amplifier=2):
+    hits = np.empty_like(queries)
+    target_index = 0
+    no_target_overflow = True
+    for i, query_index in enumerate(queries):
+        while no_target_overflow:
+            momentum = 1
+            while targets[target_index] <= query_index:
+                target_index += momentum
+                if target_index >= len(targets):
+                    break
+                momentum *= momentum_amplifier
+            else:
+                if momentum <= momentum_amplifier:
+                    break
+                else:
+                    target_index -= momentum // momentum_amplifier - 1
+                continue
+            if momentum == 1:
+                no_target_overflow = False
+            else:
+                target_index -= momentum
+        hits[i] = target_index - 1
+    return hits
