@@ -131,7 +131,10 @@ def check_github_version():
                     github_version = line.split()[2]
                     logging.info(
                         f"A newer version of AlphaTims is available at "
-                        f"GitHub: {github_version}")
+                        f"GitHub: {github_version}. Update with `pip install "
+                        "git+https://github.com/MannLabs/alphatims.git "
+                        "--upgrade`"
+                    )
                     logging.info("")
                     return github_version
             else:
