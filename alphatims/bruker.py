@@ -599,22 +599,22 @@ class TimsTOF(object):
         return_type:str="",
     ):
         if return_frame_indices:
-            return_type = "frame"
+            return_type = "frame_indices"
         elif return_scan_indices:
-            return_type = "scan"
+            return_type = "scan_indices"
         elif return_tof_indices:
-            return_type = "tof"
-        if return_type == "frame":
+            return_type = "tof_indices"
+        if return_type == "frame_indices":
             return np.searchsorted(self.rt_values, values, side)
-        elif return_type == "scan":
+        elif return_type == "scan_indices":
             return np.searchsorted(
                 self.mobility_values[::-1],
                 values,
                 side
             )
-        elif return_type == "tof":
+        elif return_type == "tof_indices":
             return np.searchsorted(self.mz_values, values, side)
-        elif return_type == "precursor":
+        elif return_type == "precursor_indices":
             try:
                 if values not in [-np.inf, np.inf]:
                     raise PrecursorValueError(
@@ -632,12 +632,22 @@ class TimsTOF(object):
             raise KeyError(f"return_type '{return_type}' is invalid")
 
     def __getitem__(self, keys):
+        if not isinstance(keys, tuple):
+            keys = tuple([keys])
+        if isinstance(keys[-1], str):
+            if keys[-1] == "df":
+                as_dataframe = True
+            else:
+                as_dataframe = False
+            keys = keys[:-1]
+        else:
+            as_dataframe = False
         parsed_keys = self.parse_keys(keys)
-        return filter_indices(
-            frame_slices=parsed_keys["frame"],
-            scan_slices=parsed_keys["scan"],
-            precursor_slices=parsed_keys["precursor"],
-            tof_slices=parsed_keys["tof"],
+        raw_indices = filter_indices(
+            frame_slices=parsed_keys["frame_indices"],
+            scan_slices=parsed_keys["scan_indices"],
+            precursor_slices=parsed_keys["precursor_indices"],
+            tof_slices=parsed_keys["tof_indices"],
             quad_slices=parsed_keys["quad_values"],
             intensity_slices=parsed_keys["intensity_values"],
             frame_max_index=self.frame_max_index,
@@ -651,6 +661,10 @@ class TimsTOF(object):
             tof_indices=self.tof_indices,
             intensities=self.intensities,
         )
+        if as_dataframe:
+            return self.as_dataframe(raw_indices)
+        else:
+            return raw_indices
 
     def getitem_DEPRECATED(self, keys):
         if len(keys) > 5:
@@ -836,10 +850,10 @@ class TimsTOF(object):
         NOTE: Negative slicing is not supported
         """
         dimensions = [
-            "frame",
-            "scan",
-            "precursor",
-            "tof",
+            "frame_indices",
+            "scan_indices",
+            "precursor_indices",
+            "tof_indices",
         ]
         dimension_slices = {}
         if len(keys) > (len(dimensions) + 1):
@@ -849,6 +863,17 @@ class TimsTOF(object):
                 "floats are assumed as values. Intensity is always casted "
                 "to integer values, regardless of input type."
             )
+        if isinstance(keys[0], dict):
+            new_keys = []
+            for dimension in dimensions:
+                if dimension in keys[0]:
+                    new_keys.append(keys[0][dimension])
+                else:
+                    new_keys.append(slice(None))
+            if "intensity_values" in keys[0]:
+                new_keys.append(keys[0]["intensity_values"])
+            keys = new_keys
+        print(keys)
         for i, dimension in enumerate(dimensions):
             try:
                 dimension_slices[dimension] = self.convert_slice_key_to_integer(
@@ -856,7 +881,7 @@ class TimsTOF(object):
                     dimension
                 )
             except PrecursorValueError:
-                dimension_slices["precursor"] = self.convert_slice_key_to_integer(
+                dimension_slices["precursor_indices"] = self.convert_slice_key_to_integer(
                     slice(None),
                     "precursor"
                 )
