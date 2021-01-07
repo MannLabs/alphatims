@@ -41,4 +41,4 @@ __requirements__ = {
     "cli": "requirements/requirements_cli.txt",
     "nbs": "requirements/requirements_nbs.txt",
 }
-__strict_requirements__ = False
+__strict_requirements__ = True
