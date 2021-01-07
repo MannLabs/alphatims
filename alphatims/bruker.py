@@ -14,20 +14,23 @@ import alphatims
 import alphatims.utils
 
 if sys.platform[:5] == "win32":
-    BRUKER_DLL_FILE_NAME = "timsdata.dll"
+    BRUKER_DLL_FILE_NAME = os.path.join(
+        alphatims.utils.EXT_PATH,
+        "timsdata.dll"
+    )
 elif sys.platform[:5] == "linux":
-    BRUKER_DLL_FILE_NAME = "timsdata.so"
+    BRUKER_DLL_FILE_NAME = os.path.join(
+        alphatims.utils.EXT_PATH,
+        "timsdata.so"
+    )
 else:
     logging.warning(
-        "No Bruker libraries are available for MacOS. "
-        "Raw data import will not be possible."
+        "No Bruker libraries are available for this operating system. "
+        "Mobility and m/z values can only be crudely calculated, "
+        "possibly with huge errors!"
     )
     logging.info("")
     BRUKER_DLL_FILE_NAME = ""
-BRUKER_DLL_FILE_NAME = os.path.join(
-    alphatims.utils.EXT_PATH,
-    BRUKER_DLL_FILE_NAME
-)
 MSMSTYPE_PASEF = 8
 MSMSTYPE_DIAPASEF = 9
 
@@ -214,13 +217,13 @@ def decompress_bruker_binary(decomp_data):
 
 
 def process_frame(
+    frame_id,
     file_name,
     offset_values,
     scan_indptr,
     intensities,
     tof_indices,
     frame_indptr,
-    frame_id,
     max_scan_count,
 ):
     import pyzstd
@@ -321,7 +324,6 @@ def read_bruker_scans(
     # bruker_calibrated_mz_values:bool=False,
     # bruker_calibrated_mobility_values:bool=False,
 ):
-    import multiprocessing
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
@@ -344,10 +346,6 @@ def read_bruker_scans(
     #     BRUKER_DLL_FILE_NAME,
     #     bruker_d_folder_name
     # ) as (bruker_dll, bruker_d_folder_handle):
-    #     logging.info(
-    #         f"Reading {frame_indptr[-1]:,} TOF arrivals for "
-    #         f"{bruker_d_folder_name}"
-    #     )
     #     for frame_id in alphatims.utils.progress_callback(
     #         range(1, frame_indptr.shape[0] - 1)
     #     ):
@@ -367,30 +365,30 @@ def read_bruker_scans(
     #     range(1, frame_indptr.shape[0] - 1)
     # ):
     #     process_frame(
+    #         frame_id,
     #         tdf_bin_file_name,
     #         offset_values,
     #         scan_indptr,
     #         intensities,
     #         tof_indices,
     #         frame_indptr,
-    #         frame_id,
     #         max_scan_count,
     #     )
-    with multiprocessing.pool.ThreadPool(8) as pool:
-        pool.starmap(
+    with alphatims.utils.Threadpool(progress_callback=True) as pool:
+        logging.info(
+            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
+            f"{bruker_d_folder_name}"
+        )
+        pool.map(
             process_frame,
-            [
-                (
-                    tdf_bin_file_name,
-                    offset_values,
-                    scan_indptr,
-                    intensities,
-                    tof_indices,
-                    frame_indptr,
-                    frame_id,
-                    max_scan_count,
-                ) for frame_id in range(1, len(frames))
-            ]
+            range(1, len(frames)),
+            tdf_bin_file_name,
+            offset_values,
+            scan_indptr,
+            intensities,
+            tof_indices,
+            frame_indptr,
+            max_scan_count,
         )
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
@@ -415,12 +413,13 @@ class TimsTOF(object):
     ):
         bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if bruker_d_folder_name.endswith(".d"):
+            bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
             self.import_data_from_d_folder(
                 bruker_d_folder_name,
                 bruker_calibrated_mz_values,
                 bruker_calibrated_mobility_values,
-                mz_estimation_from_frame,
-                mobility_estimation_from_frame,
+                mz_estimation_from_frame and bruker_dll_available,
+                mobility_estimation_from_frame and bruker_dll_available,
             )
         elif bruker_d_folder_name.endswith(".hdf"):
             self.import_data_from_hdf_file(
