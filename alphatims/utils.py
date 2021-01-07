@@ -178,6 +178,52 @@ def set_threads(threads, set_global=True):
     return MAX_THREADS
 
 
+class Threadpool(object):
+
+    def __init__(self, thread_count=None, progress_callback=False):
+        if thread_count is None:
+            self.thread_count = MAX_THREADS
+        else:
+            self.thread_count = set_threads(
+                thread_count,
+                set_global=False
+            )
+        if progress_callback:
+            global PROGRESS_CALLBACK_STYLE
+            self.progress_callback_style = PROGRESS_CALLBACK_STYLE
+        else:
+            self.progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def map(self, func, iterator, *args):
+        import multiprocessing.pool
+        import tqdm
+
+        def starfunc(iterable):
+            return func(iterable, *args)
+
+        with multiprocessing.pool.ThreadPool(self.thread_count) as pool:
+            if self.progress_callback_style == PROGRESS_CALLBACK_STYLE_NONE:
+                for i in pool.imap_unordered(starfunc, iterator):
+                    pass
+            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_TEXT:
+                with tqdm.tqdm(total=len(iterator)) as pbar:
+                    for i in pool.imap_unordered(starfunc, iterator):
+                        pbar.update()
+            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
+                # TODO: update?
+                with tqdm.gui(total=len(iterator)) as pbar:
+                    for i in pool.imap_unordered(starfunc, iterator):
+                        pbar.update()
+            else:
+                raise ValueError("Not a valid progress callback style")
+
+
 def njit(*args, **kwargs):
     import numba
     if "cache" in kwargs:
