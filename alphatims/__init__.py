@@ -2,9 +2,9 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.0.201206"
+__version__ = "0.0.210107"
 __license__ = "MIT"
-__description__ = "A python package for Bruker TimsTOF raw data analysis and feature finding"
+__description__ = "A python package for Bruker TimsTOF raw data accession and visualization"
 __author__ = "Sander Willems"
 __author_email__ = "willems@biochem.mpg.de"
 __github__ = "https://github.com/MannLabs/alphatims"
@@ -41,4 +41,4 @@ __requirements__ = {
     "cli": "requirements/requirements_cli.txt",
     "nbs": "requirements/requirements_nbs.txt",
 }
-__strict_requirements__ = False
+__strict_requirements__ = True

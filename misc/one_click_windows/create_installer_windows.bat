@@ -1,3 +1,6 @@
+rmdir dist /s /q
+rmdir build /s /q
+conda env remove -n alphatimsinstaller
 call conda create -n alphatimsinstaller python=3.8 pip=20.2 -y
 REM call conda create -n alphatimsinstaller python=3.8 -y
 call conda activate alphatimsinstaller

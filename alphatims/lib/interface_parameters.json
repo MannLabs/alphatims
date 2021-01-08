@@ -1,6 +1,6 @@
 {
   "log_file": {
-    "help": "Save all log data to a file (blank means 'log_[date].txt' with data format yymmddhhmmss in 'log' folder of AlphaTims directory).",
+    "help": "Save all log data to a file (blank means 'log_[date].txt' with date format yymmddhhmmss in 'log' folder of AlphaTims directory).",
     "default": "",
     "type": {
       "name": "path",
@@ -27,7 +27,7 @@
     "required": true
   },
   "output_folder": {
-    "help": "A directory for all output (blank means `bruker_d_folder` is used).",
+    "help": "A directory for all output (blank means `bruker_d_folder` root is used).",
     "type": {
       "name": "path",
       "exists": false,

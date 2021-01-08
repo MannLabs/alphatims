@@ -20,6 +20,7 @@ PROGRESS_CALLBACK_STYLE_NONE = 0
 PROGRESS_CALLBACK_STYLE_TEXT = 1
 PROGRESS_CALLBACK_STYLE_PLOT = 2
 PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
+LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py"
 
 
 def set_logger(
@@ -75,15 +76,26 @@ def set_logger(
 
 def show_platform_info():
     import platform
+    import psutil
     logging.info("Platform information:")
-    logging.info(f"system    - {platform.system()}")
-    logging.info(f"release   - {platform.release()}")
+    logging.info(f"system     - {platform.system()}")
+    logging.info(f"release    - {platform.release()}")
     if platform.system() == "Darwin":
-        logging.info(f"version   - {platform.mac_ver()[0]}")
+        logging.info(f"version    - {platform.mac_ver()[0]}")
     else:
-        logging.info(f"version   - {platform.version()}")
-    logging.info(f"machine   - {platform.machine()}")
-    logging.info(f"processor - {platform.processor()}")
+        logging.info(f"version    - {platform.version()}")
+    logging.info(f"machine    - {platform.machine()}")
+    logging.info(f"processor  - {platform.processor()}")
+    logging.info(
+        f"cpu count  - {psutil.cpu_count()}"
+        # f" ({100 - psutil.cpu_percent()}% unused)"
+    )
+    logging.info(
+        f"ram memory - "
+        f"{psutil.virtual_memory().available/1024**3:.1f}/"
+        f"{psutil.virtual_memory().total/1024**3:.1f} Gb "
+        f"(available/total)"
+    )
     logging.info("")
 
 
@@ -107,6 +119,38 @@ def show_python_info():
     for key, value in sorted(module_versions.items()):
         logging.info(f"{key:<{max_len}} - {value}")
     logging.info("")
+
+
+def check_github_version():
+    import urllib.request
+    import urllib.error
+    try:
+        with urllib.request.urlopen(LATEST_GITHUB_INIT_FILE) as version_file:
+            for line in version_file.read().decode('utf-8').split("\n"):
+                if line.startswith("__version__"):
+                    github_version = line.split()[2]
+                    logging.info(
+                        f"A newer version of AlphaTims is available at "
+                        f"GitHub: {github_version}. Update with `pip install "
+                        "git+https://github.com/MannLabs/alphatims.git "
+                        "--upgrade`"
+                    )
+                    logging.info("")
+                    return github_version
+            else:
+                return None
+    except IndexError:
+        logging.info(
+            "Could not check GitHub for the latest AlphaTims release."
+        )
+        logging.info("")
+        return None
+    except urllib.error.URLError:
+        logging.info(
+            "Could not check GitHub for the latest AlphaTims release."
+        )
+        logging.info("")
+        return None
 
 
 def save_parameters(parameter_file_name, paramaters):
@@ -134,11 +178,58 @@ def set_threads(threads, set_global=True):
     return MAX_THREADS
 
 
+class Threadpool(object):
+
+    def __init__(self, thread_count=None, progress_callback=False):
+        if thread_count is None:
+            self.thread_count = MAX_THREADS
+        else:
+            self.thread_count = set_threads(
+                thread_count,
+                set_global=False
+            )
+        if progress_callback:
+            self.progress_callback_style = PROGRESS_CALLBACK_STYLE
+        else:
+            self.progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+    def map(self, func, iterator, *args):
+        import multiprocessing.pool
+        import tqdm
+
+        def starfunc(iterable):
+            return func(iterable, *args)
+
+        with multiprocessing.pool.ThreadPool(self.thread_count) as pool:
+            if self.progress_callback_style == PROGRESS_CALLBACK_STYLE_NONE:
+                for i in pool.imap_unordered(starfunc, iterator):
+                    pass
+            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_TEXT:
+                with tqdm.tqdm(total=len(iterator)) as pbar:
+                    for i in pool.imap_unordered(starfunc, iterator):
+                        pbar.update()
+            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
+                # TODO: update?
+                with tqdm.gui(total=len(iterator)) as pbar:
+                    for i in pool.imap_unordered(starfunc, iterator):
+                        pbar.update()
+            else:
+                raise ValueError("Not a valid progress callback style")
+
+
 def njit(*args, **kwargs):
     import numba
     if "cache" in kwargs:
-        kwargs.pop("cache")
-    return numba.njit(*args, cache=True, **kwargs)
+        cache = kwargs.pop("cache")
+    else:
+        cache = True
+    return numba.njit(*args, cache=cache, **kwargs)
 
 
 def pjit(
@@ -222,7 +313,6 @@ def set_progress_callback_style(style=None, set_global=True):
 def progress_callback(iterable, style=None):
     import tqdm
     if style is None:
-        global PROGRESS_CALLBACK_STYLE
         style = PROGRESS_CALLBACK_STYLE
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
