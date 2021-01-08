@@ -437,3 +437,6 @@ def create_dict_from_hdf_group(hdf_group):
             else:
                 result[key] = create_dict_from_hdf_group(hdf_group[key])
     return result
+
+
+set_threads(MAX_THREADS)

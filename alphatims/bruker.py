@@ -171,13 +171,13 @@ def read_bruker_frames(
         )
 
 
-@alphatims.utils.njit(nogil=True)
+@alphatims.utils.njit(nogil=True, cache=False)
 def decompress_bruker_binary(decomp_data):
     # TODO: BUG scan from 1-928 instead of 0-927?
     temp = np.frombuffer(decomp_data, dtype=np.uint8)
     buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
     scan_count = buffer[0]
-    scan_indices = buffer[:scan_count] // 2
+    scan_indices = buffer[:scan_count].copy() // 2
     scan_indices[0] = 0
     tof_indices = buffer[scan_count::2].copy()
     index = 0
@@ -188,7 +188,10 @@ def decompress_bruker_binary(decomp_data):
             tof_indices[index] = current_sum
             index += 1
     intensities = buffer[scan_count + 1::2]
-    scan_indices[-1] = len(intensities) - np.sum(scan_indices[:-1])
+    # scan_indices[-1] = len(intensities) - np.sum(scan_indices[:-1])
+    last_scan = len(intensities) - np.sum(scan_indices[1:])
+    scan_indices[:-1] = scan_indices[1:]
+    scan_indices[-1] = last_scan
     return scan_indices, tof_indices, intensities
 
 
@@ -331,7 +334,7 @@ def read_bruker_scans(
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
     max_scan_count = frames.NumScans.max()
     scan_count = max_scan_count * frames.shape[0]
-    scan_indptr = np.empty(scan_count + 1, dtype=np.int64)
+    scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
     # if bruker_calibrated_mz_values:
     #     calibrated_mzs = np.empty(frame_indptr[-1], dtype=np.float64)
     # else:
@@ -1005,18 +1008,19 @@ def valid_precursor_index(
     precursor_indices,
     precursor_slices,
 ):
+    return True #TODO
     precursor_index = precursor_indices[quad_index]
     slice_index = np.searchsorted(
         precursor_slices[:, 0].ravel(),
         precursor_index,
-        side="right"
+        side="left"
     )
-    if slice_index == 0:
+    if slice_index > len(precursor_indices):
         return False
-    if precursor_index < precursor_slices[slice_index - 1, 1]:
-        if (
-            precursor_index - precursor_slices[slice_index - 1, 0]
-        ) % precursor_slices[slice_index - 1, 2] == 0:
+    # return precursor_index in range(*precursor_slices[slice_index])
+    slice_start, slice_stop, slice_step = precursor_slices[slice_index]
+    if precursor_index < slice_stop:
+        if (precursor_index - slice_start) % slice_step == 0:
             return True
     return False
 
