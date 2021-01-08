@@ -173,7 +173,6 @@ def read_bruker_frames(
 
 @alphatims.utils.njit(nogil=True, cache=False)
 def decompress_bruker_binary(decomp_data):
-    # TODO: BUG scan from 1-928 instead of 0-927?
     temp = np.frombuffer(decomp_data, dtype=np.uint8)
     buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
     scan_count = buffer[0]
@@ -188,7 +187,6 @@ def decompress_bruker_binary(decomp_data):
             tof_indices[index] = current_sum
             index += 1
     intensities = buffer[scan_count + 1::2]
-    # scan_indices[-1] = len(intensities) - np.sum(scan_indices[:-1])
     last_scan = len(intensities) - np.sum(scan_indices[1:])
     scan_indices[:-1] = scan_indices[1:]
     scan_indices[-1] = last_scan
@@ -251,7 +249,9 @@ def process_frame(
             frame_end = frame_indptr[frame_id + 1]
             scan_start = frame_id * max_scan_count
             scan_end = scan_start + scan_count
+            # TODO: 0-offset. Should this be 1-offset?
             scan_indptr[scan_start: scan_end] = scan_indices_
+            # TODO: 0-offset. Should this be 1-offset?
             tof_indices[frame_start: frame_end] = tof_indices_
             intensities[frame_start: frame_end] = intensities_
 
@@ -1008,21 +1008,19 @@ def valid_precursor_index(
     precursor_indices,
     precursor_slices,
 ):
-    return True #TODO
     precursor_index = precursor_indices[quad_index]
     slice_index = np.searchsorted(
         precursor_slices[:, 0].ravel(),
         precursor_index,
-        side="left"
+        side="right"
     )
-    if slice_index > len(precursor_indices):
+    if slice_index == 0:
         return False
-    # return precursor_index in range(*precursor_slices[slice_index])
-    slice_start, slice_stop, slice_step = precursor_slices[slice_index]
-    if precursor_index < slice_stop:
-        if (precursor_index - slice_start) % slice_step == 0:
-            return True
-    return False
+    return precursor_index in range(
+        precursor_slices[slice_index - 1, 0],
+        precursor_slices[slice_index - 1, 1],
+        precursor_slices[slice_index - 1, 2],
+    )
 
 
 @alphatims.utils.njit
@@ -1043,9 +1041,9 @@ def filter_indices(
     intensities,
 ):
     result = []
-    quad_index = 0
+    quad_index = -2
     new_quad_index = -1
-    quad_end = quad_indptr[new_quad_index + 1]
+    quad_end = -1
     is_valid_quad_index = True
     starts = tof_indptr[:-1].reshape(
         frame_max_index,
