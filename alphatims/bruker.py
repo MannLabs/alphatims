@@ -26,8 +26,10 @@ elif sys.platform[:5] == "linux":
 else:
     logging.warning(
         "No Bruker libraries are available for this operating system. "
-        "Mobility and m/z values can only be crudely calculated, "
-        "possibly with huge errors!"
+        "Intensities are uncalibrated, resulting in (very) small differences. "
+        "However, mobility and m/z values need to be estimated. "
+        "Possibly these have huge errors (e.g. offsets of 6 Th have "
+        "already been observed)!"
     )
     logging.info("")
     BRUKER_DLL_FILE_NAME = ""
@@ -376,8 +378,8 @@ def read_bruker_scans(
     #     )
     with alphatims.utils.Threadpool(progress_callback=True) as pool:
         logging.info(
-            f"Reading {frame_indptr[-1]:,} TOF arrivals for "
-            f"{bruker_d_folder_name}"
+            f"Reading {frame_indptr.size - 1:,} frames with "
+            f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
         )
         pool.map(
             process_frame,
@@ -731,7 +733,6 @@ class TimsTOF(object):
         else:
             as_dataframe = False
         parsed_keys = self.parse_keys(keys)
-        return parsed_keys
         raw_indices = filter_indices(
             frame_slices=parsed_keys["frame_indices"],
             scan_slices=parsed_keys["scan_indices"],

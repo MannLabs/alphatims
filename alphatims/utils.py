@@ -189,7 +189,6 @@ class Threadpool(object):
                 set_global=False
             )
         if progress_callback:
-            global PROGRESS_CALLBACK_STYLE
             self.progress_callback_style = PROGRESS_CALLBACK_STYLE
         else:
             self.progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
@@ -314,7 +313,6 @@ def set_progress_callback_style(style=None, set_global=True):
 def progress_callback(iterable, style=None):
     import tqdm
     if style is None:
-        global PROGRESS_CALLBACK_STYLE
         style = PROGRESS_CALLBACK_STYLE
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
