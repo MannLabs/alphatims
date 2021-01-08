@@ -7,6 +7,7 @@ import numba
 import numpy as np
 import pandas as pd
 import panel as pn
+import time
 
 # holoviz libraries
 import colorcet
@@ -98,7 +99,7 @@ hv.extension('bokeh')
 ### LOCAL VARIABLES
 
 DATASET = None
-CONTINUE_RUNNING = True
+SERVER = None
 whole_title = str()
 
 ### PATHS
@@ -701,7 +702,7 @@ def save_hdf(_):
     save_message.object = ''
     save_spinner.value = True
     file_name = os.path.basename(DATASET.bruker_d_folder_name).split('.')[0] + '.hdf'
-    directory = DATASET.bruker_d_folder_name
+    directory = os.path.dirname(DATASET.bruker_d_folder_name)
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
@@ -1073,7 +1074,7 @@ def show_plots(
 ):
     if DATASET:
         if select_precursors.value:
-            quad_values = (-1, 0)
+            quad_values = (0, 1)
         df = DATASET.as_dataframe(
             DATASET[
                 slice(*frame_values),
@@ -1101,13 +1102,14 @@ def show_plots(
 )
 def button_event(_):
     import logging
-    global CONTINUE_RUNNING
     logging.info("Quitting server...")
-    CONTINUE_RUNNING = False
+    exit_button.name = "Server closed"
+    exit_button.button_type = "danger"
+    SERVER.stop()
 
 
 def run():
-    global CONTINUE_RUNNING
+    global SERVER
     layout = pn.Column(
         header,
         main_part,
@@ -1116,7 +1118,4 @@ def run():
             show_plots,
         ),
     )
-    server = layout.show(threaded=True)
-    while CONTINUE_RUNNING:
-        time.sleep(1)
-    server.stop()
+    SERVER = layout.show(threaded=True)
