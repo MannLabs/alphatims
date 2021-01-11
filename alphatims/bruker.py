@@ -219,6 +219,7 @@ def decompress_bruker_binary(decomp_data):
 #         ]
 
 
+@alphatims.utils.threadpool(progress_callback=True)
 def process_frame(
     frame_id,
     file_name,
@@ -379,22 +380,20 @@ def read_bruker_scans(
     #         frame_indptr,
     #         max_scan_count,
     #     )
-    with alphatims.utils.Threadpool(progress_callback=True) as pool:
-        logging.info(
-            f"Reading {frame_indptr.size - 1:,} frames with "
-            f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
-        )
-        pool.map(
-            process_frame,
-            range(1, len(frames)),
-            tdf_bin_file_name,
-            offset_values,
-            scan_indptr,
-            intensities,
-            tof_indices,
-            frame_indptr,
-            max_scan_count,
-        )
+    logging.info(
+        f"Reading {frame_indptr.size - 2:,} frames with "
+        f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
+    )
+    process_frame(
+        range(1, len(frames)),
+        tdf_bin_file_name,
+        offset_values,
+        scan_indptr,
+        intensities,
+        tof_indices,
+        frame_indptr,
+        max_scan_count,
+    )
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
     return (

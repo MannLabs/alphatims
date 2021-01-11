@@ -297,50 +297,80 @@ def set_threads(threads: int, set_global: bool = True) -> int:
     return MAX_THREADS
 
 
-class Threadpool(object):
-    # TODO: comment
+def threadpool(
+    _func=None,
+    *,
+    thread_count=None,
+    progress_callback: bool = False,
+) -> None:
+    """A decorator that parallelizes a function with threads and callback.
 
-    def __init__(self, thread_count=None, progress_callback=False):
-        if thread_count is None:
-            self.thread_count = MAX_THREADS
-        else:
-            self.thread_count = set_threads(
-                thread_count,
-                set_global=False
-            )
-        if progress_callback:
-            self.progress_callback_style = PROGRESS_CALLBACK_STYLE
-        else:
-            self.progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
+    The first argument of the decorated function need to be an iterable.
+    The original function should accept a single element of this iterable
+    as its first argument.
+    The original function cannot return values, instead it should store
+    results in e.g. one if its input arrays that acts as a buffer array.
 
-    def __enter__(self):
-        return self
+    Parameters
+    ----------
+    _func
+        The function to decorate.
+    thread_count : int, None
+        The number of threads to use.
+        This is always parsed with alphatims.utils.set_threads.
+        Not possible as positional arguments,
+        it always needs to be an explicit keyword argument.
+        Default is None.
+    progress_callback : bool
+        If True, the default progress callback will be used as callback.
+        (See "progress_callback" function.)
+        If False, no callback is added.
+        Default is False.
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
+    Returns
+    -------
+    None
+    """
+    import multiprocessing.pool
+    import tqdm
+    import functools
 
-    def map(self, func, iterator, *args):
-        import multiprocessing.pool
-        import tqdm
+    def parallel_func_inner(func):
+        def wrapper(iterable, *args, **kwargs):
+            def starfunc(iterable):
+                return func(iterable, *args, **kwargs)
 
-        def starfunc(iterable):
-            return func(iterable, *args)
-
-        with multiprocessing.pool.ThreadPool(self.thread_count) as pool:
-            if self.progress_callback_style == PROGRESS_CALLBACK_STYLE_NONE:
-                for i in pool.imap_unordered(starfunc, iterator):
-                    pass
-            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_TEXT:
-                with tqdm.tqdm(total=len(iterator)) as pbar:
-                    for i in pool.imap_unordered(starfunc, iterator):
-                        pbar.update()
-            elif self.progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
-                # TODO: update?
-                with tqdm.gui(total=len(iterator)) as pbar:
-                    for i in pool.imap_unordered(starfunc, iterator):
-                        pbar.update()
+            if thread_count is None:
+                current_thread_count = MAX_THREADS
             else:
-                raise ValueError("Not a valid progress callback style")
+                current_thread_count = set_threads(
+                    thread_count,
+                    set_global=False
+                )
+            if progress_callback:
+                progress_callback_style = PROGRESS_CALLBACK_STYLE
+            else:
+                progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
+            with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
+                if progress_callback_style == PROGRESS_CALLBACK_STYLE_NONE:
+                    for i in pool.imap_unordered(starfunc, iterable):
+                        pass
+                elif progress_callback_style == PROGRESS_CALLBACK_STYLE_TEXT:
+                    with tqdm.tqdm(total=len(iterable)) as pbar:
+                        for i in pool.imap_unordered(starfunc, iterable):
+                            pbar.update()
+                elif progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
+                    # TODO: update?
+                    with tqdm.gui(total=len(iterable)) as pbar:
+                        for i in pool.imap_unordered(starfunc, iterable):
+                            pbar.update()
+                else:
+                    raise ValueError("Not a valid progress callback style")
+        return functools.wraps(func)(wrapper)
+    if _func is None:
+        return parallel_func_inner
+    else:
+        return parallel_func_inner(_func)
 
 
 def njit(*args, **kwargs):
