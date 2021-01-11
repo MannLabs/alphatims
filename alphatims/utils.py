@@ -25,10 +25,37 @@ LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/
 
 def set_logger(
     *,
-    log_file_name="",
-    stream=True,
-    log_level=logging.INFO,
-):
+    log_file_name: str = "",
+    stream: bool = True,
+    log_level: int = logging.INFO,
+) -> str:
+    """Set the log stream and file.
+
+    All previously set handlers will be disabled with this command.
+
+    Parameters
+    ----------
+    log_file_name : str
+        The file name to where the log is written.
+        Folders are automatically created if needed.
+        This is relative to the current path. When an empty string is provided,
+        a log is written to the AlphaTims "logs" folder with the name
+        "log_yymmddhhmmss" (reversed timestamp year to seconds).
+        Default is "".
+    stream : bool
+        If False, no log data is also sent to stream.
+        If True, all logging can be tracked with stdout stream.
+        Default is True
+    log_level : int
+        The logging level. Usable values are defined in Python's "logging"
+        module.
+        Default is logging.INFO.
+
+    Returns
+    -------
+    str
+        The file name to where the log is written.
+    """
     import time
     root = logging.getLogger()
     formatter = logging.Formatter(
@@ -74,7 +101,23 @@ def set_logger(
     return log_file_name
 
 
-def show_platform_info():
+def show_platform_info() -> None:
+    """Log all platform information.
+
+    This is done in the following format:
+    [timestamp]> Platform information:
+    [timestamp]> system     - [...]
+    [timestamp]> release    - [...]
+    [timestamp]> version    - [...]
+    [timestamp]> machine    - [...]
+    [timestamp]> processor  - [...]
+    [timestamp]> cpu count  - [...]
+    [timestamp]> ram memory - [...]/[...] Gb (available/total)
+
+    Returns
+    -------
+    None
+    """
     import platform
     import psutil
     logging.info("Platform information:")
@@ -99,7 +142,21 @@ def show_platform_info():
     logging.info("")
 
 
-def show_python_info():
+def show_python_info() -> None:
+    """Log all Python information.
+
+    This is done in the following format:
+    [timestamp]> Python information:
+    [timestamp]> alphatims          - [current_version]
+    [timestamp]> [required package] - [current_version]
+    ...
+    [timestamp]> [required package] - [current_version]
+
+
+    Returns
+    -------
+    None
+    """
     import importlib.metadata
     import platform
     module_versions = {
@@ -121,7 +178,19 @@ def show_python_info():
     logging.info("")
 
 
-def check_github_version():
+def check_github_version() -> str:
+    """Checks and logs the current version of AlphaTims.
+
+    Check if the local version equals the AlphaTims GitHub master branch.
+    This is only possible with an active internet connection and
+    if no credentials are required for GitHub.
+
+    Returns
+    -------
+    str
+        The version on the AlphaTims GitHub master branch.
+        "" if no version can be found on GitHub
+    """
     import urllib.request
     import urllib.error
     try:
@@ -129,42 +198,92 @@ def check_github_version():
             for line in version_file.read().decode('utf-8').split("\n"):
                 if line.startswith("__version__"):
                     github_version = line.split()[2]
-                    logging.info(
-                        f"A newer version of AlphaTims is available at "
-                        f"GitHub: {github_version}. Update with `pip install "
-                        "git+https://github.com/MannLabs/alphatims.git "
-                        "--upgrade`"
-                    )
-                    logging.info("")
+                    if github_version != alphatims.__version__:
+                        logging.info(
+                            f"A newer version of AlphaTims is available at "
+                            f"GitHub: {github_version}. Update with `pip "
+                            "install "
+                            "git+https://github.com/MannLabs/alphatims.git "
+                            "--upgrade`"
+                        )
+                        logging.info("")
+                    else:
+                        logging.info(
+                            "Current AlphaTims version is up-to-date "
+                            "with GitHub."
+                        )
+                        logging.info("")
                     return github_version
-            else:
-                return None
     except IndexError:
         logging.info(
             "Could not check GitHub for the latest AlphaTims release."
         )
         logging.info("")
-        return None
+        return ""
     except urllib.error.URLError:
         logging.info(
             "Could not check GitHub for the latest AlphaTims release."
         )
         logging.info("")
-        return None
+        return ""
 
 
-def save_parameters(parameter_file_name, paramaters):
+def save_parameters(parameter_file_name: str, paramaters: dict) -> None:
+    """Save parameters to a parameter file.
+
+    Parameters
+    ----------
+    parameter_file_name : str
+        The file name to where the parameters are written.
+    paramaters : dict
+        A dictionary with parameters.
+
+    Returns
+    -------
+    None
+    """
     logging.info(f"Saving parameters to {parameter_file_name}")
     with open(parameter_file_name, "w") as outfile:
         json.dump(paramaters, outfile, indent=4, sort_keys=True)
 
 
-def load_parameters(parameter_file_name):
+def load_parameters(parameter_file_name: str) -> dict:
+    """Load a parameter dict from a file.
+
+    Parameters
+    ----------
+    parameter_file_name : str
+        A file name that contains parameters in .json format.
+
+    Returns
+    -------
+    dict
+        A dict with parameters.
+    """
     with open(parameter_file_name, "r") as infile:
         return json.load(infile)
 
 
-def set_threads(threads, set_global=True):
+def set_threads(threads: int, set_global: bool = True) -> int:
+    """Parse and set the (global) number of threads.
+
+    Parameters
+    ----------
+    threads : int
+        The number of threads.
+        If larger than available cores, it is trimmed to the available maximum.
+        If 0, it is set the the maximum cores available.
+        If negative, it indicates how many cores NOT to use.
+    set_global : bool
+        If False, the number of threads is only parsed to a valid value.
+        If True, the number of threads is saved as a global variable.
+        Default is True.
+
+    Returns
+    -------
+    int
+        The number of threads.
+    """
     import multiprocessing
     if set_global:
         global MAX_THREADS
@@ -179,6 +298,7 @@ def set_threads(threads, set_global=True):
 
 
 class Threadpool(object):
+    # TODO: comment
 
     def __init__(self, thread_count=None, progress_callback=False):
         if thread_count is None:
@@ -224,6 +344,22 @@ class Threadpool(object):
 
 
 def njit(*args, **kwargs):
+    """A wrapper for the numba.njit decorator.
+
+    The "cache" option is set to True by default.
+    This can be overriden with **kwargs.
+
+    Parameters
+    ----------
+    *args
+        See numba.njit decorator.
+    **kwargs
+        See numba.njit decorator.
+
+    Returns
+    -------
+    A numba.njit decorated function.
+    """
     import numba
     if "cache" in kwargs:
         cache = kwargs.pop("cache")
@@ -235,8 +371,38 @@ def njit(*args, **kwargs):
 def pjit(
     _func=None,
     *,
-    thread_count=None
+    thread_count=None,
+    cache: bool = True,
 ):
+    """A decorator that parallelizes the numba.njit decorator with threads.
+
+    The first argument of the decorated function need to be an iterable.
+    A range-object will be most performant as iterable.
+    The original function should accept a single element of this iterable
+    as its first argument.
+    The original function cannot return values, instead it should store
+    results in e.g. one if its input arrays that acts as a buffer array.
+    The original function needs to be numba.njit compatible.
+    Numba argument "nogil" is always set to True.
+
+    Parameters
+    ----------
+    _func
+        The function to decorate.
+    thread_count : int, None
+        The number of threads to use.
+        This is always parsed with alphatims.utils.set_threads.
+        Not possible as positional arguments,
+        it always needs to be an explicit keyword argument.
+        Default is None.
+    cache : bool
+        See numba.njit decorator.
+        Default is True (in contrast to numba) .
+
+    Returns
+    -------
+    A decorated function.
+    """
     import functools
     import threading
     import numba
@@ -302,17 +468,33 @@ def pjit(
         return parallel_compiled_func_inner(_func)
 
 
-def set_progress_callback_style(style=None, set_global=True):
-    if set_global:
-        global PROGRESS_CALLBACK_STYLE
-    if style is not None:
-        PROGRESS_CALLBACK_STYLE = style
-    return PROGRESS_CALLBACK_STYLE
+def progress_callback(iterable, style: int = -1):
+    """Add tqdm progress callback to iterable.
 
+    Parameters
+    ----------
+    iterable
+        An iterable that implements __len__.
+    style : int
+        The callback style.
+        -1 means to use the global PROGRESS_CALLBACK_STYLE variable.
+        PROGRESS_CALLBACK_STYLE_NONE = 0 means no callback.
+        PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
+        PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
+        Default is -1.
 
-def progress_callback(iterable, style=None):
+    Returns
+    -------
+    iterable
+        The iterable with tqdm callback.
+
+    Raises
+    ------
+    ValueError
+        If no valid style (-1, 0, 1, 2) is provided.
+    """
     import tqdm
-    if style is None:
+    if style is -1:
         style = PROGRESS_CALLBACK_STYLE
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
@@ -327,20 +509,55 @@ def progress_callback(iterable, style=None):
 
 def create_hdf_group_from_dict(
     hdf_group,
-    data_dict,
+    data_dict: dict,
     *,
-    overwrite=False,
-    compress=False,
-    recursed=False,
-):
-    """
-    Save dict to opened hdf_group.
-    All keys are expected to be strings.
-    Values are converted as follows:
-        np.ndarray, pd.core.frame.DataFrame => dataset
-        bool, int, float, str => attr
-        dict => group (recursive)
-    Nothing is overwritten, unless otherwise defined
+    overwrite: bool = False,
+    compress: bool = False,
+    recursed: bool = False,
+) -> None:
+    """Save a dict to an open hdf group.
+
+    Parameters
+    ----------
+    hdf_group : type
+        An open and writable HDF group.
+    data_dict : dict
+        A dict that needs to be written to HDF.
+        Keys always need to be strings. Values are stored as follows:
+            Subdicts -> subgroups.
+            Arrays -> arrays
+            pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
+            bool, int, float and str -> attrs.
+    overwrite : bool
+        If True, existing subgroups, arrays and attrs are fully
+        truncated/overwritten.
+        If False, the existing value in HDF remains unchanged.
+        Default is False.
+    compress : bool
+        If True, all arrays are compressed with binary shuffle and "lzf"
+        compression.
+        If False, arrays are saved as provided.
+        On average, compression halves file sizes,
+        at the cost of 2-6 time longer accession times.
+        Default is False.
+    recursed : bool
+        If False, the default progress callback is added while itereating over
+        the keys of the data_dict.
+        If True, no callback is added, allowing subdicts to not trigger
+        callback.
+        Default is False.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    ValueError
+        When a value of data_dict cannot be converted to an HDF value
+        (see data_dict).
+    KeyError
+        When a key of data_dict is not a string.
     """
     import pandas as pd
     import numpy as np
@@ -351,7 +568,7 @@ def create_hdf_group_from_dict(
         iterable_dict = progress_callback(data_dict.items())
     for key, value in iterable_dict:
         if not isinstance(key, str):
-            raise ValueError(f"Key {key} is not a string.")
+            raise KeyError(f"Key {key} is not a string.")
         if isinstance(value, pd.core.frame.DataFrame):
             new_dict = {key: dict(value)}
             new_dict[key]["is_pd_dataframe"] = True
@@ -403,7 +620,29 @@ def create_hdf_group_from_dict(
             )
 
 
-def create_dict_from_hdf_group(hdf_group):
+def create_dict_from_hdf_group(hdf_group) -> dict:
+    """Convert the contents of an HDF group and return as normal Python dict.
+
+    Parameters
+    ----------
+    hdf_group : type
+        An open and readable HDF group.
+
+    Returns
+    -------
+    dict
+        A Python dict.
+        Keys of the dict are names of arrays, attrs and subgroups.
+        Values are corresponding arrays and attrs.
+        Subgroups are converted to subdicts.
+        If a subgroup has an "is_pd_dataframe=True" attr,
+        it is automatically converted to a pd.dataFrame.
+
+    Raises
+    ------
+    ValueError
+        When an attr value in the HDF group is not an int, float, str or bool.
+    """
     import h5py
     import pandas as pd
     import numpy as np
