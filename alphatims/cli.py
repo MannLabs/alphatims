@@ -12,7 +12,26 @@ import alphatims.utils
 
 
 @contextlib.contextmanager
-def parse_cli_settings(command_name, **kwargs):
+def parse_cli_settings(command_name: str, **kwargs):
+    """A context manager that parses and logs CLI settings.
+
+    Parameters
+    ----------
+    command_name : str
+        The name of the command that utilizes these CLI settings.
+    **kwargs
+        All values that need to be logged.
+        Values (if included) that explicitly will be parsed are:
+            parameter_file
+            threads
+            log_file
+            disable_log_stream
+
+    Returns
+    -------
+    dict
+        A dictionary with parsed parameters.
+    """
     import logging
     import time
     try:
@@ -38,7 +57,9 @@ def parse_cli_settings(command_name, **kwargs):
                 "log_file"
             ]["default"]
         if "disable_log_stream" not in kwargs:
-            kwargs["disable_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
+            kwargs[
+                "disable_log_stream"
+            ] = alphatims.utils.INTERFACE_PARAMETERS[
                 "disable_log_stream"
             ]["default"]
         kwargs["log_file"] = alphatims.utils.set_logger(
@@ -70,7 +91,36 @@ def parse_cli_settings(command_name, **kwargs):
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def cli_option(parameter_name, as_argument=False, **kwargs):
+def cli_option(
+    parameter_name: str,
+    as_argument: bool = False,
+    **kwargs
+):
+    """A wrapper for click.options and click.arguments using local defaults.
+
+    Parameters
+    ----------
+    parameter_name : str
+        The name of the parameter or argument.
+        It's default values need to be present in
+        lib/interface_parameters.json.
+    as_argument : bool
+        If True, a click.argument is returned.
+        If False, a click.option is returned.
+        Default is False.
+    **kwargs
+        Items that overwrite the default values of
+        lib/interface_parameters.json.
+        These need to be valid items for click.
+        A special "type" dict can be used to pass a click.Path or click.Choice,
+        that has the following format:
+        type = {"name": "path" or "choice", **choice_or_path_kwargs}
+
+    Returns
+    -------
+    click.option, click.argument
+        A click.option or click.argument decorator.
+    """
     names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
     parameters.update(kwargs)
