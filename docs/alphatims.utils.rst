@@ -1,4 +1,4 @@
-alphatims.utils module
+alphatims.utils
 ----------------------
 
 .. automodule:: alphatims.utils

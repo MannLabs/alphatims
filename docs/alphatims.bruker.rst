@@ -1,4 +1,4 @@
-alphatims.bruker module
+alphatims.bruker
 -----------------------
 
 .. automodule:: alphatims.bruker
