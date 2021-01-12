@@ -105,18 +105,15 @@ def show_platform_info() -> None:
     """Log all platform information.
 
     This is done in the following format:
-    [timestamp]> Platform information:
-    [timestamp]> system     - [...]
-    [timestamp]> release    - [...]
-    [timestamp]> version    - [...]
-    [timestamp]> machine    - [...]
-    [timestamp]> processor  - [...]
-    [timestamp]> cpu count  - [...]
-    [timestamp]> ram memory - [...]/[...] Gb (available/total)
 
-    Returns
-    -------
-    None
+        - [timestamp]> Platform information:
+        - [timestamp]> system     - [...]
+        - [timestamp]> release    - [...]
+        - [timestamp]> version    - [...]
+        - [timestamp]> machine    - [...]
+        - [timestamp]> processor  - [...]
+        - [timestamp]> cpu count  - [...]
+        - [timestamp]> ram memory - [...]/[...] Gb (available/total)
     """
     import platform
     import psutil
@@ -146,16 +143,12 @@ def show_python_info() -> None:
     """Log all Python information.
 
     This is done in the following format:
-    [timestamp]> Python information:
-    [timestamp]> alphatims          - [current_version]
-    [timestamp]> [required package] - [current_version]
-    ...
-    [timestamp]> [required package] - [current_version]
 
-
-    Returns
-    -------
-    None
+        - [timestamp]> Python information:
+        - [timestamp]> alphatims          - [current_version]
+        - [timestamp]> [required package] - [current_version]
+        - ...
+        - [timestamp]> [required package] - [current_version]
     """
     import importlib.metadata
     import platform
@@ -237,10 +230,6 @@ def save_parameters(parameter_file_name: str, paramaters: dict) -> None:
         The file name to where the parameters are written.
     paramaters : dict
         A dictionary with parameters.
-
-    Returns
-    -------
-    None
     """
     logging.info(f"Saving parameters to {parameter_file_name}")
     with open(parameter_file_name, "w") as outfile:
@@ -329,7 +318,8 @@ def threadpool(
 
     Returns
     -------
-    None
+    function
+        A parallelized decorated function.
     """
     import multiprocessing.pool
     import tqdm
@@ -373,14 +363,16 @@ def threadpool(
         return parallel_func_inner(_func)
 
 
-def njit(*args, **kwargs):
+def njit(_func=None, *args, **kwargs):
     """A wrapper for the numba.njit decorator.
 
     The "cache" option is set to True by default.
-    This can be overriden with **kwargs.
+    This can be overriden with kwargs.
 
     Parameters
     ----------
+    _func
+        The function to decorate.
     *args
         See numba.njit decorator.
     **kwargs
@@ -388,14 +380,15 @@ def njit(*args, **kwargs):
 
     Returns
     -------
-    A numba.njit decorated function.
+    function
+        A numba.njit decorated function.
     """
     import numba
     if "cache" in kwargs:
         cache = kwargs.pop("cache")
     else:
         cache = True
-    return numba.njit(*args, cache=cache, **kwargs)
+    return numba.njit(_func, *args, cache=cache, **kwargs)
 
 
 def pjit(
@@ -431,7 +424,8 @@ def pjit(
 
     Returns
     -------
-    A decorated function.
+    function
+        A parallelized numba.njit decorated function.
     """
     import functools
     import threading
@@ -506,11 +500,13 @@ def progress_callback(iterable, style: int = -1):
     iterable
         An iterable that implements __len__.
     style : int
-        The callback style.
-        -1 means to use the global PROGRESS_CALLBACK_STYLE variable.
-        PROGRESS_CALLBACK_STYLE_NONE = 0 means no callback.
-        PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
-        PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
+        The callback style. Options are:
+
+            - -1 means to use the global PROGRESS_CALLBACK_STYLE variable.
+            - PROGRESS_CALLBACK_STYLE_NONE = 0 means no callback.
+            - PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
+            - PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
+
         Default is -1.
 
     Returns
@@ -554,10 +550,11 @@ def create_hdf_group_from_dict(
     data_dict : dict
         A dict that needs to be written to HDF.
         Keys always need to be strings. Values are stored as follows:
-            Subdicts -> subgroups.
-            Arrays -> arrays
-            pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
-            bool, int, float and str -> attrs.
+
+            - Subdicts -> subgroups.
+            - Arrays -> arrays
+            - pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
+            - bool, int, float and str -> attrs.
     overwrite : bool
         If True, existing subgroups, arrays and attrs are fully
         truncated/overwritten.
@@ -576,10 +573,6 @@ def create_hdf_group_from_dict(
         If True, no callback is added, allowing subdicts to not trigger
         callback.
         Default is False.
-
-    Returns
-    -------
-    None
 
     Raises
     ------

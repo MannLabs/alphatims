@@ -171,7 +171,7 @@ def read_bruker_frames(
         )
 
 
-@alphatims.utils.njit(nogil=True, cache=False)
+@alphatims.utils.njit(nogil=True)
 def decompress_bruker_binary(decomp_data):
     temp = np.frombuffer(decomp_data, dtype=np.uint8)
     buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
@@ -823,26 +823,26 @@ class TimsTOF(object):
         )
 
     def parse_keys(self, keys):
-        """
-        Keys is at most a 5-tuple, with selection criteria for the
-        LC-IMS-MSMS dimensions:
-            (
-                'frame_index/rt_value',
-                'scan_index/mobility_value',
-                'precursor_index/quad_mz_value',
-                'TOF_index/tof_mz_value',
-                'intensity_values',
-            )
-        Each element of this tuple can be either:
-            A slice
-                slice.start and slice.stop can be either integer, float or None,
-                representing respectively a value or an index.
-                For the intensity dimension, both integers and floats are
-                interpreted as a value
-                slice.step can only be None or an integer.
-            An iterable with sorted indices
-        NOTE: Negative slicing is not supported
-        """
+        # """
+        # Keys is at most a 5-tuple, with selection criteria for the
+        # LC-IMS-MSMS dimensions:
+        #     (
+        #         'frame_index/rt_value',
+        #         'scan_index/mobility_value',
+        #         'precursor_index/quad_mz_value',
+        #         'TOF_index/tof_mz_value',
+        #         'intensity_values',
+        #     )
+        # Each element of this tuple can be either:
+        #     A slice
+        #         slice.start and slice.stop can be either integer, float or None,
+        #         representing respectively a value or an index.
+        #         For the intensity dimension, both integers and floats are
+        #         interpreted as a value
+        #         slice.step can only be None or an integer.
+        #     An iterable with sorted indices
+        # NOTE: Negative slicing is not supported
+        # """
         dimensions = [
             "frame_indices",
             "scan_indices",
