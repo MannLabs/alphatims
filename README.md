@@ -251,13 +251,19 @@ AlphaTims can be imported as a Python package into any Python script or notebook
 
 Some performance statistics on data in-/output include of standard [HeLa datasets](#test-sample) include:
 
-| type | gradient | datapoints    | reading (raw/hdf) | export |
-|------|----------|---------------|-------------------|--------|
-| DDA  | 6 min    | 214,172,697   | 1.6 s / 517 ms    | 512 ms |
-| DIA  | 6 min    | 158,552,099   | 1.0 s / 376 ms    | 381 ms |
-| DDA  | 21 min   | 295,251,252   | 3.0 s / 821 ms    | 768 ms |
-| DIA  | 21 min   | 730,564,765   | 4.3 s / 1.8 s     | 1.7 s  |
-| DDA  | 120 min  | 2,074,019,899 | 26.1 s / 9.3 s    | 4.9 s  |
+| type | gradient | datapoints    | reading (raw/hdf) | export | slicing (in ms)          |
+|------|----------|---------------|-------------------|--------|--------------------------|
+| DDA  | 6 min    | 214,172,697   | 1.6 s / 517 ms    | 512 ms | 331 / 41.6 / 31.1 / 92.7 |
+| DIA  | 6 min    | 158,552,099   | 1.0 s / 376 ms    | 381 ms | 142 / 32 / 766 / 113     |
+| DDA  | 21 min   | 295,251,252   | 3.0 s / 821 ms    | 768 ms | 10 / 74 / 128 / 214      |
+| DIA  | 21 min   | 730,564,765   | 4.3 s / 1.8 s     | 1.7 s  | 15 / 147 / 5500 / 472    |
+| DDA  | 120 min  | 2,074,019,899 | 26.1 s / 9.3 s    | 4.9 s  | 42 / 421 / 691 / 1350    |
+
+The slices that were considered are:
+* 100.0 <= retention_time <= 100.5
+* scan_index = 450
+* 700.0 <= quad_mz_values <= 710.0
+* 621.9 <= tof_mz_values <= 622.1
 
 All of these analysis were run on the following system:
 
