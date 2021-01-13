@@ -258,7 +258,7 @@ AlphaTims can be imported as a Python package into any Python script or notebook
 
 Typical performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
 
-| type | gradient | datapoints    | reading (raw/hdf) | export | slicing (in ms)          |
+| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)          |
 |------|----------|---------------|-------------------|--------|--------------------------|
 | DDA  | 6 min    | 214,172,697   | 1.6 s / 517 ms    | 512 ms | 331 / 41.6 / 31.1 / 92.7 |
 | DIA  | 6 min    | 158,552,099   | 1.0 s / 376 ms    | 381 ms | 142 / 32 / 766 / 113     |
