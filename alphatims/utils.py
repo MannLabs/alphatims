@@ -1,4 +1,12 @@
 #!python
+"""This module provides generic utilities.
+These utilities primarily focus on:
+
+    - logging
+    - compilation
+    - parallelization
+    - generic io
+"""
 
 # builtin
 import logging
@@ -53,7 +61,7 @@ def set_logger(
 
     Returns
     -------
-    str
+    : str
         The file name to where the log is written.
     """
     import time
@@ -180,7 +188,7 @@ def check_github_version() -> str:
 
     Returns
     -------
-    str
+    : str
         The version on the AlphaTims GitHub master branch.
         "" if no version can be found on GitHub
     """
@@ -246,7 +254,7 @@ def load_parameters(parameter_file_name: str) -> dict:
 
     Returns
     -------
-    dict
+    : dict
         A dict with parameters.
     """
     with open(parameter_file_name, "r") as infile:
@@ -270,7 +278,7 @@ def set_threads(threads: int, set_global: bool = True) -> int:
 
     Returns
     -------
-    int
+    : int
         The number of threads.
     """
     import multiprocessing
@@ -318,7 +326,7 @@ def threadpool(
 
     Returns
     -------
-    function
+    : function
         A parallelized decorated function.
     """
     import multiprocessing.pool
@@ -380,7 +388,7 @@ def njit(_func=None, *args, **kwargs):
 
     Returns
     -------
-    function
+    : function
         A numba.njit decorated function.
     """
     import numba
@@ -424,7 +432,7 @@ def pjit(
 
     Returns
     -------
-    function
+    : function
         A parallelized numba.njit decorated function.
     """
     import functools
@@ -511,7 +519,7 @@ def progress_callback(iterable, style: int = -1):
 
     Returns
     -------
-    iterable
+    : iterable
         The iterable with tqdm callback.
 
     Raises
@@ -653,7 +661,7 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
 
     Returns
     -------
-    dict
+    : dict
         A Python dict.
         Keys of the dict are names of arrays, attrs and subgroups.
         Values are corresponding arrays and attrs.

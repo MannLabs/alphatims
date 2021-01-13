@@ -21,6 +21,7 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
     * [**GUI**](#gui)
     * [**CLI**](#cli)
     * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
+  * [**Performance**](#performance)
   * [**How it works**](#how-it-works)
     * [**Bruker raw data**](#bruker-raw-data)
     * [**TimsTOF objects in Python**](#timstof-objects-in-python)
@@ -245,6 +246,12 @@ Options:
 ### Python and jupyter notebooks
 
 AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) (with the extra option `gui` activated for all plotting capabilities) is present in the [nbs folder](nbs).
+
+## Performance
+
+<!-- Some typical datasets: -->
+
+TODO
 
 ## How it works
 
