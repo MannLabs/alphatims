@@ -855,7 +855,7 @@ def show_settings(_):
         im_start.value = max(DATASET.mobility_values)
         im_end.value = min(DATASET.mobility_values)
         quad_slider.end = round(DATASET.quad_max_mz_value, 3)
-        tof_slider.end = int(DATASET.tof_max_index + 1)
+        tof_slider.end = int(DATASET.tof_max_index)
         tof_slider.value = (tof_slider.start, tof_slider.end)
         upload_spinner.value = False
         return settings
