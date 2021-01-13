@@ -1123,7 +1123,7 @@ def filter_indices(
         The raw indices that satisfy all the slices.
     """
     result = []
-    quad_index = -2
+    quad_index = -1
     new_quad_index = -1
     quad_end = -1
     is_valid_quad_index = True
@@ -1168,8 +1168,12 @@ def filter_indices(
                     if not is_valid_quad_index:
                         continue
                     idx = sparse_start
-                    tof_value = tof_indices[idx]
                     for tof_start, tof_stop, tof_step in tof_slices:
+                        idx += np.searchsorted(
+                            tof_indices[idx: sparse_end],
+                            tof_start
+                        )
+                        tof_value = tof_indices[idx]
                         while (tof_value < tof_stop) and (idx < sparse_end):
                             if tof_value in range(
                                 tof_start,
