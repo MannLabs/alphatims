@@ -249,7 +249,7 @@ AlphaTims can be imported as a Python package into any Python script or notebook
 
 ## Performance
 
-Some performance statistics on data in-/output include of standard [HeLa datasets](#test-sample) include:
+Typical performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
 
 | type | gradient | datapoints    | reading (raw/hdf) | export | slicing (in ms)          |
 |------|----------|---------------|-------------------|--------|--------------------------|
@@ -259,11 +259,12 @@ Some performance statistics on data in-/output include of standard [HeLa dataset
 | DIA  | 21 min   | 730,564,765   | 4.3 s / 1.8 s     | 1.7 s  | 15 / 147 / 5500 / 472    |
 | DDA  | 120 min  | 2,074,019,899 | 26.1 s / 9.3 s    | 4.9 s  | 42 / 421 / 691 / 1350    |
 
-The slices that were considered are:
-* 100.0 <= retention_time <= 100.5
-* scan_index = 450
-* 700.0 <= quad_mz_values <= 710.0
-* 621.9 <= tof_mz_values <= 622.1
+All slices were performed in a single dimension. Including more slices make the analysis more stringent and hence faster. The considered dimensions were:
+
+* **LC:** 100.0 <= retention_time <= 100.5
+* **TIMS:** scan_index = 450
+* **Quadrupole:** 700.0 <= quad_mz_values <= 710.0
+* **TOF:** 621.9 <= tof_mz_values <= 622.1
 
 All of these analysis were run on the following system:
 
