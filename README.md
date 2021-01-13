@@ -1,5 +1,6 @@
 ![Pip installation](https://github.com/MannLabs/alphatims/workflows/Pip%20installation/badge.svg)
 
+---
 # AlphaTims
 
 An open-source Python package for efficient accession and analysis of Bruker TimsTOF raw data from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
@@ -265,7 +266,7 @@ Typical performance statistics on data in-/output and slicing of standard [HeLa 
 | DIA  | 21 min   | 730,564,765   | 4.3 s / 1.8 s     | 1.7 s  | 15 / 147 / 5500 / 472    |
 | DDA  | 120 min  | 2,074,019,899 | 26.1 s / 9.3 s    | 4.9 s  | 42 / 421 / 691 / 1350    |
 
-All slices were performed in a single dimension. Including more slices make the analysis more stringent and hence faster. The considered dimensions were:
+All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
 * **LC:** 100.0 <= retention_time <= 100.5
 * **TIMS:** scan_index = 450
