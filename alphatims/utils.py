@@ -551,8 +551,8 @@ def create_hdf_group_from_dict(
         A dict that needs to be written to HDF.
         Keys always need to be strings. Values are stored as follows:
 
-            - Subdicts -> subgroups.
-            - Arrays -> arrays
+            - subdicts -> subgroups.
+            - np.array -> array
             - pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
             - bool, int, float and str -> attrs.
     overwrite : bool

@@ -37,9 +37,36 @@ MSMSTYPE_PASEF = 8
 MSMSTYPE_DIAPASEF = 9
 
 
-def init_bruker_dll(bruker_dll_file_name):
+def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
+    """Open a bruker.dll in Python.
+
+    Five functions are defined for this dll:
+
+        - tims_open:
+            [c_char_p, c_uint32] -> c_uint64
+        - tims_close:
+            [c_char_p, c_uint32] -> c_uint64
+        - tims_read_scans_v2:
+            [c_uint64, c_int64, c_uint32, c_uint32, c_void_p,
+            c_uint32] -> c_uint32
+        - tims_index_to_mz:
+            [c_uint64, c_int64, POINTER(c_double), POINTER(c_double),
+            c_uint32] -> None
+        - tims_scannum_to_oneoverk0:
+            Same as "tims_index_to_mz"
+
+    Parameters
+    ----------
+    bruker_dll_file_name : str
+        The absolute path to the timsdata.dll.
+        Default is alphatims.utils.BRUKER_DLL_FILE_NAME.
+
+    Returns
+    -------
+    library
+        The Bruker dll library.
+    """
     import ctypes
-    # logging.info(f"Reading bruker dll file {bruker_dll_file_name}")
     bruker_dll = ctypes.cdll.LoadLibrary(
         os.path.realpath(bruker_dll_file_name)
     )
@@ -47,8 +74,6 @@ def init_bruker_dll(bruker_dll_file_name):
     bruker_dll.tims_open.restype = ctypes.c_uint64
     bruker_dll.tims_close.argtypes = [ctypes.c_uint64]
     bruker_dll.tims_close.restype = None
-    # dia_pasef_dll.tims_has_recalibrated_state.argtypes = [ctypes.c_uint64 ]
-    # dia_pasef_dll.tims_has_recalibrated_state.restype = ctypes.c_uint32
     bruker_dll.tims_read_scans_v2.argtypes = [
         ctypes.c_uint64,
         ctypes.c_int64,
@@ -76,17 +101,38 @@ def init_bruker_dll(bruker_dll_file_name):
     bruker_dll.tims_scannum_to_oneoverk0.restype = ctypes.c_uint32
     bruker_dll.tims_set_num_threads.argtypes = [ctypes.c_uint64]
     bruker_dll.tims_set_num_threads.restype = None
-    # TODO: multiple threads is equally fast as just 1 for io?
     bruker_dll.tims_set_num_threads(alphatims.utils.MAX_THREADS)
+    # multiple threads is equally fast as just 1 for io?
     # bruker_dll.tims_set_num_threads(1)
     return bruker_dll
 
 
 @contextlib.contextmanager
-def open_bruker_d_folder(bruker_dll, bruker_d_folder_name):
+def open_bruker_d_folder(
+    bruker_d_folder_name: str,
+    bruker_dll_file_name=BRUKER_DLL_FILE_NAME,
+) -> tuple:
+    """A context manager for a bruker dll connection to a .d folder.
+
+    Parameters
+    ----------
+    bruker_d_folder_name : str
+        The name of a Bruker .d folder.
+    bruker_dll_file_name : str, library
+        The path to Bruker' timsdata.dll library.
+        Alternatively, the library itself can be passed as argument.
+        Default is alphatims.utils.BRUKER_DLL_FILE_NAME,
+        which in itself is dependent on the OS.
+
+    Returns
+    -------
+    tuple
+        (library, int).
+        The opened bruker dll and identifier of the .d folder.
+    """
     try:
-        if isinstance(bruker_dll, str):
-            bruker_dll = init_bruker_dll(bruker_dll)
+        if isinstance(bruker_dll_file_name, str):
+            bruker_dll = init_bruker_dll(bruker_dll_file_name)
         logging.info(f"Opening handle for {bruker_d_folder_name}")
         bruker_d_folder_handle = bruker_dll.tims_open(
             bruker_d_folder_name.encode('utf-8'),
@@ -98,11 +144,44 @@ def open_bruker_d_folder(bruker_dll, bruker_d_folder_name):
         bruker_dll.tims_close(bruker_d_folder_handle)
 
 
-def read_bruker_frames(
-    bruker_d_folder_name,
-    add_zeroth_frame=True,
-    drop_polarity=True,
-):
+def read_bruker_sql(
+    bruker_d_folder_name: str,
+    add_zeroth_frame: bool = True,
+    drop_polarity: bool = True,
+) -> tuple:
+    """Read metadata and (fragment) frames from a Bruker .d folder.
+
+    Parameters
+    ----------
+    bruker_d_folder_name : str
+        The name of a Bruker .d folder.
+    add_zeroth_frame : bool
+        Bruker uses 1-indexing for frames.
+        If True, a zeroth frame is added without any TOF detections to
+        make Python simulate this 1-indexing.
+        If False, frames are 0-indexed.
+        Default is True.
+    drop_polarity : bool
+        The polarity column of the frames table contains "+" or "-" and
+        is not numerical.
+        If True, the polarity column is dropped from the frames table.
+        this ensures a fully numerical pd.DataFrame.
+        If False, this column is kept, resulting in a pd.DataFrame with
+        dtype=object.
+        Default is True.
+
+    Returns
+    -------
+    tuple
+        (str, dict, pd.DataFrame, pd.DataFrame).
+        The acquisition_mode, global_meta_data, frames and fragment_frames.
+
+    Raises
+    ------
+    ValueError
+        When MSMSTYPE_DIAPASEF is not 8 or 9.
+        In this case it is unclear if it is ddaPASEF or diaPASEF.
+    """
     import sqlite3
     logging.info(f"Reading frame metadata for {bruker_d_folder_name}")
     with sqlite3.connect(
@@ -172,7 +251,21 @@ def read_bruker_frames(
 
 
 @alphatims.utils.njit(nogil=True)
-def decompress_bruker_binary(decomp_data):
+def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
+    """Parse a Bruker binary frame buffer into scans, tofs and intensities.
+
+    Parameters
+    ----------
+    decomp_data : bytes
+        A Bruker frame binary buffer that is already decompressed with pyzstd.
+
+    Returns
+    -------
+    tuple
+        (np.uint32[:], np.uint32[:], np.uint32[:]).
+        The scan_indices, tof_indices and intensities present in this binary
+        array
+    """
     temp = np.frombuffer(decomp_data, dtype=np.uint8)
     buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
     scan_count = buffer[0]
@@ -193,46 +286,64 @@ def decompress_bruker_binary(decomp_data):
     return scan_indices, tof_indices, intensities
 
 
-# @alphatims.utils.njit(nogil=True)
-# def parse_frame_buffer(
-#     scan_offset,
-#     buffer,
-#     scan_count,
-#     peak_start,
-#     scan_indptr,
-#     mz_indices,
-#     intensities,
-# ):
-#     scan_indptr[scan_offset: scan_offset + scan_count] = buffer[:scan_count]
-#     end_indices = np.cumsum(buffer[:scan_count])
-#     for end, size in zip(end_indices, buffer[:scan_count]):
-#         start = end - size
-#         mz_start = scan_count + start * 2
-#         int_start = scan_count + start * 2 + size
-#         buffer_start = peak_start + start
-#         buffer_end = peak_start + end
-#         mz_indices[buffer_start: buffer_end] = buffer[
-#             mz_start: mz_start + size
-#         ]
-#         intensities[buffer_start: buffer_end] = buffer[
-#             int_start: int_start + size
-#         ]
-
-
 @alphatims.utils.threadpool(progress_callback=True)
 def process_frame(
-    frame_id,
-    file_name,
-    offset_values,
+    frame_id: int,
+    tdf_bin_file_name: str,
+    tims_offset_values,
     scan_indptr,
     intensities,
     tof_indices,
     frame_indptr,
-    max_scan_count,
-):
+    max_scan_count: int,
+) -> None:
+    """Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.
+
+    IMPORTANT NOTE: This function is decorated with alphatims.utils.threadpool.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    frame_id : int
+        The frame number that should be processed.
+        Note that this is interpreted as 1-indixed instead of 0-indexed,
+        so that it is compatible with Bruker.
+    tdf_bin_file_name : str
+        The full file name of the SQL database "analysis.tdf_bin" in a Bruker
+        .d folder.
+    tims_offset_values : np.int64[:]
+        The offsets that indicate the starting indices of each frame in the
+        binary.
+        These are contained in the "TimsId" column of the frames table in
+        "analysis.tdf_bin".
+    scan_indptr : np.int64[:]
+        A buffer containing zeros that can store the cumulative number of
+        detections per scan.
+        The size should be equal to max_scan_count * len(frames) + 1.
+        A dummy 0-indexed frame is required to be present for len(frames).
+        The last + 1 allows to explicitly interpret the end of a scan as
+        the start of a subsequent scan.
+    intensities : np.uint16[:]
+        A buffer that can store the intensities of all detections.
+        It's size can be determined by summing the "NumPeaks" column from
+        the frames table in "analysis.tdf_bin".
+    tof_indices : np.uint32[:]
+        A buffer that can store the tof indices of all detections.
+        It's size can be determined by summing the "NumPeaks" column from
+        the frames table in "analysis.tdf_bin".
+    frame_indptr : np.int64[:]
+        The cumulative sum of the number of detections per frame.
+        The size should be equal to len(frames) + 1.
+        A dummy 0-indexed frame is required to be present for len(frames).
+        The last + 1 allows to explicitly interpret the end of a frame as
+        the start of a subsequent frame.
+    max_scan_count : int
+        The maximum number of scans a single frame can have.
+    """
     import pyzstd
-    with open(file_name, "rb") as infile:
-        offset = offset_values[frame_id]
+    with open(tdf_bin_file_name, "rb") as infile:
+        offset = tims_offset_values[frame_id]
         infile.seek(offset)
         bin_size = int.from_bytes(infile.read(4), "little")
         scan_count = int.from_bytes(infile.read(4), "little")
@@ -243,143 +354,44 @@ def process_frame(
                 scan_indices_,
                 tof_indices_,
                 intensities_
-            ) = decompress_bruker_binary(
-                decomp_data,
-            )
+            ) = parse_decompressed_bruker_binary(decomp_data)
             frame_start = frame_indptr[frame_id]
             frame_end = frame_indptr[frame_id + 1]
             scan_start = frame_id * max_scan_count
             scan_end = scan_start + scan_count
-            # TODO: 0-offset. Should this be 1-offset?
             scan_indptr[scan_start: scan_end] = scan_indices_
-            # TODO: 0-offset. Should this be 1-offset?
             tof_indices[frame_start: frame_end] = tof_indices_
             intensities[frame_start: frame_end] = intensities_
 
 
-# def read_scans_of_frame(
-#     frame_id,
-#     frames,
-#     frame_indptr,
-#     intensities,
-#     mz_indices,
-#     scan_indptr,
-#     bruker_dll,
-#     bruker_d_folder_handle,
-#     calibrated_mzs=None,
-#     calibrated_ccs=None,
-# ):
-#     import ctypes
-#     scan_start = 0
-#     scan_end = frames.NumScans[frame_id]
-#     scan_count = scan_end - scan_start
-#     peak_start = frame_indptr[frame_id]
-#     peak_end = frame_indptr[frame_id + 1]
-#     peak_count = peak_end - peak_start
-#     buffer = np.empty(
-#         shape=scan_count + 2 * peak_count,
-#         dtype=np.uint32
-#     )
-#     bruker_dll.tims_read_scans_v2(
-#         bruker_d_folder_handle,
-#         frame_id,
-#         scan_start,
-#         scan_end,
-#         buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32)),
-#         len(buffer) * 4
-#     )
-#     scan_offset = scan_count * (frame_id)
-#     parse_frame_buffer(
-#         scan_offset,
-#         buffer,
-#         scan_count,
-#         peak_start,
-#         scan_indptr,
-#         mz_indices,
-#         intensities,
-#     )
-#     if calibrated_mzs is not None:
-#         bruker_dll.tims_index_to_mz(
-#             bruker_d_folder_handle,
-#             frame_id,
-#             mz_indices[peak_start: peak_end].astype(np.float64).ctypes.data_as(
-#                 ctypes.POINTER(ctypes.c_double)
-#             ),
-#             calibrated_mzs[peak_start: peak_end].ctypes.data_as(
-#                 ctypes.POINTER(ctypes.c_double)
-#             ),
-#             peak_count
-#         )
-#     if calibrated_ccs is not None:
-#         bruker_dll.tims_scannum_to_oneoverk0(
-#             bruker_d_folder_handle,
-#             frame_id,
-#             np.arange(scan_end, dtype=np.float64).ctypes.data_as(
-#                 ctypes.POINTER(ctypes.c_double)
-#             ),
-#             calibrated_ccs[
-#                 scan_offset: scan_offset + scan_count
-#             ].ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-#             scan_count
-#         )
+def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
+    """Read all data from an "analysis.tdf_bin" of a Bruker .d folder.
 
+    Parameters
+    ----------
+    frames : pd.DataFrame
+        The frames from the "analysis.tdf" SQL database of a Bruker .d folder.
+        These can be acquired with e.g. alphatims.bruker.read_bruker_sql.
+    bruker_d_folder_name : str
+        The full path to a Bruker .d folder.
 
-def read_bruker_scans(
-    frames,
-    bruker_d_folder_name:str,
-    # bruker_calibrated_mz_values:bool=False,
-    # bruker_calibrated_mobility_values:bool=False,
-):
+    Returns
+    -------
+    tuple
+        (np.int64[:], np.uint32[:], np.uint16[:]).
+        The scan_indptr, tof_indices and intensities.
+    """
+    # TODO: colon (:) in returns is not parsed properly in readthedocs.
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
     max_scan_count = frames.NumScans.max()
     scan_count = max_scan_count * frames.shape[0]
     scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
-    # if bruker_calibrated_mz_values:
-    #     calibrated_mzs = np.empty(frame_indptr[-1], dtype=np.float64)
-    # else:
-    #     calibrated_mzs = None
-    # if bruker_calibrated_mobility_values:
-    #     calibrated_ccs = np.empty(scan_count, dtype=np.float64)
-    # else:
-    #     calibrated_ccs = None
     intensities = np.empty(frame_indptr[-1], dtype=np.uint16)
     tof_indices = np.empty(frame_indptr[-1], dtype=np.uint32)
-    tdf_bin_file_name = os.path.join(bruker_d_folder_name, "analysis.tdf_bin") # TODO
-    offset_values = frames.TimsId.values
-    # with open_bruker_d_folder(
-    #     BRUKER_DLL_FILE_NAME,
-    #     bruker_d_folder_name
-    # ) as (bruker_dll, bruker_d_folder_handle):
-    #     for frame_id in alphatims.utils.progress_callback(
-    #         range(1, frame_indptr.shape[0] - 1)
-    #     ):
-    #         read_scans_of_frame(
-    #             frame_id,
-    #             frames,
-    #             frame_indptr,
-    #             intensities,
-    #             tof_indices,
-    #             scan_indptr,
-    #             bruker_dll,
-    #             bruker_d_folder_handle,
-    #             calibrated_mzs=calibrated_mzs,
-    #             calibrated_ccs=calibrated_ccs,
-    #         )
-    # for frame_id in alphatims.utils.progress_callback(
-    #     range(1, frame_indptr.shape[0] - 1)
-    # ):
-    #     process_frame(
-    #         frame_id,
-    #         tdf_bin_file_name,
-    #         offset_values,
-    #         scan_indptr,
-    #         intensities,
-    #         tof_indices,
-    #         frame_indptr,
-    #         max_scan_count,
-    #     )
+    tdf_bin_file_name = os.path.join(bruker_d_folder_name, "analysis.tdf_bin")
+    tims_offset_values = frames.TimsId.values
     logging.info(
         f"Reading {frame_indptr.size - 2:,} frames with "
         f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
@@ -387,7 +399,7 @@ def read_bruker_scans(
     process_frame(
         range(1, len(frames)),
         tdf_bin_file_name,
-        offset_values,
+        tims_offset_values,
         scan_indptr,
         intensities,
         tof_indices,
@@ -396,24 +408,18 @@ def read_bruker_scans(
     )
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
-    return (
-        scan_indptr,
-        tof_indices,
-        intensities,
-        # calibrated_mzs,
-        # calibrated_ccs,
-    )
+    return scan_indptr, tof_indices, intensities
 
 
 class TimsTOF(object):
 
     def __init__(
         self,
-        bruker_d_folder_name:str,
-        bruker_calibrated_mz_values:bool=False,
-        bruker_calibrated_mobility_values:bool=False,
-        mz_estimation_from_frame:int=1,
-        mobility_estimation_from_frame:int=1,
+        bruker_d_folder_name: str,
+        bruker_calibrated_mz_values: bool = False,
+        bruker_calibrated_mobility_values: bool = False,
+        mz_estimation_from_frame: int = 1,
+        mobility_estimation_from_frame: int = 1,
     ):
         bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if bruker_d_folder_name.endswith(".d"):
@@ -440,11 +446,11 @@ class TimsTOF(object):
 
     def import_data_from_d_folder(
         self,
-        bruker_d_folder_name:str,
-        bruker_calibrated_mz_values:bool,
-        bruker_calibrated_mobility_values:bool,
-        mz_estimation_from_frame:int,
-        mobility_estimation_from_frame:int,
+        bruker_d_folder_name: str,
+        bruker_calibrated_mz_values: bool,
+        bruker_calibrated_mobility_values: bool,
+        mz_estimation_from_frame: int,
+        mobility_estimation_from_frame: int,
     ):
         logging.info(f"Importing data from {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
@@ -454,23 +460,15 @@ class TimsTOF(object):
             global_meta_data,
             self.frames,
             self.fragment_frames,
-        ) = read_bruker_frames(bruker_d_folder_name)
+        ) = read_bruker_sql(bruker_d_folder_name)
         (
             self.tof_indptr,
             self.tof_indices,
             self.intensities,
-            # calibrated_mz_values,
-            # calibrated_mobility_values,
-        ) = read_bruker_scans(
+        ) = read_bruker_binary(
             self.frames,
             bruker_d_folder_name,
-            # bruker_calibrated_mz_values,
-            # bruker_calibrated_mobility_values,
         )
-        if bruker_calibrated_mz_values:
-            self.calibrated_mz_values = calibrated_mz_values
-        if bruker_calibrated_mobility_values:
-            self.calibrated_mobility_values = calibrated_mobility_values
         self.meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -491,7 +489,6 @@ class TimsTOF(object):
         else:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
-                alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
                 logging.info(
@@ -525,7 +522,6 @@ class TimsTOF(object):
         else:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
-                alphatims.bruker.BRUKER_DLL_FILE_NAME,
                 bruker_d_folder_name
             ) as (bruker_dll, bruker_d_folder_handle):
                 logging.info(
@@ -545,9 +541,8 @@ class TimsTOF(object):
                     self.tof_max_index
                 )
         (
-            self.quad_indptr,
-            self.quad_low_values,
-            self.quad_high_values,
+            quad_indptr,
+            self.quad_mz_values,
             self.precursor_indices
         ) = parse_quad_indptr(
             self.fragment_frames.Frame.values,
@@ -559,15 +554,16 @@ class TimsTOF(object):
             self.scan_max_index,
             self.frame_max_index,
         )
-        self.quad_max_index = int(np.max(self.quad_high_values))
+        self.quad_indptr = self.tof_indptr[quad_indptr]
+        self.quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
         self.precursor_max_index = int(np.max(self.precursor_indices))
 
     def save_as_hdf(
         self,
-        directory:str,
-        file_name:str,
-        overwrite:bool=False,
-        compress:bool=False
+        directory: str,
+        file_name: str,
+        overwrite: bool = False,
+        compress: bool = False
     ):
         full_file_name = os.path.join(
             directory,
@@ -591,7 +587,7 @@ class TimsTOF(object):
 
     def import_data_from_hdf_file(
         self,
-        bruker_d_folder_name:str,
+        bruker_d_folder_name: str,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
@@ -606,17 +602,17 @@ class TimsTOF(object):
         quad_indices=None,
         scan_indices=None,
         tof_indices=None,
-        return_frame_indices:bool=False,
-        return_scan_indices:bool=False,
-        return_quad_indices:bool=False,
-        return_tof_indices:bool=False,
-        return_rt_values:bool=False,
-        return_mobility_values:bool=False,
-        return_quad_mz_values:bool=False,
-        return_precursor_indices:bool=False,
-        return_mz_values:bool=False,
-        return_intensity_values:bool=False,
-        return_as_dict:bool=False,
+        return_frame_indices: bool = False,
+        return_scan_indices: bool = False,
+        return_quad_indices: bool = False,
+        return_tof_indices: bool = False,
+        return_rt_values: bool = False,
+        return_mobility_values: bool = False,
+        return_quad_mz_values: bool = False,
+        return_precursor_indices: bool = False,
+        return_mz_values: bool = False,
+        return_intensity_values: bool = False,
+        return_as_dict: bool = False,
     ):
         result = {}
         if (raw_indices is not None) and any(
@@ -649,7 +645,7 @@ class TimsTOF(object):
         ):
             quad_indices = indptr_lookup(
                 self.quad_indptr,
-                parsed_indices,
+                raw_indices,
             )
         if (return_tof_indices or return_mz_values) and (tof_indices is None):
             tof_indices = self.tof_indices[raw_indices]
@@ -668,8 +664,11 @@ class TimsTOF(object):
         if return_mobility_values:
             result["mobility_values"] = self.mobility_values[scan_indices]
         if return_quad_mz_values:
-            result["quad_low_mz_values"] = self.quad_low_values[quad_indices]
-            result["quad_high_mz_values"] = self.quad_high_values[quad_indices]
+            selected_quad_values = self.quad_mz_values[quad_indices]
+            low_mz_values = selected_quad_values[:, 0]
+            high_mz_values = selected_quad_values[:, 1]
+            result["quad_low_mz_values"] = low_mz_values
+            result["quad_high_mz_values"] = high_mz_values
         if return_mz_values:
             result["mz_values"] = self.mz_values[tof_indices]
         if return_intensity_values:
@@ -684,11 +683,11 @@ class TimsTOF(object):
         self,
         values,
         *,
-        return_frame_indices:bool=False,
-        return_scan_indices:bool=False,
-        return_tof_indices:bool=False,
-        side:str="right",
-        return_type:str="",
+        return_frame_indices: bool = False,
+        return_scan_indices: bool = False,
+        return_tof_indices: bool = False,
+        side: str = "right",
+        return_type: str = "",
     ):
         if return_frame_indices:
             return_type = "frame_indices"
@@ -709,11 +708,11 @@ class TimsTOF(object):
         elif return_type == "precursor_indices":
             try:
                 if values not in [-np.inf, np.inf]:
-                    raise PrecursorValueError(
+                    raise PrecursorFloatError(
                         "Can not convert values to precursor_indices"
                     )
             except ValueError:
-                raise PrecursorValueError(
+                raise PrecursorFloatError(
                     "Can not convert values to precursor_indices"
                 )
             if values == -np.inf:
@@ -746,10 +745,8 @@ class TimsTOF(object):
             scan_max_index=self.scan_max_index,
             tof_indptr=self.tof_indptr,
             precursor_indices=self.precursor_indices,
-            quad_values=np.stack(
-                [self.quad_low_values, self.quad_high_values]
-            ).T,
-            quad_indptr=self.tof_indptr[self.quad_indptr],
+            quad_mz_values=self.quad_mz_values,
+            quad_indptr=self.quad_indptr,
             tof_indices=self.tof_indices,
             intensities=self.intensities,
         )
@@ -835,7 +832,8 @@ class TimsTOF(object):
         #     )
         # Each element of this tuple can be either:
         #     A slice
-        #         slice.start and slice.stop can be either integer, float or None,
+        #         slice.start and slice.stop can be either integer,
+        #         float or None,
         #         representing respectively a value or an index.
         #         For the intensity dimension, both integers and floats are
         #         interpreted as a value
@@ -869,18 +867,22 @@ class TimsTOF(object):
             keys = new_keys
         for i, dimension in enumerate(dimensions):
             try:
-                dimension_slices[dimension] = self.convert_slice_key_to_integer(
+                dimension_slices[
+                    dimension
+                ] = self.convert_slice_key_to_integer(
                     keys[i] if (i < len(keys)) else slice(None),
                     dimension
                 )
-            except PrecursorValueError:
-                dimension_slices["precursor_indices"] = self.convert_slice_key_to_integer(
+            except PrecursorFloatError:
+                dimension_slices[
+                    "precursor_indices"
+                ] = self.convert_slice_key_to_integer(
                     slice(None),
                     "precursor_indices"
                 )
-                dimension_slices["quad_values"] = self.convert_slice_key_to_float(
-                    keys[i]
-                )
+                dimension_slices[
+                    "quad_values"
+                ] = self.convert_slice_key_to_float(keys[i])
         dimension_slices["intensity_values"] = self.convert_slice_key_to_float(
             keys[-1] if (len(keys) > len(dimensions)) else slice(None)
         )
@@ -975,39 +977,70 @@ class TimsTOF(object):
                 raise ValueError
 
 
-class PrecursorValueError(ValueError):
+class PrecursorFloatError(TypeError):
+    """Used to indicate that a precursor value is not an int but a float."""
     pass
 
 
 @alphatims.utils.njit
-def valid_quad_mz(
-    quad_index,
-    quad_values,
+def valid_quad_mz_values(
+    low_mz_value: float,
+    high_mz_value: float,
     quad_slices,
-):
+) -> bool:
+    """Check if the low and high quad mz values are included in the slices.
+
+    NOTE: Just a part of the quad range needs to overlap with a part
+    of a single slice.
+
+    Parameters
+    ----------
+    low_mz_value : float
+        The lower mz value of the current quad selection.
+    high_mz_value : float
+        The upper mz value of the current quad selection.
+    quad_slices : np.float64[:, :]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+
+    Returns
+    -------
+    bool
+        True if some part of the quad overlaps with some part of some slice.
+        False if there is no overlap in the range.
     """
-    Quad is assumed valid if there is at least some overlap
-    """
-    quad_low_value, quad_high_value = quad_values[quad_index]
     slice_index = np.searchsorted(
         quad_slices[:, 0].ravel(),
-        quad_high_value,
+        high_mz_value,
         "right"
     )
     if slice_index == 0:
         return False
-    if quad_low_value <= quad_slices[slice_index - 1, 1]:
+    if low_mz_value <= quad_slices[slice_index - 1, 1]:
         return True
     return False
 
 
 @alphatims.utils.njit
-def valid_precursor_index(
-    quad_index,
-    precursor_indices,
-    precursor_slices,
-):
-    precursor_index = precursor_indices[quad_index]
+def valid_precursor_index(precursor_index: int, precursor_slices) -> bool:
+    """Check if a precursor index is included in the slices.
+
+    Parameters
+    ----------
+    precursor_index : int
+        The precursor index to validate.
+    precursor_slices : np.int64[:, :, :]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+
+    Returns
+    -------
+    bool
+        True if the precursor index is present in any of the slices.
+        False otherwise.
+    """
     slice_index = np.searchsorted(
         precursor_slices[:, 0].ravel(),
         precursor_index,
@@ -1030,15 +1063,65 @@ def filter_indices(
     tof_slices,
     quad_slices,
     intensity_slices,
-    frame_max_index,
-    scan_max_index,
+    frame_max_index: int,
+    scan_max_index: int,
     tof_indptr,
     precursor_indices,
-    quad_values,
+    quad_mz_values,
     quad_indptr,
     tof_indices,
     intensities,
 ):
+    """Filter raw indices by slices from all dimensions.
+
+    Parameters
+    ----------
+    frame_slices : np.int64[:, :, :]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+    scan_slices : np.int64[:, :, :]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+    precursor_slices : np.int64[:, :, :]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+    tof_slices : np.int64[:, :, :]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
+    quad_slices : np.float64[:, :]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    intensity_slices : np.float64[:, :]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(intensity_slices.ravel()) >= 0) = True).
+    frame_max_index : int
+        The maximum frame index of a TimsTOF object.
+    scan_max_index : int
+        The maximum scan index of a TimsTOF object.
+    tof_indptr : np.int64[:]
+        The self.tof_indptr array of a TimsTOF object.
+    precursor_indices : np.int64[:]
+        The self.precursor_indices array of a TimsTOF object.
+    quad_mz_values : np.float64[:, :]
+        The self.quad_mz_values array of a TimsTOF object.
+    quad_indptr : np.int64[:]
+        The self.quad_indptr array of a TimsTOF object.
+    tof_indices : np.uint32[:]
+        The self.tof_indices array of a TimsTOF object.
+    intensities : np.uint16[:]
+        The self.intensities array of a TimsTOF object.
+
+    Returns
+    -------
+    np.int64[:]
+        The raw indices that satisfy all the slices.
+    """
     result = []
     quad_index = -2
     new_quad_index = -1
@@ -1069,15 +1152,14 @@ def filter_indices(
                         quad_end = quad_indptr[new_quad_index + 1]
                     if quad_index != new_quad_index:
                         quad_index = new_quad_index
-                        if not valid_quad_mz(
-                            quad_index,
-                            quad_values,
+                        if not valid_quad_mz_values(
+                            quad_mz_values[quad_index, 0],
+                            quad_mz_values[quad_index, 1],
                             quad_slices
                         ):
                             is_valid_quad_index = False
                         elif not valid_precursor_index(
-                            quad_index,
-                            precursor_indices,
+                            precursor_indices[quad_index],
                             precursor_slices,
                         ):
                             is_valid_quad_index = False
@@ -1108,7 +1190,7 @@ def filter_indices(
     return np.array(result)
 
 
-@alphatims.utils.njit
+# @alphatims.utils.njit
 def parse_quad_indptr(
     frame_ids,
     scan_begins,
@@ -1158,8 +1240,7 @@ def parse_quad_indptr(
         precursor_indices.append(0)
     return (
         np.array(quad_indptr),
-        np.array(quad_low_values),
-        np.array(quad_high_values),
+        np.stack([quad_low_values, quad_high_values]).T,
         np.array(precursor_indices),
     )
 
@@ -1200,7 +1281,7 @@ def indptr_lookup(targets, queries, momentum_amplifier=2):
                     break
                 else:
                     target_index -= momentum // momentum_amplifier - 1
-                continue
+                    continue
             if momentum == 1:
                 no_target_overflow = False
             else:
