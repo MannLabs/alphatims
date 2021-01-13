@@ -29,14 +29,17 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
   * [**Future perspectives**](#future-perspectives)
   * [**How to contribute**](#how-to-contribute)
 
+---
 ## About
 
 With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) and [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900), the inclusion of trapped ion mobility separation (TIMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data are therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
 
+---
 ## License
 
 AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
+---
 ## Installation
 
 Three types of installation are possible:
@@ -158,6 +161,7 @@ Common issues include:
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 
+---
 ## Test data
 
 AlphaTims is compatible with both ddaPASEF and diaPASEF. Initial investigation of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
@@ -179,6 +183,7 @@ A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.b
 
 The same sample was also acquired with diaPASEF (1.96 Gb) and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed” method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
+---
 ## Usage
 
 There are three ways to use the software:
@@ -247,6 +252,7 @@ Options:
 
 AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) (with the extra option `gui` activated for all plotting capabilities) is present in the [nbs folder](nbs).
 
+---
 ## Performance
 
 Typical performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
@@ -273,6 +279,7 @@ All of these analysis were run on the following system:
 * **Memory:** 32 GB 3733 MHz LPDDR4X
 * **Startup Disk:** Macintosh HD
 
+---
 ## How it works
 
 The basic workflow of AlphaTims looks as follows:
@@ -317,6 +324,7 @@ All these arrays can be loaded into memory, taking up roughly twice as much RAM 
 
 Once a Python TimsTOF object is available, it can be loaded into memory for ultrafast accession. Accession of the `data` object is done by simple Python slicing such as e.g. `selected_ion_indices = data[frame_selection, scan_selection, quad_selection, tof_selection]`. These ion indices are then easily parsed to a `pd.DataFrame` with the function `df = data.as_dataframe(selected_ion_indices)`. The columns of this dataframe contain all information, i.e. `frame`, `scan`, `precursor` and `tof` indices and `rt`, `mobility`, `quad_low`, `quad_high`, `mz` and `intensity` values.
 
+---
 ## Future perspectives
 
 * Detection of:
@@ -324,6 +332,7 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
   * isotopic envelopes (i.e. features)
   * fragment clusters (i.e. pseudo MSMS spectra)
 
+---
 ## How to contribute
 
 All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch.
