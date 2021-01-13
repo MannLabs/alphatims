@@ -33,8 +33,6 @@ else:
     )
     logging.info("")
     BRUKER_DLL_FILE_NAME = ""
-MSMSTYPE_PASEF = 8
-MSMSTYPE_DIAPASEF = 9
 
 
 def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
@@ -63,7 +61,7 @@ def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
 
     Returns
     -------
-    library
+    : ctypes.cdll
         The Bruker dll library.
     """
     import ctypes
@@ -118,7 +116,7 @@ def open_bruker_d_folder(
     ----------
     bruker_d_folder_name : str
         The name of a Bruker .d folder.
-    bruker_dll_file_name : str, library
+    bruker_dll_file_name : str, ctypes.cdll
         The path to Bruker' timsdata.dll library.
         Alternatively, the library itself can be passed as argument.
         Default is alphatims.utils.BRUKER_DLL_FILE_NAME,
@@ -126,8 +124,7 @@ def open_bruker_d_folder(
 
     Returns
     -------
-    tuple
-        (library, int).
+    : tuple (ctypes.cdll, int).
         The opened bruker dll and identifier of the .d folder.
     """
     try:
@@ -172,14 +169,14 @@ def read_bruker_sql(
 
     Returns
     -------
-    tuple
+    : tuple
         (str, dict, pd.DataFrame, pd.DataFrame).
         The acquisition_mode, global_meta_data, frames and fragment_frames.
 
     Raises
     ------
     ValueError
-        When MSMSTYPE_DIAPASEF is not 8 or 9.
+        When table "MsMsType" is not 8 or 9.
         In this case it is unclear if it is ddaPASEF or diaPASEF.
     """
     import sqlite3
@@ -195,7 +192,7 @@ def read_bruker_sql(
             "SELECT * FROM Frames",
             sql_database_connection
         )
-        if MSMSTYPE_DIAPASEF in frames.MsMsType.values:
+        if 9 in frames.MsMsType.values:
             acquisition_mode = "diaPASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * FROM DiaFrameMsMsInfo",
@@ -213,7 +210,7 @@ def read_bruker_sql(
                 columns={"WindowGroup": "Precursor"},
                 inplace=True
             )
-        elif MSMSTYPE_PASEF in frames.MsMsType.values:
+        elif 8 in frames.MsMsType.values:
             acquisition_mode = "PASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * from PasefFrameMsMsInfo",
@@ -261,8 +258,7 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
 
     Returns
     -------
-    tuple
-        (np.uint32[:], np.uint32[:], np.uint32[:]).
+    : tuple (np.uint32[:], np.uint32[:], np.uint32[:]).
         The scan_indices, tof_indices and intensities present in this binary
         array
     """
@@ -377,8 +373,7 @@ def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
 
     Returns
     -------
-    tuple
-        (np.int64[:], np.uint32[:], np.uint16[:]).
+    : tuple (np.int64[:], np.uint32[:], np.uint16[:]).
         The scan_indptr, tof_indices and intensities.
     """
     # TODO: colon (:) in returns is not parsed properly in readthedocs.
@@ -775,7 +770,7 @@ class TimsTOF(object):
             "mobility": "scan_indices",
             "mz": "tof_indices",
         }
-        bin_intensities(
+        add_intensity_to_bin(
             range(indices.size),
             intensities,
             tuple(
@@ -1006,7 +1001,7 @@ def valid_quad_mz_values(
 
     Returns
     -------
-    bool
+    : bool
         True if some part of the quad overlaps with some part of some slice.
         False if there is no overlap in the range.
     """
@@ -1037,7 +1032,7 @@ def valid_precursor_index(precursor_index: int, precursor_slices) -> bool:
 
     Returns
     -------
-    bool
+    : bool
         True if the precursor index is present in any of the slices.
         False otherwise.
     """
@@ -1119,7 +1114,7 @@ def filter_indices(
 
     Returns
     -------
-    np.int64[:]
+    : np.int64[:]
         The raw indices that satisfy all the slices.
     """
     result = []
@@ -1202,9 +1197,9 @@ def parse_quad_indptr(
     isolation_mzs,
     isolation_widths,
     precursors,
-    scan_max_index,
-    frame_max_index,
-):
+    scan_max_index: int,
+    frame_max_index: int,
+) -> tuple:
     quad_indptr = [0]
     quad_low_values = []
     quad_high_values = []
@@ -1249,26 +1244,69 @@ def parse_quad_indptr(
     )
 
 
-# Overhead of using multiple threads is slower
+# TODO: Overhead of using multiple threads is slower
 @alphatims.utils.pjit(thread_count=1)
-def bin_intensities(
-    query,
+def add_intensity_to_bin(
+    query_index: int,
     intensities,
     parsed_indices,
     intensity_bins
-):
-    intensity = intensities[query]
+) -> None:
+    """Add the intensity of a query to the appropriate bin.
+
+    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    query_index : int
+        The query whose intensity needs to be binned
+        The first argument is thus expected to be provided as an iterable
+        containing ints instead of a single int.
+    intensities : np.float64[:]
+        An array with intensities that need to be binned.
+    parsed_indices : np.int64[:], np.int64[:, :]
+        Description of parameter `parsed_indices`.
+    intensity_bins : np.float64[:]
+        A buffer with intensity bins to which the current query will be added.
+    """
+    intensity = intensities[query_index]
     if len(parsed_indices) == 1:
-        intensity_bins[parsed_indices[0][query]] += intensity
+        intensity_bins[parsed_indices[0][query_index]] += intensity
     elif len(parsed_indices) == 2:
         intensity_bins[
-            parsed_indices[0][query],
-            parsed_indices[1][query]
+            parsed_indices[0][query_index],
+            parsed_indices[1][query_index]
         ] += intensity
 
 
 @alphatims.utils.njit
-def indptr_lookup(targets, queries, momentum_amplifier=2):
+def indptr_lookup(targets, queries, momentum_amplifier: int = 2):
+    """Find the indices of queries in targets.
+
+    This function is equivalent to
+    "np.searchsorted(targets, queries, "right") - 1".
+    By utilizing the fact that queries are also sorted,
+    it is significantly faster though.
+
+    Parameters
+    ----------
+    targets : np.int64[:]
+        A sorted list of index pointers where queries needs to be looked up.
+    queries : np.int64[:]
+        A sorted list of queries whose index pointers needs to be looked up.
+    momentum_amplifier : int
+        Factor to add momentum to linear searching, attempting to quickly
+        discard empty range without hits.
+        Invreasing it can speed up searching of queries if they are sparsely
+        spread out in targets.
+
+    Returns
+    -------
+    : np.int64[:]
+        The indices of queries in targets.
+    """
     hits = np.empty_like(queries)
     target_index = 0
     no_target_overflow = True

@@ -249,9 +249,22 @@ AlphaTims can be imported as a Python package into any Python script or notebook
 
 ## Performance
 
-<!-- Some typical datasets: -->
+Some performance statistics on data in-/output include of standard [HeLa datasets](#test-sample) include:
 
-TODO
+| type | gradient | datapoints    | reading (raw/hdf) | export |
+|------|----------|---------------|-------------------|--------|
+| DDA  | 6 min    | 214,172,697   | 1.6 s / 517 ms    | 512 ms |
+| DIA  | 6 min    | 158,552,099   | 1.0 s / 376 ms    | 381 ms |
+| DDA  | 21 min   | 295,251,252   | 3.0 s / 821 ms    | 768 ms |
+| DIA  | 21 min   | 730,564,765   | 4.3 s / 1.8 s     | 1.7 s  |
+| DDA  | 120 min  | 2,074,019,899 | 26.1 s / 9.3 s    | 4.9 s  |
+
+All of these analysis were run on the following system:
+
+* **MacBook Pro:** (13-inch, 2020, Four Thunderbolt 3 ports)
+* **Processor:** 2.3 GHz Quad-Core Intel Core i7
+* **Memory:** 32 GB 3733 MHz LPDDR4X
+* **Startup Disk:** Macintosh HD
 
 ## How it works
 
