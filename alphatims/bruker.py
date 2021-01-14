@@ -44,18 +44,11 @@ def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
 
     Five functions are defined for this dll:
 
-        - tims_open:
-            [c_char_p, c_uint32] -> c_uint64
-        - tims_close:
-            [c_char_p, c_uint32] -> c_uint64
-        - tims_read_scans_v2:
-            [c_uint64, c_int64, c_uint32, c_uint32, c_void_p,
-            c_uint32] -> c_uint32
-        - tims_index_to_mz:
-            [c_uint64, c_int64, POINTER(c_double), POINTER(c_double),
-            c_uint32] -> None
-        - tims_scannum_to_oneoverk0:
-            Same as "tims_index_to_mz"
+        - tims_open: [c_char_p, c_uint32] -> c_uint64
+        - tims_close: [c_char_p, c_uint32] -> c_uint64
+        - tims_read_scans_v2: [c_uint64, c_int64, c_uint32, c_uint32, c_void_p, c_uint32] -> c_uint32
+        - tims_index_to_mz: [c_uint64, c_int64, POINTER(c_double), POINTER(c_double), c_uint32] -> None
+        - tims_scannum_to_oneoverk0: Same as "tims_index_to_mz"
 
     Parameters
     ----------
@@ -380,7 +373,6 @@ def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
     : tuple (np.int64[:], np.uint32[:], np.uint16[:]).
         The scan_indptr, tof_indices and intensities.
     """
-    # TODO: colon (:) in returns is not parsed properly in readthedocs.
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
@@ -415,125 +407,123 @@ class TimsTOF(object):
 
     @property
     def sample_name(self):
-        """str : The sample name of this TimsTOF object."""
+        """: str : The sample name of this TimsTOF object."""
         file_name = os.path.basename(self.bruker_d_folder_name)
         return '.'.join(file_name.split('.')[:-1])
 
     @property
     def directory(self):
-        """str : The directory of this TimsTOF object."""
+        """: str : The directory of this TimsTOF object."""
         return os.path.dirname(self.bruker_d_folder_name)
 
     @property
     def version(self):
-        """str : AlphaTims version used to create this TimsTOF object."""
+        """: str : AlphaTims version used to create this TimsTOF object."""
         return self._version
 
     @property
     def acquisition_mode(self):
-        """str : The acquisition mode of this TimsTOF object."""
+        """: str : The acquisition mode."""
         return self._acquisition_mode
 
     @property
     def meta_data(self):
-        """dict : The metadata for the acquisition of this TimsTOF object."""
+        """: dict : The metadata for the acquisition."""
         return self._meta_data
 
     @property
     def rt_values(self):
-        """np.float64[:] : The rt values of this TimsTOF object."""
+        """: np.ndarray : np.float64[:] : The rt values."""
         return self._rt_values
 
     @property
     def mobility_values(self):
-        """np.float64[:] : The mobility values of this TimsTOF object."""
+        """: np.ndarray : np.float64[:] : The mobility values."""
         return self._mobility_values
 
     @property
     def mz_values(self):
-        """np.float64[:] : The mz values of this TimsTOF object."""
+        """: np.ndarray : np.float64[:] : The mz values."""
         return self._mz_values
 
     @property
     def quad_mz_values(self):
-        """np.float64[:,:] : The (low, high) quad mz values
-        of this TimsTOF object.
-        """
+        """: np.ndarray : np.float64[:, :] : The (low, high) quad mz values."""
         return self._quad_mz_values
 
     @property
     def intensity_values(self):
-        """np.uint16[:] : The intensity values of this TimsTOF object."""
+        """: np.ndarray : np.uint16[:] : The intensity values."""
         return self._intensity_values
 
     @property
     def frame_max_index(self):
-        """int : The maximum frame index of this TimsTOF object."""
+        """: int : The maximum frame index."""
         return self._frame_max_index
 
     @property
     def scan_max_index(self):
-        """int : The maximum scan index of this TimsTOF object."""
+        """: int : The maximum scan index."""
         return self._scan_max_index
 
     @property
     def tof_max_index(self):
-        """int : The maximum tof index of this TimsTOF object."""
+        """: int : The maximum tof index."""
         return self._tof_max_index
 
     @property
     def precursor_max_index(self):
-        """int : The maximum precursor index of this TimsTOF object."""
+        """: int : The maximum precursor index."""
         return self._precursor_max_index
 
     @property
     def mz_min_value(self):
-        """float : The minimum mz value of this TimsTOF object."""
+        """: float : The minimum mz value."""
         return self._mz_min_value
 
     @property
     def mz_max_value(self):
-        """float : The maximum mz value of this TimsTOF object."""
+        """: float : The maximum mz value."""
         return self._mz_max_value
 
     @property
     def mobility_min_value(self):
-        """float : The minimum mobility value of this TimsTOF object."""
+        """: float : The minimum mobility value."""
         return self._mobility_min_value
 
     @property
     def mobility_max_value(self):
-        """float : The maximum mobility value of this TimsTOF object."""
+        """: float : The maximum mobility value."""
         return self._mobility_max_value
 
     @property
     def frames(self):
-        """pd.DataFrame : The frames table of the analysis.tdf SQL."""
+        """: pd.DataFrame : The frames table of the analysis.tdf SQL."""
         return self._frames
 
     @property
     def fragment_frames(self):
-        """pd.DataFrame : The fragment frames table of this TimsTOF object."""
+        """: pd.DataFrame : The fragment frames table."""
         return self._fragment_frames
 
     @property
     def tof_indices(self):
-        """np.uint32[:] : The tof indices of this TimsTOF object."""
+        """: np.ndarray : np.uint32[:] : The tof indices."""
         return self._tof_indices
 
     @property
     def tof_indptr(self):
-        """np.int64[:] : The tof indptr of this TimsTOF object."""
+        """: np.ndarray : np.int64[:] : The tof indptr."""
         return self._tof_indptr
 
     @property
     def quad_indptr(self):
-        """np.int64[:] : The quad indptr of this TimsTOF object."""
+        """: np.ndarray : np.int64[:] : The quad indptr."""
         return self._quad_indptr
 
     @property
     def precursor_indices(self):
-        """np.int64[:] : The precursor indices of this TimsTOF object."""
+        """: np.ndarray : np.int64[:] : The precursor indices."""
         return self._precursor_indices
 
     def __init__(
@@ -545,18 +535,16 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True
     ):
-        # TODO: Docstring
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
-            bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
-            self.import_data_from_d_folder(
+            self._import_data_from_d_folder(
                 bruker_d_folder_name,
-                mz_estimation_from_frame and bruker_dll_available,
-                mobility_estimation_from_frame and bruker_dll_available,
+                mz_estimation_from_frame,
+                mobility_estimation_from_frame,
             )
         elif bruker_d_folder_name.endswith(".hdf"):
-            self.import_data_from_hdf_file(
+            self._import_data_from_hdf_file(
                 bruker_d_folder_name,
             )
         if not hasattr(self, "version"):
@@ -569,13 +557,12 @@ class TimsTOF(object):
             )
         self.slice_as_dataframe = slice_as_dataframe
 
-    def import_data_from_d_folder(
+    def _import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
     ):
-        # TODO: Docstring
         self._version = alphatims.__version__
         (
             self._acquisition_mode,
@@ -604,11 +591,8 @@ class TimsTOF(object):
         self._mobility_max_value = float(
             self.meta_data["OneOverK0AcqRangeUpper"]
         )
-        if mobility_estimation_from_frame == 0:
-            self._mobility_values = self.mobility_max_value - (
-                self.mobility_max_value - self.mobility_min_value
-            ) / self.scan_max_index * np.arange(self.scan_max_index)
-        else:
+        bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
+        if (mobility_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 bruker_d_folder_name
@@ -629,17 +613,17 @@ class TimsTOF(object):
                     ),
                     self.scan_max_index
                 )
+        else:
+            self._mobility_values = self.mobility_max_value - (
+                self.mobility_max_value - self.mobility_min_value
+            ) / self.scan_max_index * np.arange(self.scan_max_index)
         self._mz_min_value = float(self.meta_data["MzAcqRangeLower"])
         self._mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
         tof_intercept = np.sqrt(self.mz_min_value)
         tof_slope = (
             np.sqrt(self.mz_max_value) - tof_intercept
         ) / self.tof_max_index
-        if mz_estimation_from_frame == 0:
-            self._mz_values = (
-                tof_intercept + tof_slope * np.arange(self.tof_max_index)
-            )**2
-        else:
+        if (mz_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 bruker_d_folder_name
@@ -660,23 +644,11 @@ class TimsTOF(object):
                     ),
                     self.tof_max_index
                 )
-        (
-            quad_indptr,
-            self._quad_mz_values,
-            self._precursor_indices
-        ) = parse_quad_indptr(
-            self.fragment_frames.Frame.values,
-            self.fragment_frames.ScanNumBegin.values,
-            self.fragment_frames.ScanNumEnd.values,
-            self.fragment_frames.IsolationMz.values,
-            self.fragment_frames.IsolationWidth.values,
-            self.fragment_frames.Precursor.values,
-            self.scan_max_index,
-            self.frame_max_index,
-        )
-        self._quad_indptr = self.tof_indptr[quad_indptr]
-        self._quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
-        self._precursor_max_index = int(np.max(self.precursor_indices))
+        else:
+            self._mz_values = (
+                tof_intercept + tof_slope * np.arange(self.tof_max_index)
+            )**2
+        self._parse_quad_indptr()
 
     def save_as_hdf(
         self,
@@ -686,7 +658,39 @@ class TimsTOF(object):
         compress: bool = False,
         return_as_bytes_io: bool = False,
     ):
-        # TODO: Docstring
+        """Save the TimsTOF object as an hdf file.
+
+        Parameters
+        ----------
+        directory : str
+            The directory where to save the HDF file.
+            Ignored if return_as_bytes_io == True.
+        file_name : str
+            The file name of the  HDF file.
+            Ignored if return_as_bytes_io == True.
+        overwrite : bool
+            If True, an existing file is truncated.
+            If False, the existing file is appended to only if the original
+            group, array or property does not exist yet.
+            Default is False.
+        compress : bool
+            If True, compression is used.
+            This roughly halves files sizes (on-disk),
+            at the cost of taking 3-6 longer accession times.
+            See also alphatims.utils.create_hdf_group_from_dict.
+            If False, no compression is used
+            Default is False.
+        return_as_bytes_io
+            If True, the HDF file is only created in memory and returned
+            as a bytes stream.
+            If False, the file is written to disk.
+            Default is False.
+
+        Returns
+        -------
+        str, io.BytesIO
+            The full file name or a bytes stream containing the HDF file.
+        """
         import io
         if overwrite:
             hdf_mode = "w"
@@ -714,11 +718,10 @@ class TimsTOF(object):
             full_file_name.seek(0)
         return full_file_name
 
-    def import_data_from_hdf_file(
+    def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
     ):
-        # TODO: Docstring
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
                 hdf_root["raw"]
@@ -855,7 +858,6 @@ class TimsTOF(object):
             raise KeyError(f"return_type '{return_type}' is invalid")
 
     def __getitem__(self, keys):
-        # TODO: Docstring
         if not isinstance(keys, tuple):
             keys = tuple([keys])
         if isinstance(keys[-1], str):
@@ -868,7 +870,7 @@ class TimsTOF(object):
             keys = keys[:-1]
         else:
             as_dataframe = self.slice_as_dataframe
-        parsed_keys = self.parse_keys(keys)
+        parsed_keys = parse_keys(self, keys)
         raw_indices = filter_indices(
             frame_slices=parsed_keys["frame_indices"],
             scan_slices=parsed_keys["scan_indices"],
@@ -890,8 +892,24 @@ class TimsTOF(object):
         else:
             return raw_indices
 
-    def bin_intensities(self, indices, axis):
-        # TODO: Docstring
+    def bin_intensities(self, indices, axis: tuple):
+        """Sum and project the intensities of the indices along 1 or 2 axis.
+
+        Parameters
+        ----------
+        indices : np.int64[:]
+            The selected indices whose coordinates need to be summed along
+            the selected axis.
+        axis : tuple
+            Must be length 1 or 2 and can only contain the elements
+            "rt", "mobility" and "mz".
+
+        Returns
+        -------
+        np.float64[:], np.float64[:, :]
+            An array or heatmap that express the summed intensity along
+            the selected axis.
+        """
         intensities = self.intensity_values[indices].astype(np.float64)
         max_index = {
             "rt": self.frame_max_index,
@@ -956,169 +974,275 @@ class TimsTOF(object):
             )
         )
 
-    def parse_keys(self, keys):
-        # """
-        # Keys is at most a 5-tuple, with selection criteria for the
-        # LC-IMS-MSMS dimensions:
-        #     (
-        #         'frame_index/rt_value',
-        #         'scan_index/mobility_value',
-        #         'precursor_index/quad_mz_value',
-        #         'TOF_index/tof_mz_value',
-        #         'intensity_values',
-        #     )
-        # Each element of this tuple can be either:
-        #     A slice
-        #         slice.start and slice.stop can be either integer,
-        #         float or None,
-        #         representing respectively a value or an index.
-        #         For the intensity dimension, both integers and floats are
-        #         interpreted as a value
-        #         slice.step can only be None or an integer.
-        #     An iterable with sorted indices
-        # NOTE: Negative slicing is not supported
-        # """
-        # TODO: Docstring
-        dimensions = [
-            "frame_indices",
-            "scan_indices",
-            "precursor_indices",
-            "tof_indices",
-        ]
-        dimension_slices = {}
-        if len(keys) > (len(dimensions) + 1):
-            raise KeyError(
-                "LC-IMS-MSMS data can be sliced in maximum 5 dimensions. "
-                "Integers are assumed to be indices, while "
-                "floats are assumed as values. Intensity is always casted "
-                "to integer values, regardless of input type."
-            )
-        if isinstance(keys[0], dict):
-            new_keys = []
-            for dimension in dimensions:
-                if dimension in keys[0]:
-                    new_keys.append(keys[0][dimension])
-                else:
-                    new_keys.append(slice(None))
-            if "intensity_values" in keys[0]:
-                new_keys.append(keys[0]["intensity_values"])
-            keys = new_keys
-        for i, dimension in enumerate(dimensions):
-            try:
-                dimension_slices[
-                    dimension
-                ] = self.convert_slice_key_to_integer(
-                    keys[i] if (i < len(keys)) else slice(None),
-                    dimension
-                )
-            except PrecursorFloatError:
-                dimension_slices[
-                    "precursor_indices"
-                ] = self.convert_slice_key_to_integer(
-                    slice(None),
-                    "precursor_indices"
-                )
-                dimension_slices[
-                    "quad_values"
-                ] = self.convert_slice_key_to_float(keys[i])
-        dimension_slices["intensity_values"] = self.convert_slice_key_to_float(
-            keys[-1] if (len(keys) > len(dimensions)) else slice(None)
-        )
-        if "quad_values" not in dimension_slices:
-            dimension_slices["quad_values"] = np.array(
-                [[-np.inf, np.inf]],
-                dtype=np.float
-            )
-        return dimension_slices
-
-    def convert_slice_key_to_float(self, key):
-        # TODO: Docstring
-        try:
-            iter(key)
-        except TypeError:
-            if key is None:
-                key = slice(None)
-            if isinstance(key, slice):
-                start = key.start
-                if start is None:
-                    start = -np.inf
-                stop = key.stop
-                if stop is None:
-                    stop = np.inf
-            else:
-                start = key
-                stop = key
-            return np.array([[start, stop]], dtype=np.float)
-        else:
-            if not isinstance(key, np.ndarray):
-                key = np.array(key, dtype=np.float)
-            if not isinstance(key.ravel()[0], np.float):
-                raise ValueError
-            if len(key.shape) == 1:
-                return np.array([[key, key]]).T
-            elif len(key.shape) == 2:
-                if key.shape[1] != 2:
-                    raise ValueError
-                return key
-            else:
-                raise ValueError
-
-    def convert_slice_key_to_integer(self, key, dimension):
-        # TODO: Docstring
-        try:
-            iter(key)
-        except TypeError:
-            if key is None:
-                key = slice(None)
-            if isinstance(key, slice):
-                start = key.start
-                if not isinstance(start, (np.integer, int)):
-                    if start is None:
-                        start = -np.inf
-                    if not isinstance(start, (np.inexact, float)):
-                        raise ValueError
-                    start = self.convert_to_indices(
-                        start,
-                        return_type=dimension
-                    )
-                stop = key.stop
-                if not isinstance(stop, (np.integer, int)):
-                    if stop is None:
-                        stop = np.inf
-                    if not isinstance(stop, (np.inexact, float)):
-                        raise ValueError
-                    stop = self.convert_to_indices(
-                        stop,
-                        return_type=dimension
-                    )
-                step = key.step
-                if not isinstance(step, (np.integer, int)):
-                    if step is not None:
-                        raise ValueError
-                    step = 1
-                return np.array([[start, stop, step]])
-            elif isinstance(key, (np.integer, int)):
-                return np.array([[key, key + 1, 1]])
-            else:
-                raise ValueError
-        else:
-            if not isinstance(key, np.ndarray):
-                key = np.array(key)
-            if not isinstance(key.ravel()[0], np.integer):
-                key = self.convert_to_indices(key, return_type=dimension)
-            if len(key.shape) == 1:
-                return np.array([key, key + 1, np.repeat(1, key.size)]).T
-            elif len(key.shape) == 2:
-                if key.shape[1] != 3:
-                    raise ValueError
-                return key
-            else:
-                raise ValueError
+    def _parse_quad_indptr(self) -> None:
+        frame_ids = self.fragment_frames.Frame.values
+        scan_begins = self.fragment_frames.ScanNumBegin.values
+        scan_ends = self.fragment_frames.ScanNumEnd.values
+        isolation_mzs = self.fragment_frames.IsolationMz.values
+        isolation_widths = self.fragment_frames.IsolationWidth.values
+        precursors = self.fragment_frames.Precursor.values
+        scan_max_index = self.scan_max_index
+        frame_max_index = self.frame_max_index
+        quad_indptr = [0]
+        quad_low_values = []
+        quad_high_values = []
+        precursor_indices = []
+        high = -1
+        for (
+            frame_id,
+            scan_begin,
+            scan_end,
+            isolation_mz,
+            isolation_width,
+            precursor
+        ) in zip(
+            frame_ids - 1,
+            scan_begins,
+            scan_ends,
+            isolation_mzs,
+            isolation_widths / 2,
+            precursors
+        ):
+            low = frame_id * scan_max_index + scan_begin - 1
+            if low > high:
+                quad_indptr.append(low)
+                quad_low_values.append(-1)
+                quad_high_values.append(-1)
+                precursor_indices.append(0)
+            high = frame_id * scan_max_index + scan_end
+            quad_indptr.append(high)
+            quad_low_values.append(isolation_mz - isolation_width)
+            quad_high_values.append(isolation_mz + isolation_width)
+            precursor_indices.append(precursor)
+        quad_max_index = scan_max_index * frame_max_index
+        if high < quad_max_index:
+            quad_indptr.append(quad_max_index)
+            quad_low_values.append(-1)
+            quad_high_values.append(-1)
+            precursor_indices.append(0)
+        self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
+        self._precursor_indices = np.array(precursor_indices)
+        self._quad_indptr = self.tof_indptr[quad_indptr]
+        self._quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
+        self._precursor_max_index = int(np.max(self.precursor_indices))
 
 
 class PrecursorFloatError(TypeError):
     """Used to indicate that a precursor value is not an int but a float."""
     pass
+
+
+def parse_keys(data, keys) -> dict:
+    """Convert different keys to a key dict with defined types.
+
+    NOTE: Negative slicing is not supported and all indiviudal keys
+    are assumed to be sorted, disjunct and strictly increasing
+
+    Parameters
+    ----------
+    data : alphatims.bruker.TimsTOF
+        The TimsTOF objext for which to get slices.
+    keys : tuple
+        A tuple of at most 5 elemens, containing
+        slices, ints, floats, Nones, and/or iterables.
+        See `alphatims.bruker.convert_slice_key_to_integer_array` and
+        `alphatims.bruker.convert_slice_key_to_float_array` for more details.
+
+    Returns
+    -------
+    : dict
+        The resulting dict always has the following items:
+            - "frame_indices": np.int64[:, :, :]
+            - "scan_indices": np.int64[:, :, :]
+            - "tof_indices": np.int64[:, :, :]
+            - "precursor_indices": np.int64[:, :, :]
+            - "quad_values": np.float64[:, :]
+            - "intensity_values": np.float64[:, :]
+    """
+    dimensions = [
+        "frame_indices",
+        "scan_indices",
+        "precursor_indices",
+        "tof_indices",
+    ]
+    dimension_slices = {}
+    if len(keys) > (len(dimensions) + 1):
+        raise KeyError(
+            "LC-IMS-MSMS data can be sliced in maximum 5 dimensions. "
+            "Integers are assumed to be indices, while "
+            "floats are assumed as values. Intensity is always casted "
+            "to integer values, regardless of input type."
+        )
+    if isinstance(keys[0], dict):
+        new_keys = []
+        for dimension in dimensions:
+            if dimension in keys[0]:
+                new_keys.append(keys[0][dimension])
+            else:
+                new_keys.append(slice(None))
+        if "intensity_values" in keys[0]:
+            new_keys.append(keys[0]["intensity_values"])
+        keys = new_keys
+    for i, dimension in enumerate(dimensions):
+        try:
+            dimension_slices[
+                dimension
+            ] = convert_slice_key_to_integer_array(
+                data,
+                keys[i] if (i < len(keys)) else slice(None),
+                dimension
+            )
+        except PrecursorFloatError:
+            dimension_slices[
+                "precursor_indices"
+            ] = convert_slice_key_to_integer_array(
+                data,
+                slice(None),
+                "precursor_indices"
+            )
+            dimension_slices[
+                "quad_values"
+            ] = convert_slice_key_to_float_array(data, keys[i])
+    dimension_slices[
+        "intensity_values"
+    ] = convert_slice_key_to_float_array(
+        data,
+        keys[-1] if (len(keys) > len(dimensions)) else slice(None)
+    )
+    if "quad_values" not in dimension_slices:
+        dimension_slices["quad_values"] = np.array(
+            [[-np.inf, np.inf]],
+            dtype=np.float
+        )
+    return dimension_slices
+
+
+def convert_slice_key_to_float_array(data, key):
+    """Convert a key of a data object to a slice float array.
+
+    Parameters
+    ----------
+    data : alphatims.bruker.TimsTOF
+        The TimsTOF objext for which to get slices.
+    key : slice, int, float, None, iterable
+        The key that needs to be converted.
+
+    Returns
+    -------
+    : np.float64[:, :]
+        Each row represent a a (start, stop) slice.
+
+    Raises
+    ------
+    ValueError
+        When the key is an np.ndarray with more than 2 columns.
+    """
+    try:
+        iter(key)
+    except TypeError:
+        if key is None:
+            key = slice(None)
+        if isinstance(key, slice):
+            start = key.start
+            if start is None:
+                start = -np.inf
+            stop = key.stop
+            if stop is None:
+                stop = np.inf
+        else:
+            start = key
+            stop = key
+        return np.array([[start, stop]], dtype=np.float)
+    else:
+        if not isinstance(key, np.ndarray):
+            key = np.array(key, dtype=np.float)
+        key = key.astype(np.float)
+        if len(key.shape) == 1:
+            return np.array([[key, key]]).T
+        elif len(key.shape) == 2:
+            if key.shape[1] != 2:
+                raise ValueError
+            return key
+        else:
+            raise ValueError
+
+
+def convert_slice_key_to_integer_array(data, key, dimension: str):
+    """Convert a key of a data dimension to a slice integer array.
+
+    Parameters
+    ----------
+    data : alphatims.bruker.TimsTOF
+        The TimsTOF objext for which to get slices.
+    key : slice, int, float, None, iterable
+        The key that needs to be converted.
+    dimension : str
+        The dimension for which the key needs to be retrieved
+
+    Returns
+    -------
+    : np.int64[:, :, :]
+        Each row represent a a (start, stop, step) slice.
+
+    Raises
+    ------
+    ValueError
+        When the key contains elements other than int or float.
+    PrecursorFloatError
+        When trying to convert a quad float to precursor index.
+    """
+    try:
+        iter(key)
+    except TypeError:
+        if key is None:
+            key = slice(None)
+        if isinstance(key, slice):
+            start = key.start
+            if not isinstance(start, (np.integer, int)):
+                if start is None:
+                    start = -np.inf
+                if not isinstance(start, (np.inexact, float)):
+                    raise ValueError
+                start = data.convert_to_indices(
+                    start,
+                    return_type=dimension
+                )
+            stop = key.stop
+            if not isinstance(stop, (np.integer, int)):
+                if stop is None:
+                    stop = np.inf
+                if not isinstance(stop, (np.inexact, float)):
+                    raise ValueError
+                stop = data.convert_to_indices(
+                    stop,
+                    return_type=dimension
+                )
+            step = key.step
+            if not isinstance(step, (np.integer, int)):
+                if step is not None:
+                    raise ValueError
+                step = 1
+            return np.array([[start, stop, step]])
+        elif isinstance(key, (np.integer, int)):
+            return np.array([[key, key + 1, 1]])
+        elif isinstance(key, (np.inexact, float)):
+            key = data.convert_to_indices(key, return_type=dimension)
+            return np.array([[key, key + 1, 1]])
+        else:
+            raise ValueError
+    else:
+        if not isinstance(key, np.ndarray):
+            key = np.array(key)
+        if not isinstance(key.ravel()[0], np.integer):
+            key = data.convert_to_indices(key, return_type=dimension)
+        if len(key.shape) == 1:
+            return np.array([key, key + 1, np.repeat(1, key.size)]).T
+        elif len(key.shape) == 2:
+            if key.shape[1] != 3:
+                raise ValueError
+            return key
+        else:
+            raise ValueError
 
 
 @alphatims.utils.njit
@@ -1331,62 +1455,6 @@ def filter_indices(
                             idx += 1
                             tof_value = tof_indices[idx]
     return np.array(result)
-
-
-# @alphatims.utils.njit
-def parse_quad_indptr(
-    frame_ids,
-    scan_begins,
-    scan_ends,
-    isolation_mzs,
-    isolation_widths,
-    precursors,
-    scan_max_index: int,
-    frame_max_index: int,
-) -> tuple:
-    # TODO: docstring
-    quad_indptr = [0]
-    quad_low_values = []
-    quad_high_values = []
-    precursor_indices = []
-    high = -1
-    for (
-        frame_id,
-        scan_begin,
-        scan_end,
-        isolation_mz,
-        isolation_width,
-        precursor
-    ) in zip(
-        frame_ids - 1,
-        scan_begins,
-        scan_ends,
-        isolation_mzs,
-        isolation_widths / 2,
-        precursors
-    ):
-        low = frame_id * scan_max_index + scan_begin - 1
-        if low > high:
-            quad_indptr.append(low)
-            quad_low_values.append(-1)
-            quad_high_values.append(-1)
-            precursor_indices.append(0)
-        high = frame_id * scan_max_index + scan_end
-        quad_indptr.append(high)
-        quad_low_values.append(isolation_mz - isolation_width)
-        quad_high_values.append(isolation_mz + isolation_width)
-        precursor_indices.append(precursor)
-    quad_max_index = scan_max_index * frame_max_index
-    if high < quad_max_index:
-        quad_indptr.append(quad_max_index)
-        quad_low_values.append(-1)
-        quad_high_values.append(-1)
-        precursor_indices.append(0)
-    return (
-        np.array(quad_indptr),
-        np.stack([quad_low_values, quad_high_values]).T,
-        np.array(precursor_indices),
-    )
 
 
 # TODO: Overhead of using multiple threads is slower
