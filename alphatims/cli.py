@@ -4,6 +4,7 @@
 # builtin
 import contextlib
 import os
+import logging
 # external
 import click
 # local
@@ -22,6 +23,7 @@ def parse_cli_settings(command_name: str, **kwargs):
     **kwargs
         All values that need to be logged.
         Values (if included) that explicitly will be parsed are:
+            output_folder
             parameter_file
             threads
             log_file
@@ -29,14 +31,20 @@ def parse_cli_settings(command_name: str, **kwargs):
 
     Returns
     -------
-    dict
+    : dict
         A dictionary with parsed parameters.
     """
-    import logging
     import time
     try:
         start_time = time.time()
         kwargs = {key: arg for key, arg in kwargs.items() if arg is not None}
+        if "output_folder" in kwargs:
+            if kwargs["output_folder"] is not None:
+                kwargs["output_folder"] = os.path.abspath(
+                    kwargs["output_folder"]
+                )
+                if not os.path.exists(kwargs["output_folder"]):
+                    os.makedirs(kwargs["output_folder"])
         if ("parameter_file" in kwargs):
             kwargs["parameter_file"] = os.path.abspath(
                 kwargs["parameter_file"]
@@ -118,7 +126,7 @@ def cli_option(
 
     Returns
     -------
-    click.option, click.argument
+    : click.option, click.argument
         A click.option or click.argument decorator.
     """
     names = [parameter_name]
@@ -171,8 +179,7 @@ def run(ctx, **kwargs):
 
 @run.command("gui", help="Start graphical user interface.")
 def gui():
-    with parse_cli_settings("gui") as parameters:
-        import logging
+    with parse_cli_settings("gui"):
         logging.info("Loading GUI..")
         import alphatims.gui
         alphatims.gui.run()
@@ -197,19 +204,17 @@ def detect(**kwargs):
 @cli_option("parameter_file")
 @cli_option("compress")
 def export_hdf(**kwargs):
-    if kwargs["output_folder"] is None:
-        kwargs["output_folder"] = os.path.dirname(kwargs["bruker_d_folder"])
-    if not os.path.exists(kwargs["output_folder"]):
-        os.makedirs(kwargs["output_folder"])
     with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
-        file_name = os.path.basename(data.bruker_d_folder_name)
-        file_name = f"{'.'.join(file_name.split('.')[:-1])}.hdf"
+        if "output_folder" not in parameters:
+            directory = data.directory
+        else:
+            directory = parameters["output_folder"]
         data.save_as_hdf(
             overwrite=True,
-            directory=parameters["output_folder"],
-            file_name=file_name,
+            directory=directory,
+            file_name=f"{data.sample_name}.hdf",
             compress=parameters["compress"],
         )
 
@@ -231,16 +236,58 @@ def export_hdf(**kwargs):
 @cli_option("output_folder")
 @cli_option("disable_log_stream")
 def export_parameters(**kwargs):
-    import json
     kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
-    with open(kwargs["parameter_file"], "w") as truncated_file:
-        json.dump({}, truncated_file, indent=4, sort_keys=True)
+    alphatims.utils.save_parameters(kwargs["parameter_file"], {})
     with parse_cli_settings("export parameters", **kwargs) as parameters:
         parameter_file_name = parameters.pop("parameter_file")
         alphatims.utils.save_parameters(
             parameter_file_name,
             parameters
         )
+
+
+@export.command(
+    "slice",
+    help="Load a BRUKER_D_FOLDER and export a data slice to a csv file."
+)
+@cli_option(
+    "bruker_d_folder",
+    as_argument=True,
+    type={
+        "name": "path",
+        "exists": True,
+        "file_okay": True,
+        "dir_okay": True
+    }
+)
+@cli_option("slice")
+@cli_option("slice_file")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("disable_log_stream")
+@cli_option("parameter_file")
+def export_slice(**kwargs):
+    with parse_cli_settings("export slice", **kwargs) as parameters:
+        slice = tuple(parameters["slice"])
+        import alphatims.bruker
+        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        logging.info(f"Slicing data with slice {slice}")
+        # TODO: Slicing with eval is very unsafe!
+        # TODO: update help function
+        data_slice = eval(f"data[{parameters['slice']},'df']")
+        if "slice_file" not in parameters:
+            parameters["slice_file"] = f"{data.sample_name}_slice.csv"
+        if "output_folder" not in parameters:
+            output_folder = data.directory
+        else:
+            output_folder = parameters["output_folder"]
+        output_file_name = os.path.join(
+            output_folder,
+            parameters["slice_file"]
+        )
+        logging.info(f"Saving sliced data to {output_file_name}")
+        data_slice.to_csv(output_file_name)
 
 
 @detect.command("ions", help="Detect ions (NotImplemented yet).")

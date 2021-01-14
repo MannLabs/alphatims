@@ -232,6 +232,8 @@ def check_github_version() -> str:
 def save_parameters(parameter_file_name: str, paramaters: dict) -> None:
     """Save parameters to a parameter file.
 
+    IMPORTANT NOTE: This overwrites any existing file.
+
     Parameters
     ----------
     parameter_file_name : str

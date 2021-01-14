@@ -417,6 +417,7 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int = 1,
     ):
         bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+        logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
             bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
             self.import_data_from_d_folder(
@@ -439,6 +440,15 @@ class TimsTOF(object):
                 f"AlphaTims is {alphatims.__version__}."
             )
 
+    @property
+    def sample_name(self):
+        file_name = os.path.basename(self.bruker_d_folder_name)
+        return '.'.join(file_name.split('.')[:-1])
+
+    @property
+    def directory(self):
+        return os.path.dirname(self.bruker_d_folder_name)
+
     def import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,
@@ -447,7 +457,6 @@ class TimsTOF(object):
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
     ):
-        logging.info(f"Importing data from {bruker_d_folder_name}")
         self.bruker_d_folder_name = bruker_d_folder_name
         self.version = alphatims.__version__
         (
