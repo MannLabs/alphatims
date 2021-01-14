@@ -1,4 +1,8 @@
 #!python
+"""This module provides functions to handle Bruker data.
+It primarily implements the TimsTOF class, that acts as an in-memory container
+for Bruker data accession and storage.
+"""
 
 # builtin
 import os
@@ -407,8 +411,130 @@ def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
 
 
 class TimsTOF(object):
+    # TODO: Docstring
 
-    bruker_d_folder_name = ""
+    @property
+    def sample_name(self):
+        """str : The sample name of this TimsTOF object."""
+        file_name = os.path.basename(self.bruker_d_folder_name)
+        return '.'.join(file_name.split('.')[:-1])
+
+    @property
+    def directory(self):
+        """str : The directory of this TimsTOF object."""
+        return os.path.dirname(self.bruker_d_folder_name)
+
+    @property
+    def version(self):
+        """str : AlphaTims version used to create this TimsTOF object."""
+        return self._version
+
+    @property
+    def acquisition_mode(self):
+        """str : The acquisition mode of this TimsTOF object."""
+        return self._acquisition_mode
+
+    @property
+    def meta_data(self):
+        """dict : The metadata for the acquisition of this TimsTOF object."""
+        return self._meta_data
+
+    @property
+    def rt_values(self):
+        """np.float64[:] : The rt values of this TimsTOF object."""
+        return self._rt_values
+
+    @property
+    def mobility_values(self):
+        """np.float64[:] : The mobility values of this TimsTOF object."""
+        return self._mobility_values
+
+    @property
+    def mz_values(self):
+        """np.float64[:] : The mz values of this TimsTOF object."""
+        return self._mz_values
+
+    @property
+    def quad_mz_values(self):
+        """np.float64[:,:] : The (low, high) quad mz values
+        of this TimsTOF object.
+        """
+        return self._quad_mz_values
+
+    @property
+    def intensity_values(self):
+        """np.uint16[:] : The intensity values of this TimsTOF object."""
+        return self._intensity_values
+
+    @property
+    def frame_max_index(self):
+        """int : The maximum frame index of this TimsTOF object."""
+        return self._frame_max_index
+
+    @property
+    def scan_max_index(self):
+        """int : The maximum scan index of this TimsTOF object."""
+        return self._scan_max_index
+
+    @property
+    def tof_max_index(self):
+        """int : The maximum tof index of this TimsTOF object."""
+        return self._tof_max_index
+
+    @property
+    def precursor_max_index(self):
+        """int : The maximum precursor index of this TimsTOF object."""
+        return self._precursor_max_index
+
+    @property
+    def mz_min_value(self):
+        """float : The minimum mz value of this TimsTOF object."""
+        return self._mz_min_value
+
+    @property
+    def mz_max_value(self):
+        """float : The maximum mz value of this TimsTOF object."""
+        return self._mz_max_value
+
+    @property
+    def mobility_min_value(self):
+        """float : The minimum mobility value of this TimsTOF object."""
+        return self._mobility_min_value
+
+    @property
+    def mobility_max_value(self):
+        """float : The maximum mobility value of this TimsTOF object."""
+        return self._mobility_max_value
+
+    @property
+    def frames(self):
+        """pd.DataFrame : The frames table of the analysis.tdf SQL."""
+        return self._frames
+
+    @property
+    def fragment_frames(self):
+        """pd.DataFrame : The fragment frames table of this TimsTOF object."""
+        return self._fragment_frames
+
+    @property
+    def tof_indices(self):
+        """np.uint32[:] : The tof indices of this TimsTOF object."""
+        return self._tof_indices
+
+    @property
+    def tof_indptr(self):
+        """np.int64[:] : The tof indptr of this TimsTOF object."""
+        return self._tof_indptr
+
+    @property
+    def quad_indptr(self):
+        """np.int64[:] : The quad indptr of this TimsTOF object."""
+        return self._quad_indptr
+
+    @property
+    def precursor_indices(self):
+        """np.int64[:] : The precursor indices of this TimsTOF object."""
+        return self._precursor_indices
 
     def __init__(
         self,
@@ -419,6 +545,7 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True
     ):
+        # TODO: Docstring
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
@@ -442,110 +569,13 @@ class TimsTOF(object):
             )
         self.slice_as_dataframe = slice_as_dataframe
 
-    @property
-    def sample_name(self):
-        file_name = os.path.basename(self.bruker_d_folder_name)
-        return '.'.join(file_name.split('.')[:-1])
-
-    @property
-    def directory(self):
-        return os.path.dirname(self.bruker_d_folder_name)
-
-    @property
-    def version(self):
-        """str : AlphaTims version used to create this TimsTOF object."""
-        return self._version
-
-    @property
-    def acquisition_mode(self):
-        return self._acquisition_mode
-
-    @property
-    def meta_data(self):
-        return self._meta_data
-
-    @property
-    def rt_values(self):
-        return self._rt_values
-
-    @property
-    def mobility_values(self):
-        return self._mobility_values
-
-    @property
-    def mz_values(self):
-        return self._mz_values
-
-    @property
-    def quad_mz_values(self):
-        return self._quad_mz_values
-
-    @property
-    def intensity_values(self):
-        return self._intensity_values
-
-    @property
-    def frame_max_index(self):
-        return self._frame_max_index
-
-    @property
-    def scan_max_index(self):
-        return self._scan_max_index
-
-    @property
-    def tof_max_index(self):
-        return self._tof_max_index
-
-    @property
-    def precursor_max_index(self):
-        return self._precursor_max_index
-
-    @property
-    def mz_min_value(self):
-        return self._mz_min_value
-
-    @property
-    def mz_max_value(self):
-        return self._mz_max_value
-
-    @property
-    def mobility_min_value(self):
-        return self._mobility_min_value
-
-    @property
-    def mobility_max_value(self):
-        return self._mobility_max_value
-
-    @property
-    def frames(self):
-        return self._frames
-
-    @property
-    def fragment_frames(self):
-        return self._fragment_frames
-
-    @property
-    def tof_indices(self):
-        return self._tof_indices
-
-    @property
-    def tof_indptr(self):
-        return self._tof_indptr
-
-    @property
-    def quad_indptr(self):
-        return self._quad_indptr
-
-    @property
-    def precursor_indices(self):
-        return self._precursor_indices
-
     def import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
     ):
+        # TODO: Docstring
         self._version = alphatims.__version__
         (
             self._acquisition_mode,
@@ -656,6 +686,7 @@ class TimsTOF(object):
         compress: bool = False,
         return_as_bytes_io: bool = False,
     ):
+        # TODO: Docstring
         import io
         if overwrite:
             hdf_mode = "w"
@@ -687,6 +718,7 @@ class TimsTOF(object):
         self,
         bruker_d_folder_name: str,
     ):
+        # TODO: Docstring
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
                 hdf_root["raw"]
@@ -712,6 +744,7 @@ class TimsTOF(object):
         return_intensity_values: bool = False,
         return_as_dict: bool = False,
     ):
+        # TODO: Docstring
         result = {}
         if (raw_indices is not None) and any(
             [
@@ -787,6 +820,7 @@ class TimsTOF(object):
         side: str = "right",
         return_type: str = "",
     ):
+        # TODO: Docstring
         if return_frame_indices:
             return_type = "frame_indices"
         elif return_scan_indices:
@@ -821,6 +855,7 @@ class TimsTOF(object):
             raise KeyError(f"return_type '{return_type}' is invalid")
 
     def __getitem__(self, keys):
+        # TODO: Docstring
         if not isinstance(keys, tuple):
             keys = tuple([keys])
         if isinstance(keys[-1], str):
@@ -856,6 +891,7 @@ class TimsTOF(object):
             return raw_indices
 
     def bin_intensities(self, indices, axis):
+        # TODO: Docstring
         intensities = self.intensity_values[indices].astype(np.float64)
         max_index = {
             "rt": self.frame_max_index,
@@ -902,6 +938,7 @@ class TimsTOF(object):
         mz_values=True,
         intensity_values=True
     ):
+        # TODO: Docstring
         return pd.DataFrame(
            self.convert_from_indices(
                 indices,
@@ -941,6 +978,7 @@ class TimsTOF(object):
         #     An iterable with sorted indices
         # NOTE: Negative slicing is not supported
         # """
+        # TODO: Docstring
         dimensions = [
             "frame_indices",
             "scan_indices",
@@ -994,6 +1032,7 @@ class TimsTOF(object):
         return dimension_slices
 
     def convert_slice_key_to_float(self, key):
+        # TODO: Docstring
         try:
             iter(key)
         except TypeError:
@@ -1025,7 +1064,7 @@ class TimsTOF(object):
                 raise ValueError
 
     def convert_slice_key_to_integer(self, key, dimension):
-        # TODO: BUG? 0-value sometimes interpreted as float?
+        # TODO: Docstring
         try:
             iter(key)
         except TypeError:
@@ -1305,6 +1344,7 @@ def parse_quad_indptr(
     scan_max_index: int,
     frame_max_index: int,
 ) -> tuple:
+    # TODO: docstring
     quad_indptr = [0]
     quad_low_values = []
     quad_high_values = []
