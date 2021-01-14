@@ -408,6 +408,8 @@ def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
 
 class TimsTOF(object):
 
+    bruker_d_folder_name = ""
+
     def __init__(
         self,
         bruker_d_folder_name: str,
@@ -417,15 +419,12 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True
     ):
-        self.slice_as_dataframe = slice_as_dataframe
-        bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+        self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
             bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
             self.import_data_from_d_folder(
                 bruker_d_folder_name,
-                bruker_calibrated_mz_values,
-                bruker_calibrated_mobility_values,
                 mz_estimation_from_frame and bruker_dll_available,
                 mobility_estimation_from_frame and bruker_dll_available,
             )
@@ -434,13 +433,14 @@ class TimsTOF(object):
                 bruker_d_folder_name,
             )
         if not hasattr(self, "version"):
-            self.version = "none"
+            self._version = "none"
         if self.version != alphatims.__version__:
             logging.info(
                 f"AlphaTims version {self.version} was used to initialize "
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
+        self.slice_as_dataframe = slice_as_dataframe
 
     @property
     def sample_name(self):
@@ -451,45 +451,131 @@ class TimsTOF(object):
     def directory(self):
         return os.path.dirname(self.bruker_d_folder_name)
 
+    @property
+    def version(self):
+        """str : AlphaTims version used to create this TimsTOF object."""
+        return self._version
+
+    @property
+    def acquisition_mode(self):
+        return self._acquisition_mode
+
+    @property
+    def meta_data(self):
+        return self._meta_data
+
+    @property
+    def rt_values(self):
+        return self._rt_values
+
+    @property
+    def mobility_values(self):
+        return self._mobility_values
+
+    @property
+    def mz_values(self):
+        return self._mz_values
+
+    @property
+    def quad_mz_values(self):
+        return self._quad_mz_values
+
+    @property
+    def intensity_values(self):
+        return self._intensity_values
+
+    @property
+    def frame_max_index(self):
+        return self._frame_max_index
+
+    @property
+    def scan_max_index(self):
+        return self._scan_max_index
+
+    @property
+    def tof_max_index(self):
+        return self._tof_max_index
+
+    @property
+    def precursor_max_index(self):
+        return self._precursor_max_index
+
+    @property
+    def mz_min_value(self):
+        return self._mz_min_value
+
+    @property
+    def mz_max_value(self):
+        return self._mz_max_value
+
+    @property
+    def mobility_min_value(self):
+        return self._mobility_min_value
+
+    @property
+    def mobility_max_value(self):
+        return self._mobility_max_value
+
+    @property
+    def frames(self):
+        return self._frames
+
+    @property
+    def fragment_frames(self):
+        return self._fragment_frames
+
+    @property
+    def tof_indices(self):
+        return self._tof_indices
+
+    @property
+    def tof_indptr(self):
+        return self._tof_indptr
+
+    @property
+    def quad_indptr(self):
+        return self._quad_indptr
+
+    @property
+    def precursor_indices(self):
+        return self._precursor_indices
+
     def import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,
-        bruker_calibrated_mz_values: bool,
-        bruker_calibrated_mobility_values: bool,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
     ):
-        self.bruker_d_folder_name = bruker_d_folder_name
-        self.version = alphatims.__version__
+        self._version = alphatims.__version__
         (
-            self.acquisition_mode,
+            self._acquisition_mode,
             global_meta_data,
-            self.frames,
-            self.fragment_frames,
+            self._frames,
+            self._fragment_frames,
         ) = read_bruker_sql(bruker_d_folder_name)
         (
-            self.tof_indptr,
-            self.tof_indices,
-            self.intensities,
+            self._tof_indptr,
+            self._tof_indices,
+            self._intensity_values,
         ) = read_bruker_binary(
             self.frames,
             bruker_d_folder_name,
         )
-        self.meta_data = dict(
+        self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
-        self.frame_max_index = self.frames.shape[0]
-        self.scan_max_index = int(self.frames.NumScans.max())
-        self.tof_max_index = int(self.meta_data["DigitizerNumSamples"])
-        self.rt_values = self.frames.Time.values.astype(np.float64)
-        self.mobility_min_value = float(
+        self._frame_max_index = self.frames.shape[0]
+        self._scan_max_index = int(self.frames.NumScans.max())
+        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"])
+        self._rt_values = self.frames.Time.values.astype(np.float64)
+        self._mobility_min_value = float(
             self.meta_data["OneOverK0AcqRangeLower"]
         )
-        self.mobility_max_value = float(
+        self._mobility_max_value = float(
             self.meta_data["OneOverK0AcqRangeUpper"]
         )
         if mobility_estimation_from_frame == 0:
-            self.mobility_values = self.mobility_max_value - (
+            self._mobility_values = self.mobility_max_value - (
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         else:
@@ -501,7 +587,7 @@ class TimsTOF(object):
                     f"Fetching mobility values from {bruker_d_folder_name}"
                 )
                 indices = np.arange(self.scan_max_index).astype(np.float64)
-                self.mobility_values = np.empty_like(indices)
+                self._mobility_values = np.empty_like(indices)
                 bruker_dll.tims_scannum_to_oneoverk0(
                     bruker_d_folder_handle,
                     mobility_estimation_from_frame,
@@ -513,17 +599,15 @@ class TimsTOF(object):
                     ),
                     self.scan_max_index
                 )
-        self.mz_min_value = float(self.meta_data["MzAcqRangeLower"])
-        self.mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
-        self.tof_intercept = np.sqrt(self.mz_min_value)
-        self.tof_slope = (
-            np.sqrt(self.mz_max_value) - self.tof_intercept
+        self._mz_min_value = float(self.meta_data["MzAcqRangeLower"])
+        self._mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
+        tof_intercept = np.sqrt(self.mz_min_value)
+        tof_slope = (
+            np.sqrt(self.mz_max_value) - tof_intercept
         ) / self.tof_max_index
         if mz_estimation_from_frame == 0:
-            self.mz_values = (
-                self.tof_intercept + self.tof_slope * np.arange(
-                    self.tof_max_index
-                )
+            self._mz_values = (
+                tof_intercept + tof_slope * np.arange(self.tof_max_index)
             )**2
         else:
             import ctypes
@@ -534,7 +618,7 @@ class TimsTOF(object):
                     f"Fetching mz values from {bruker_d_folder_name}"
                 )
                 indices = np.arange(self.tof_max_index).astype(np.float64)
-                self.mz_values = np.empty_like(indices)
+                self._mz_values = np.empty_like(indices)
                 bruker_dll.tims_index_to_mz(
                     bruker_d_folder_handle,
                     mz_estimation_from_frame,
@@ -548,8 +632,8 @@ class TimsTOF(object):
                 )
         (
             quad_indptr,
-            self.quad_mz_values,
-            self.precursor_indices
+            self._quad_mz_values,
+            self._precursor_indices
         ) = parse_quad_indptr(
             self.fragment_frames.Frame.values,
             self.fragment_frames.ScanNumBegin.values,
@@ -560,9 +644,9 @@ class TimsTOF(object):
             self.scan_max_index,
             self.frame_max_index,
         )
-        self.quad_indptr = self.tof_indptr[quad_indptr]
-        self.quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
-        self.precursor_max_index = int(np.max(self.precursor_indices))
+        self._quad_indptr = self.tof_indptr[quad_indptr]
+        self._quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
+        self._precursor_max_index = int(np.max(self.precursor_indices))
 
     def save_as_hdf(
         self,
@@ -686,7 +770,7 @@ class TimsTOF(object):
         if return_mz_values:
             result["mz_values"] = self.mz_values[tof_indices]
         if return_intensity_values:
-            result["intensity_values"] = self.intensities[raw_indices]
+            result["intensity_values"] = self.intensity_values[raw_indices]
         if not return_as_dict:
             # python >= 3.7 maintains dict insertion order
             return list(result.values())
@@ -764,7 +848,7 @@ class TimsTOF(object):
             quad_mz_values=self.quad_mz_values,
             quad_indptr=self.quad_indptr,
             tof_indices=self.tof_indices,
-            intensities=self.intensities,
+            intensities=self.intensity_values
         )
         if as_dataframe:
             return self.as_dataframe(raw_indices)
@@ -772,7 +856,7 @@ class TimsTOF(object):
             return raw_indices
 
     def bin_intensities(self, indices, axis):
-        intensities = self.intensities[indices].astype(np.float64)
+        intensities = self.intensity_values[indices].astype(np.float64)
         max_index = {
             "rt": self.frame_max_index,
             "mobility": self.scan_max_index,
@@ -1131,7 +1215,7 @@ def filter_indices(
     tof_indices : np.uint32[:]
         The self.tof_indices array of a TimsTOF object.
     intensities : np.uint16[:]
-        The self.intensities array of a TimsTOF object.
+        The self.intensity_values array of a TimsTOF object.
 
     Returns
     -------
