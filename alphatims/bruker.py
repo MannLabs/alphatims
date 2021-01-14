@@ -558,16 +558,21 @@ class TimsTOF(object):
         directory: str,
         file_name: str,
         overwrite: bool = False,
-        compress: bool = False
+        compress: bool = False,
+        return_as_bytes_io: bool = False,
     ):
-        full_file_name = os.path.join(
-            directory,
-            file_name
-        )
+        import io
         if overwrite:
             hdf_mode = "w"
         else:
             hdf_mode = "a"
+        if return_as_bytes_io:
+            full_file_name = io.BytesIO()
+        else:
+            full_file_name = os.path.join(
+                directory,
+                file_name
+            )
         logging.info(
             f"Writing TimsTOF data to {full_file_name}"
         )
@@ -579,6 +584,9 @@ class TimsTOF(object):
                 overwrite=overwrite,
                 compress=compress,
             )
+        if return_as_bytes_io:
+            full_file_name.seek(0)
+        return full_file_name
 
     def import_data_from_hdf_file(
         self,
