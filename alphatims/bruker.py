@@ -415,7 +415,9 @@ class TimsTOF(object):
         bruker_calibrated_mobility_values: bool = False,
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
+        slice_as_dataframe: bool = True
     ):
+        self.slice_as_dataframe = slice_as_dataframe
         bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
@@ -740,11 +742,13 @@ class TimsTOF(object):
         if isinstance(keys[-1], str):
             if keys[-1] == "df":
                 as_dataframe = True
-            else:
+            elif keys[-1] == "raw":
                 as_dataframe = False
+            else:
+                raise ValueError(f"Cannot use {keys[-1]} as a key")
             keys = keys[:-1]
         else:
-            as_dataframe = False
+            as_dataframe = self.slice_as_dataframe
         parsed_keys = self.parse_keys(keys)
         raw_indices = filter_indices(
             frame_slices=parsed_keys["frame_indices"],
