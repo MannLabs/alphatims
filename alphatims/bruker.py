@@ -739,15 +739,64 @@ class TimsTOF(object):
         return_scan_indices: bool = False,
         return_quad_indices: bool = False,
         return_tof_indices: bool = False,
+        return_precursor_indices: bool = False,
         return_rt_values: bool = False,
         return_mobility_values: bool = False,
         return_quad_mz_values: bool = False,
-        return_precursor_indices: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
-        return_as_dict: bool = False,
-    ):
-        # TODO: Docstring
+    ) -> dict:
+        """Convert selected indices to a dict.
+
+        Parameters
+        ----------
+        raw_indices : np.int64[:], None
+            The raw indices for which coordinates need to be retrieved.
+        frame_indices : np.int64[:], None
+            The frame indices for which coordinates need to be retrieved.
+        quad_indices : np.int64[:], None
+            The quad indices for which coordinates need to be retrieved.
+        scan_indices : np.int64[:], None
+            The scan indices for which coordinates need to be retrieved.
+        tof_indices : np.int64[:], None
+            The tof indices for which coordinates need to be retrieved.
+        return_frame_indices : bool
+            If True, include "frame_indices" in the dict.
+            Default is False.
+        return_scan_indices : bool
+            If True, include "scan_indices" in the dict.
+            Default is False.
+        return_quad_indices : bool
+            If True, include "quad_indices" in the dict.
+            Default is False.
+        return_tof_indices : bool
+            If True, include "tof_indices" in the dict.
+            Default is False.
+        return_precursor_indices : bool
+            If True, include "precursor_indices" in the dict.
+            Default is False.
+        return_rt_values : bool
+            If True, include "rt_values" in the dict.
+            Default is False.
+        return_mobility_values : bool
+            If True, include "mobility_values" in the dict.
+            Default is False.
+        return_quad_mz_values : bool
+            If True, include "quad_low_mz_values" and
+            "quad_high_mz_values" in the dict.
+            Default is False.
+        return_mz_values : bool
+            If True, include "mz_values" in the dict.
+            Default is False.
+        return_intensity_values : bool
+            If True, include "intensity_values" in the dict.
+            Default is False.
+
+        Returns
+        -------
+        dict
+            A dict with all requested columns.
+        """
         result = {}
         if (raw_indices is not None) and any(
             [
@@ -772,8 +821,12 @@ class TimsTOF(object):
             scan_indices is None
         ):
             scan_indices = parsed_indices % self.scan_max_index
-        if (
-            return_quad_indices or return_quad_mz_values or return_precursor_indices
+        if any(
+            [
+                return_quad_indices,
+                return_quad_mz_values,
+                return_precursor_indices
+            ]
         ) and (
             quad_indices is None
         ):
@@ -807,11 +860,7 @@ class TimsTOF(object):
             result["mz_values"] = self.mz_values[tof_indices]
         if return_intensity_values:
             result["intensity_values"] = self.intensity_values[raw_indices]
-        if not return_as_dict:
-            # python >= 3.7 maintains dict insertion order
-            return list(result.values())
-        else:
-            return result
+        return result
 
     def convert_to_indices(
         self,
@@ -823,7 +872,43 @@ class TimsTOF(object):
         side: str = "right",
         return_type: str = "",
     ):
-        # TODO: Docstring
+        """Convert selected values to a pd.DataFrame.
+
+        Parameters
+        ----------
+        values : float, np.float64[...], iterable
+            The raw values for which indices need to be retrieved.
+        return_frame_indices : bool
+            If True, convert the values to "frame_indices".
+            Default is False.
+        return_scan_indices : bool
+            If True, convert the values to "scan_indices".
+            Default is False.
+        return_tof_indices : bool
+            If True, convert the values to "tof_indices".
+            Default is False.
+        side : str
+            If there is an exact match between the values and reference array,
+            which index should be chosen. See also np.searchsorted.
+            Options are "left" or "right".
+            Default is "right".
+        return_type : str
+            Alternative way to define the return type.
+            Options are "frame_indices", "scan_indices" or "tof_indices".
+            Default is "".
+
+        Returns
+        -------
+        np.int64[...], int
+            An array with the same shape as values or iterable or an int
+            the corresponds to the requested value.
+
+        Raises
+        ------
+        PrecursorFloatError
+            When trying to convert a quad float other than np.inf or -np.inf
+            to precursor index.
+        """
         if return_frame_indices:
             return_type = "frame_indices"
         elif return_scan_indices:
@@ -921,7 +1006,6 @@ class TimsTOF(object):
             return_frame_indices="rt" in axis,
             return_scan_indices="mobility" in axis,
             return_tof_indices="mz" in axis,
-            return_as_dict=True,
         )
         binned_intensities = np.zeros(tuple([max_index[ax] for ax in axis]))
         parse_dict = {
@@ -945,18 +1029,60 @@ class TimsTOF(object):
         self,
         indices,
         *,
-        frame_indices=True,
-        scan_indices=True,
-        quad_indices=False,
-        tof_indices=True,
-        precursor_indices=True,
-        rt_values=True,
-        mobility_values=True,
-        quad_mz_values=True,
-        mz_values=True,
-        intensity_values=True
+        frame_indices: bool = True,
+        scan_indices: bool = True,
+        quad_indices: bool = False,
+        tof_indices: bool = True,
+        precursor_indices: bool = True,
+        rt_values: bool = True,
+        mobility_values: bool = True,
+        quad_mz_values: bool = True,
+        mz_values: bool = True,
+        intensity_values: bool = True
     ):
-        # TODO: Docstring
+        """Convert selected indices to a pd.DataFrame.
+
+        Parameters
+        ----------
+        indices : np.int64[:]
+            The raw indices for which coordinates need to be retrieved.
+        frame_indices : bool
+            If True, include "frame_indices" in the dataframe.
+            Default is True.
+        scan_indices : bool
+            If True, include "scan_indices" in the dataframe.
+            Default is True.
+        quad_indices : bool
+            If True, include "quad_indices" in the dataframe.
+            Default is False.
+        tof_indices : bool
+            If True, include "tof_indices" in the dataframe.
+            Default is True.
+        precursor_indices : bool
+            If True, include "precursor_indices" in the dataframe.
+            Default is True.
+        rt_values : bool
+            If True, include "rt_values" in the dataframe.
+            Default is True.
+        mobility_values : bool
+            If True, include "mobility_values" in the dataframe.
+            Default is True.
+        quad_mz_values : bool
+            If True, include "quad_low_mz_values" and
+            "quad_high_mz_values" in the dict.
+            Default is True.
+        mz_values : bool
+            If True, include "mz_values" in the dataframe.
+            Default is True.
+        intensity_values : bool
+            If True, include "intensity_values" in the dataframe.
+            Default is True.
+
+        Returns
+        -------
+        pd.DataFrame
+            A dataframe with all requested columns.
+        """
         return pd.DataFrame(
            self.convert_from_indices(
                 indices,
@@ -970,7 +1096,6 @@ class TimsTOF(object):
                 return_quad_mz_values=quad_mz_values,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
-                return_as_dict=True,
             )
         )
 
