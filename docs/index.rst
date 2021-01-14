@@ -12,14 +12,6 @@ This documentation is intended as an API for direct Python use. For more informa
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
    alphatims.utils
    alphatims.bruker
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`

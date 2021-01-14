@@ -269,13 +269,13 @@ def export_parameters(**kwargs):
 @cli_option("parameter_file")
 def export_slice(**kwargs):
     with parse_cli_settings("export slice", **kwargs) as parameters:
-        slice = tuple(parameters["slice"])
+        slice = parameters["slice"]
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
-        logging.info(f"Slicing data with slice {slice}")
+        logging.info(f"Slicing data with slice '{slice}'")
         # TODO: Slicing with eval is very unsafe!
         # TODO: update help function
-        data_slice = eval(f"data[{parameters['slice']},'df']")
+        data_slice = eval(f"data[{slice},'df']")
         if "slice_file" not in parameters:
             parameters["slice_file"] = f"{data.sample_name}_slice.csv"
         if "output_folder" not in parameters:
