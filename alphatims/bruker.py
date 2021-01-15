@@ -283,11 +283,11 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
 def process_frame(
     frame_id: int,
     tdf_bin_file_name: str,
-    tims_offset_values,
-    scan_indptr,
-    intensities,
-    tof_indices,
-    frame_indptr,
+    tims_offset_values: np.ndarray,
+    scan_indptr: np.ndarray,
+    intensities: np.ndarray,
+    tof_indices: np.ndarray,
+    frame_indptr: np.ndarray,
     max_scan_count: int,
 ) -> None:
     """Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.
@@ -357,7 +357,10 @@ def process_frame(
             intensities[frame_start: frame_end] = intensities_
 
 
-def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
+def read_bruker_binary(
+    frames: np.ndarray,
+    bruker_d_folder_name: str
+) -> tuple:
     """Read all data from an "analysis.tdf_bin" of a Bruker .d folder.
 
     Parameters
@@ -403,6 +406,80 @@ def read_bruker_binary(frames, bruker_d_folder_name: str) -> tuple:
 
 
 class TimsTOF(object):
+    """A class that stores Bruker TimsTOF data in memory for fast access.
+
+    Data can be read directly from a Bruker .d folder.
+    All OS's are supported,
+    but reading mz_values and mobility_values from a .d folder
+    requires Windows or Linux due to availability of Bruker libraries.
+    On MacOS, they are estimated based on metadata,
+    but these values are not guaranteed to be correct.
+    Often they fall within 0.02 Th, but errors up to 6 Th have already
+    been observed!
+
+    A TimsTOF object can also be exported to HDF for subsequent access.
+    This file format is portable to all OS's.
+    As such, initial reading on Windows with correct mz_values and
+    mobility_values can be done and the resulting HDF file can
+    safely be read on MacOS.
+    This HDF file also provides improved accession times for subsequent use.
+
+    After reading, data can be accessed with traditional Python slices.
+    As TimsTOF data is 5-dimensional, the data can be sliced in 5 dimensions
+    as well. These dimensions follows the design of the TimsTOF Pro:
+
+        1 LC: rt_values, frame_indices
+            The first dimension allows to slice retention_time values
+            or frames indices. These values and indices
+            have a one-to-one relationship.
+        2 TIMS: mobility_values, scan_indices
+            The second dimension allows to slice mobility values or
+            scan indices (i.e. a single push).
+            These values and indices have a one-to-one relationship.
+        3 QUAD: quad_mz_values, precursor_indices
+            The third dimension focusses on the quadrupole and indirectly
+            on the collision cell. It allows to slice lower and upper
+            quadrupole mz values (e.g. the m/z of
+            unfragmented ions / precursors). If set to -1, the quadrupole and
+            collision cell are assumed to be inactive, i.e. precursor ions
+            are detected instead of fragments.
+            Equally, this dimension allows to slice precursor indices.
+            Precursor index 0 defaults to all precusors (i.e. quad mz values
+            equal to -1). In DDA, precursor indices > 0 point to PASEF
+            MSMS spectra.
+            In DIA, precursor indices > 0 point to windows,
+            i.e. all scans in a frame with equal quadrupole and collision
+            settings that is repeated once per full cycle.
+            Note that these values do not have a one-to-one relationship.
+        4 TOF: mz_values, tof_indices
+            The fourth dimension allows to slice (fragment) mz_values
+            or tof indices. Note that the quadrupole dimension determines
+            if precursors are detected or fragments.
+            These values and indices have a one-to-one relationship.
+        5 Detector: intensity_values
+            The fifth dimension allows to slice intensity values.
+
+    Note that all dimensions except for the detector have both
+    (float) values and (integer) indices.
+    For each dimension, slices can be provided in several different ways:
+
+        - int
+            A single int can be used to select a single index.
+            If used in the fifth dimension, it still allows to select
+            intensity_valyes
+        - float
+            A single float can be used to select a single value.
+            As the values arrays are discrete, the smallest index with a value
+            equal to or larger than this value is actually selected.
+            For intensity_value slicing, the exact value is used.
+        - slice
+            TODO
+        - iterable
+            TODO
+
+    Example use
+        TODO
+    """
     # TODO: Docstring
 
     @property
@@ -415,6 +492,11 @@ class TimsTOF(object):
     def directory(self):
         """: str : The directory of this TimsTOF object."""
         return os.path.dirname(self.bruker_d_folder_name)
+
+    @property
+    def is_compressed(self):
+        """: bool : HDF arraya are compressed or not."""
+        return self._compressed
 
     @property
     def version(self):
@@ -706,7 +788,7 @@ class TimsTOF(object):
         logging.info(
             f"Writing TimsTOF data to {full_file_name}"
         )
-        self.compress = compress
+        self._compressed = compress
         with h5py.File(full_file_name, hdf_mode, swmr=True) as hdf_root:
             alphatims.utils.create_hdf_group_from_dict(
                 hdf_root.create_group("raw"),
@@ -864,12 +946,12 @@ class TimsTOF(object):
 
     def convert_to_indices(
         self,
-        values,
+        values: np.ndarray,
         *,
         return_frame_indices: bool = False,
         return_scan_indices: bool = False,
         return_tof_indices: bool = False,
-        side: str = "right",
+        side: str = "left",
         return_type: str = "",
     ):
         """Convert selected values to a pd.DataFrame.
@@ -891,7 +973,7 @@ class TimsTOF(object):
             If there is an exact match between the values and reference array,
             which index should be chosen. See also np.searchsorted.
             Options are "left" or "right".
-            Default is "right".
+            Default is "left".
         return_type : str
             Alternative way to define the return type.
             Options are "frame_indices", "scan_indices" or "tof_indices".
@@ -901,7 +983,7 @@ class TimsTOF(object):
         -------
         np.int64[...], int
             An array with the same shape as values or iterable or an int
-            the corresponds to the requested value.
+            which corresponds to the requested value.
 
         Raises
         ------
@@ -977,7 +1059,7 @@ class TimsTOF(object):
         else:
             return raw_indices
 
-    def bin_intensities(self, indices, axis: tuple):
+    def bin_intensities(self, indices: np.ndarray, axis: tuple):
         """Sum and project the intensities of the indices along 1 or 2 axis.
 
         Parameters
@@ -1027,7 +1109,7 @@ class TimsTOF(object):
 
     def as_dataframe(
         self,
-        indices,
+        raw_indices: np.ndarray,
         *,
         frame_indices: bool = True,
         scan_indices: bool = True,
@@ -1040,11 +1122,11 @@ class TimsTOF(object):
         mz_values: bool = True,
         intensity_values: bool = True
     ):
-        """Convert selected indices to a pd.DataFrame.
+        """Convert raw indices to a pd.DataFrame.
 
         Parameters
         ----------
-        indices : np.int64[:]
+        raw_indices : np.int64[:]
             The raw indices for which coordinates need to be retrieved.
         frame_indices : bool
             If True, include "frame_indices" in the dataframe.
@@ -1085,7 +1167,7 @@ class TimsTOF(object):
         """
         return pd.DataFrame(
            self.convert_from_indices(
-                indices,
+                raw_indices,
                 return_frame_indices=frame_indices,
                 return_scan_indices=scan_indices,
                 return_quad_indices=quad_indices,
@@ -1157,7 +1239,7 @@ class PrecursorFloatError(TypeError):
     pass
 
 
-def parse_keys(data, keys) -> dict:
+def parse_keys(data: TimsTOF, keys) -> dict:
     """Convert different keys to a key dict with defined types.
 
     NOTE: Negative slicing is not supported and all indiviudal keys
@@ -1242,7 +1324,7 @@ def parse_keys(data, keys) -> dict:
     return dimension_slices
 
 
-def convert_slice_key_to_float_array(data, key):
+def convert_slice_key_to_float_array(data: TimsTOF, key):
     """Convert a key of a data object to a slice float array.
 
     Parameters
@@ -1292,7 +1374,7 @@ def convert_slice_key_to_float_array(data, key):
             raise ValueError
 
 
-def convert_slice_key_to_integer_array(data, key, dimension: str):
+def convert_slice_key_to_integer_array(data: TimsTOF, key, dimension: str):
     """Convert a key of a data dimension to a slice integer array.
 
     Parameters
@@ -1340,7 +1422,7 @@ def convert_slice_key_to_integer_array(data, key, dimension: str):
                     raise ValueError
                 stop = data.convert_to_indices(
                     stop,
-                    return_type=dimension
+                    return_type=dimension,
                 )
             step = key.step
             if not isinstance(step, (np.integer, int)):
@@ -1374,7 +1456,7 @@ def convert_slice_key_to_integer_array(data, key, dimension: str):
 def valid_quad_mz_values(
     low_mz_value: float,
     high_mz_value: float,
-    quad_slices,
+    quad_slices: np.ndarray,
 ) -> bool:
     """Check if the low and high quad mz values are included in the slices.
 
@@ -1411,7 +1493,10 @@ def valid_quad_mz_values(
 
 
 @alphatims.utils.njit
-def valid_precursor_index(precursor_index: int, precursor_slices) -> bool:
+def valid_precursor_index(
+    precursor_index: int,
+    precursor_slices: np.ndarray
+) -> bool:
     """Check if a precursor index is included in the slices.
 
     Parameters
@@ -1445,20 +1530,20 @@ def valid_precursor_index(precursor_index: int, precursor_slices) -> bool:
 
 @alphatims.utils.njit
 def filter_indices(
-    frame_slices,
-    scan_slices,
-    precursor_slices,
-    tof_slices,
-    quad_slices,
-    intensity_slices,
+    frame_slices: np.ndarray,
+    scan_slices: np.ndarray,
+    precursor_slices: np.ndarray,
+    tof_slices: np.ndarray,
+    quad_slices: np.ndarray,
+    intensity_slices: np.ndarray,
     frame_max_index: int,
     scan_max_index: int,
-    tof_indptr,
-    precursor_indices,
-    quad_mz_values,
-    quad_indptr,
-    tof_indices,
-    intensities,
+    tof_indptr: np.ndarray,
+    precursor_indices: np.ndarray,
+    quad_mz_values: np.ndarray,
+    quad_indptr: np.ndarray,
+    tof_indices: np.ndarray,
+    intensities: np.ndarray,
 ):
     """Filter raw indices by slices from all dimensions.
 
@@ -1586,9 +1671,9 @@ def filter_indices(
 @alphatims.utils.pjit(thread_count=1)
 def add_intensity_to_bin(
     query_index: int,
-    intensities,
-    parsed_indices,
-    intensity_bins
+    intensities: np.ndarray,
+    parsed_indices: np.ndarray,
+    intensity_bins: np.ndarray,
 ) -> None:
     """Add the intensity of a query to the appropriate bin.
 
@@ -1620,7 +1705,11 @@ def add_intensity_to_bin(
 
 
 @alphatims.utils.njit
-def indptr_lookup(targets, queries, momentum_amplifier: int = 2):
+def indptr_lookup(
+    targets: np.ndarray,
+    queries: np.ndarray,
+    momentum_amplifier: int = 2
+):
     """Find the indices of queries in targets.
 
     This function is equivalent to

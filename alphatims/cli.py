@@ -275,7 +275,8 @@ def export_slice(**kwargs):
         logging.info(f"Slicing data with slice '{slice}'")
         # TODO: Slicing with eval is very unsafe!
         # TODO: update help function
-        data_slice = eval(f"data[{slice},'df']")
+        slice_function = eval(f"lambda d: d[{slice}]")
+        data_slice = slice_function(data)
         if "slice_file" not in parameters:
             parameters["slice_file"] = f"{data.sample_name}_slice.csv"
         if "output_folder" not in parameters:
@@ -286,8 +287,10 @@ def export_slice(**kwargs):
             output_folder,
             parameters["slice_file"]
         )
-        logging.info(f"Saving sliced data to {output_file_name}")
-        data_slice.to_csv(output_file_name)
+        logging.info(
+            f"Saving {len(data_slice)} datapoints to {output_file_name}"
+        )
+        data_slice.to_csv(output_file_name, index=False)
 
 
 @detect.command("ions", help="Detect ions (NotImplemented yet).")
