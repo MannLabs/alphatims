@@ -463,24 +463,85 @@ class TimsTOF(object):
     (float) values and (integer) indices.
     For each dimension, slices can be provided in several different ways:
 
-        - int
+        - int:
             A single int can be used to select a single index.
             If used in the fifth dimension, it still allows to select
-            intensity_valyes
-        - float
+            intensity_values
+        - float:
             A single float can be used to select a single value.
             As the values arrays are discrete, the smallest index with a value
             equal to or larger than this value is actually selected.
             For intensity_value slicing, the exact value is used.
-        - slice
-            TODO
-        - iterable
-            TODO
+        - slice:
+            A Python slice with start, stop and step can be provided.
+            Start and stop values can independently be set to int or float.
+            If a float is provided it conversed to an int as previously
+            described.
+            The step always needs to be provided as an int.
+            Since there is not one-to-one relation from values to indices for
+            QUAD and DETECTOR, the step value is ignored in these cases and
+            only start and stop can be used.
 
-    Example use
-        TODO
+            **IMPORTANT NOTE:** negative start, step and stop integers are not
+            supported!
+        - iterable:
+            An iterable with (mixed) floats and ints can also be provided,
+            in a similar fashion as Numpy's fancy indexing.
+
+            **IMPORTANT NOTE:** The resulting integers after float->int
+            conversion need to be sorted in ascending order!
+        - np.ndarray:
+            Multiple slicing is supported by providing either a
+            np.int64[:, :, :] array, where each row is assumed to be a
+            (start, stop, step) tuple or np.float64[:, :] where each row
+            is assumed to be a (start, stop) tuple.
+
+            **IMPORTANT NOTE:** These arrays need to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0)
+            = True).
+
+    The result of such slicing is a pd.DataFrame with the following columns:
+
+        - frame_indices
+        - scan_indices
+        - precursor_indices
+        - tof_indices
+        - rt_values
+        - mobility_values
+        - quad_low_mz_values
+        - quad_high_mz_values
+        - mz_values
+        - intensity_values
+
+    Examples
+    --------
+    >>> data[:100.0]
+    # Return all datapoints with rt_values < 100.0 seconds
+
+    >>> data[:, 450]
+    # Return all datapoints with scan_index = 450
+
+    >>> data[:, :, 700.: 710.]
+    # Return all datapoints with 700.0 <= quad_mz_values < 710.0
+
+    >>> data[:, :, :, 621.9: 191000]
+    # Return all datapoints with 621.9 <= mz_values and
+    # tof_indices < 191000
+
+    >>> data[[1, 8, 10], :, 0, 621.9: np.inf]
+    # Return all datapoints from frames 1, 8 and 10, which are unfragmented
+    # and with 621.9 <= mz_values < np.inf
+
+    >>> data[:, :, 999]
+    # Return all datapoints from precursor 999
+    # (for diaPASEF this is a traditional MSMS spectrum)
+
+    >>> scan_slices = np.array([[10, 20, 1], [100, 200, 10]])
+    >>> data[:, scan_slices, :, :, :]
+    # Return all datapoints with scan_indices in range(10, 20) or
+    # range(100, 200, 10)
     """
-    # TODO: Docstring
 
     @property
     def sample_name(self):
@@ -611,12 +672,40 @@ class TimsTOF(object):
     def __init__(
         self,
         bruker_d_folder_name: str,
-        bruker_calibrated_mz_values: bool = False,
-        bruker_calibrated_mobility_values: bool = False,
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True
     ):
+        """Create a Bruker TimsTOF object that contains all data in-memory.
+
+        Parameters
+        ----------
+        bruker_d_folder_name : str
+            The full file name to a Bruker .d folder.
+            Alternatively, the full file name of an already exported .hdf
+            can be provided as well.
+        mz_estimation_from_frame : int
+            If larger than 0, mz_values from this frame are read as
+            default mz_values with the Bruker library.
+            If 0, mz_values are being estimated with the metadata
+            based on "MzAcqRangeLower" and "MzAcqRangeUpper".
+            IMPORTANT NOTE: MacOS defaults to 0, as no Bruker library
+            is available.
+            Default is 1.
+        mobility_estimation_from_frame : int
+            If larger than 0, mobility_values from this frame are read as
+            default mobility_values with the Bruker library.
+            If 0, mobility_values are being estimated with the metadata
+            based on "OneOverK0AcqRangeLower" and "OneOverK0AcqRangeUpper".
+            IMPORTANT NOTE: MacOS defaults to 0, as no Bruker library
+            is available.
+            Default is 1.
+        slice_as_dataframe : bool
+            If True, slicing returns a pd.DataFrame by default.
+            If False, slicing provides a np.int64[:] with raw indices.
+            This value can also be modified after creation.
+            Default is True.
+        """
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):

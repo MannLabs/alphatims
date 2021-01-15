@@ -555,7 +555,7 @@ def create_hdf_group_from_dict(
 
     Parameters
     ----------
-    hdf_group : type
+    hdf_group : h5py.File.group
         An open and writable HDF group.
     data_dict : dict
         A dict that needs to be written to HDF.
@@ -658,7 +658,7 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
 
     Parameters
     ----------
-    hdf_group : type
+    hdf_group : h5py.File.group
         An open and readable HDF group.
 
     Returns

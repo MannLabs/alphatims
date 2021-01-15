@@ -56,5 +56,6 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 autodoc_default_options = {
-    'autosummary': False,
+    'autosummary': True,
+    'special-members': '__init__',  # Include __init__ methods.
 }
