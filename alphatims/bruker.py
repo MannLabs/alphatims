@@ -456,7 +456,7 @@ class TimsTOF(object):
             or tof indices. Note that the quadrupole dimension determines
             if precursors are detected or fragments.
             These values and indices have a one-to-one relationship.
-        5 Detector: intensity_values
+        5 DETECTOR: intensity_values
             The fifth dimension allows to slice intensity values.
 
     Note that all dimensions except for the detector have both
@@ -1000,10 +1000,10 @@ class TimsTOF(object):
         if return_type == "frame_indices":
             return np.searchsorted(self.rt_values, values, side)
         elif return_type == "scan_indices":
-            return np.searchsorted(
+            return self.scan_max_index - np.searchsorted(
                 self.mobility_values[::-1],
                 values,
-                side
+                "left" if side == "right" else "right"
             )
         elif return_type == "tof_indices":
             return np.searchsorted(self.mz_values, values, side)
@@ -1327,6 +1327,8 @@ def parse_keys(data: TimsTOF, keys) -> dict:
 def convert_slice_key_to_float_array(data: TimsTOF, key):
     """Convert a key of a data object to a slice float array.
 
+    NOTE: This function should only be used for QUAD or DETECTOR dimensions.
+
     Parameters
     ----------
     data : alphatims.bruker.TimsTOF
@@ -1429,21 +1431,26 @@ def convert_slice_key_to_integer_array(data: TimsTOF, key, dimension: str):
                 if step is not None:
                     raise ValueError
                 step = 1
+            if (dimension == "scan_indices") and (start > stop):
+                start, stop = stop, start
             return np.array([[start, stop, step]])
         elif isinstance(key, (np.integer, int)):
             return np.array([[key, key + 1, 1]])
         elif isinstance(key, (np.inexact, float)):
             key = data.convert_to_indices(key, return_type=dimension)
+            if (dimension == "scan_indices"):
+                return np.array([[key - 1, key, 1]])
             return np.array([[key, key + 1, 1]])
         else:
             raise ValueError
     else:
         if not isinstance(key, np.ndarray):
             key = np.array(key)
+        step = 1
         if not isinstance(key.ravel()[0], np.integer):
             key = data.convert_to_indices(key, return_type=dimension)
         if len(key.shape) == 1:
-            return np.array([key, key + 1, np.repeat(1, key.size)]).T
+            return np.array([key, key + 1, np.repeat(step, key.size)]).T
         elif len(key.shape) == 2:
             if key.shape[1] != 3:
                 raise ValueError
