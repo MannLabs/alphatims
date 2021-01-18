@@ -101,6 +101,11 @@ hv.extension('bokeh')
 DATASET = None
 SERVER = None
 whole_title = str()
+SELECTED_INDICES = list()
+
+# @functools.lru_cache(10)
+def get_df():
+    return DATASET.as_dataframe(SELECTED_INDICES)
 
 ### PATHS
 
@@ -419,22 +424,23 @@ mz_end = pn.widgets.FloatInput(
 )
 
 # quad info
-quad_slider = pn.widgets.RangeSlider(
-#     name='Quad',
-    show_value=False,
-    bar_color='#045082',
-    start=0,
-    value=(0, 0),
-    step=1,
-    margin=(5, 20),
-    disabled=True
-)
-
 select_precursors = pn.widgets.Checkbox(
     name='Show MS1 precursors',
     value=True,
     width=200,
-    margin=(25,20,0,20),
+    margin=(5,20,0,20),
+)
+
+quad_slider = pn.widgets.RangeSlider(
+#     name='Quad',
+    show_value=False,
+    bar_color='#045082',
+    width=180,
+    start=0,
+    value=(0, 0),
+    step=1,
+    margin=(5, 0, 5, 25),
+    disabled=True
 )
 
 quad_start = pn.widgets.FloatInput(
@@ -444,7 +450,7 @@ quad_start = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(0,0,20,0),
+    margin=(0,0,0,25),
     disabled=True
 )
 
@@ -455,8 +461,93 @@ quad_end = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(0,0,20,20),
+    margin=(0,0,0,20),
     disabled=True
+)
+
+precursor_id_true = pn.widgets.Checkbox(
+    name='Use precursor id',
+    value=False,
+    width=120,
+    margin=(8,20,0,80),
+)
+
+precursor_start = pn.widgets.IntInput(
+    name='Start precursor',
+    value=1,
+    step=1,
+    start=1,
+    width=80,
+    margin=(0,0,0,0),
+    disabled=True
+)
+
+precursor_end = pn.widgets.IntInput(
+    name='End precursor',
+    value=2,
+    step=1,
+    start=1,
+    width=80,
+    margin=(0,0,0,20),
+    disabled=True
+)
+
+intensity_threshold = pn.widgets.IntInput(
+    name='Intensity threshold',
+    value=0,
+    width=106,
+    margin=(5, 43, 15, 60),
+)
+
+selection_actions = pn.pane.Markdown(
+    'Selected settings:',
+    align='center',
+    margin=(-18,0,0,0)
+)
+undo_button = pn.widgets.Button(
+    name='\u21b6',
+#     button_type='primary',
+    disabled=True,
+    height=32,
+    width=50,
+    margin=(-3,20,0,20)
+)
+redo_button = pn.widgets.Button(
+    name='↷',
+#     button_type='primary',
+    disabled=True,
+    height=32,
+    width=50,
+    margin=(-3,20,0,0)
+)
+
+def export_sliced_data():
+    from io import StringIO
+    if select_precursors.value:
+        quad_values = (-1, 1)
+    else:
+        quad_values = quad_slider.value
+    df = DATASET[
+        slice(*frame_slider.value),
+        slice(*scan_slider.value),
+        slice(*quad_values),
+        slice(*tof_slider.value),
+        intensity_threshold.value:,
+        'df'
+    ]
+    sio = StringIO()
+    df.to_csv(sio, index=False)
+    sio.seek(0)
+    return sio
+
+download_selection = pn.widgets.FileDownload(
+    callback=export_sliced_data,
+    filename=f'sliced_data.csv',
+    button_type='default',
+    height=31,
+    width=250,
+    margin=(5, 20, 15, 20),
+    align='center'
 )
 
 # player
@@ -506,21 +597,22 @@ plot1_y_axis = pn.widgets.Select(
 
 # plot 2
 plot2_title = pn.pane.Markdown(
-    '#### Axis for Spectrum/Mobilogram',
+    '#### Axis for XIC/Spectrum/Mobilogram',
     align='center',
     margin=(-10,0,-5,0),
 )
 plot2_x_axis = pn.widgets.Select(
     name='X axis',
     value='Inversed IM, V·s·cm\u207B\u00B2',
-    options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2'],
+    options=['RT, min', 'm/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2'],
     width=180,
     margin=(0,20,0,20),
 )
 plot2_y_axis = pn.widgets.Select(
     name='Y axis',
     value='Intensity',
-    options=['RT, min', 'm/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'Intensity'],
+    options=['Intensity'],
+#     options=['RT, min', 'm/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'Intensity'],
     width=180,
     margin=(0,20,0,10),
 )
@@ -553,7 +645,8 @@ axis_selection = pn.Card(
     width=430,
     margin=(20, 10, 10, 17),
     background='#EAEAEA',
-    css_classes=['test']
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
 )
 
 ### putting together all settings widget
@@ -589,6 +682,19 @@ settings = pn.Column(
         align='center',
     ),
     sliders_divider,
+    select_precursors,
+    pn.Row(
+        quad_slider,
+        precursor_id_true
+    ),
+    pn.Row(
+        quad_start,
+        quad_end,
+        selectors_divider,
+        precursor_start,
+        precursor_end
+    ),
+    sliders_divider,
     tof_slider,
     pn.Row(
         tof_start,
@@ -599,12 +705,19 @@ settings = pn.Column(
         align='center',
     ),
     sliders_divider,
-    quad_slider,
     pn.Row(
-        select_precursors,
-        quad_start,
-        quad_end
+        intensity_threshold,
+        selectors_divider,
+        pn.Column(
+            selection_actions,
+            pn.Row(
+                undo_button,
+                redo_button
+            )
+        ),
     ),
+    sliders_divider,
+    download_selection,
     width=460,
     align='center',
     margin=(0,0,0,0),
@@ -627,18 +740,6 @@ chrom_opts = opts.Curve(
     tools=[hover]
 )
 
-### Additional functions
-@numba.njit(cache=True, nogil=True)
-def sum_binned_data(mz_values, intensity_values, min_value, max_value, bins):
-    bin_delta = (max_value - min_value) / bins
-    bins_array = np.linspace(min_value, max_value, bins+1)
-    mz_bins = ((mz_values - min_value) / bin_delta).astype(np.int64)
-    intensity_bins = np.zeros(bins)
-    for mz_bin, intensity in zip(mz_bins, intensity_values):
-        intensity_bins[mz_bin] += intensity
-    bin_centers = bins_array[1:] - bin_delta/2
-    return bin_centers, intensity_bins
-
 
 ### JS callbacks
 
@@ -660,6 +761,8 @@ axis_selection.jscallback(
     watch=True
 )
 def upload_data(_):
+    import sys
+    sys.path.append('../')
     import alphatims.bruker
     global DATASET
     global whole_title
@@ -688,7 +791,8 @@ def upload_data(_):
                 elif 'DIA' in upload_file.value:
                     mode = 'dia-'
                 whole_title = str(DATASET.meta_data['SampleName']) + ext + ': ' + mode + str(DATASET.acquisition_mode)
-            except:
+            except ValueError as e:
+                print(e)
                 upload_error.object = "#### This file is corrupted and can't be uploaded."
     else:
         upload_error.object = '#### Please, specify a path to .d Bruker folder or .hdf file.'
@@ -702,7 +806,7 @@ def save_hdf(_):
     save_message.object = ''
     save_spinner.value = True
     file_name = os.path.basename(DATASET.bruker_d_folder_name).split('.')[0] + '.hdf'
-    directory = os.path.dirname(DATASET.bruker_d_folder_name)
+    directory = DATASET.bruker_d_folder_name
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
@@ -710,7 +814,7 @@ def save_hdf(_):
         compress=False,
     )
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved to .d folder.'
+    save_message.object = '#### The HDF file is successfully saved outside .d folder.'
 
 ### PLOTTING
 def visualize_chrom():
@@ -741,7 +845,6 @@ def visualize_chrom():
     return fig.opts(responsive=True)
 
 def visualize_scatter(
-    df
 ):
     labels = {
         'mz_values': 'm/z, Th',
@@ -752,6 +855,7 @@ def visualize_scatter(
     x_coor = [k for k, v in labels.items() if v == plot1_x_axis.value][0]
     y_coor = [k for k, v in labels.items() if v == plot1_y_axis.value][0]
     z_coor = "intensity_values"
+    df = get_df()
     scatter = df.hvplot.scatter(
         x=x_coor,
         y=y_coor,
@@ -782,7 +886,6 @@ def visualize_scatter(
 
 
 def visualize_spectrum(
-    df
 ):
     labels = {
         'mz_values': 'm/z, Th',
@@ -792,13 +895,13 @@ def visualize_spectrum(
     }
     x_coor = [k for k, v in labels.items() if v == plot2_x_axis.value][0]
     y_coor = [k for k, v in labels.items() if v == plot2_y_axis.value][0]
+    df = get_df()
     if x_coor == 'mz_values':
-        level = 50
-        df = df[df.intensity_values > level]
+        mz_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['mz'])
         spectrum = hv.Spikes(
             (
-                df[x_coor].values,
-                df[y_coor].values
+                sorted(df[x_coor].unique()),
+                mz_intensities[mz_intensities>0]
             ),
             labels[x_coor],
             labels[y_coor])
@@ -806,21 +909,18 @@ def visualize_spectrum(
             title='Spectrum - ' + whole_title,
             tools=['hover'],
             color='Intensity',
-            cmap=colorcet.fire,
+            cmap=colorcet.kb,
             width=1000,
             height=300,
             align='center',
         )
-    else:
-        df.sort_values(x_coor, inplace=True)
-        data = sum_binned_data(
-            df[x_coor].values,
-            df[y_coor].values,
-            min_value = df[x_coor].min(),
-            max_value = df[x_coor].max(),
-            bins=300)
+    elif x_coor == 'mobility_values':
+        im_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['mobility'])
         spectrum = hv.Curve(
-            data,
+            (
+                sorted(df[x_coor].unique(), reverse=True),
+                im_intensities[im_intensities > 0]
+            ),
             labels[x_coor],
             labels[y_coor]
         )
@@ -831,6 +931,27 @@ def visualize_spectrum(
             align='center',
             line_width=1,
             yformatter='%.1e',
+            tools=['hover']
+        )
+    elif x_coor == 'rt_values':
+        rt_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['rt'])
+        spectrum = hv.Curve(
+            (
+                sorted(df[x_coor].unique()/60),
+                rt_intensities[rt_intensities > 0]
+            ),
+            labels[x_coor],
+            labels[y_coor]
+        )
+        spectrum.opts(
+            title="XIC - " + whole_title,
+            width=1000,
+            height=300,
+            color='darkred',
+            align='center',
+            line_width=1,
+            yformatter='%.1e',
+            tools=['hover']
         )
     return spectrum
 
@@ -854,6 +975,8 @@ def show_settings(_):
         im_start.start = im_end.start = min(DATASET.mobility_values)
         im_start.value = max(DATASET.mobility_values)
         im_end.value = min(DATASET.mobility_values)
+        precursor_end.end = DATASET.precursor_max_index + 1
+        precursor_start.end = DATASET.precursor_max_index
         quad_slider.end = round(DATASET.quad_max_mz_value, 3)
         tof_slider.end = int(DATASET.tof_max_index)
         tof_slider.value = (tof_slider.start, tof_slider.end)
@@ -1044,6 +1167,24 @@ def update_quad_using_quad_end(
         quad_start.value = quad_end.value
     quad_slider.value = (quad_start.value, quad_end.value)
 
+@pn.depends(
+    precursor_id_true.param.value,
+    watch=True
+)
+def update_precursor_selection(
+    precursor_selected
+):
+    if precursor_selected:
+        select_precursors.disabled = True
+        quad_slider.disabled = True
+        quad_start.disabled = True
+        quad_end.disabled = True
+        precursor_start.disabled = False
+        precursor_end.disabled = False
+    else:
+        select_precursors.disabled = False
+        precursor_start.disabled = True
+        precursor_end.disabled = True
 
 @pn.depends(
     player.param.value,
@@ -1059,7 +1200,11 @@ def update_frames_with_player(
     scan_slider.param.value,
     quad_slider.param.value,
     tof_slider.param.value,
+    intensity_threshold.param.value,
     select_precursors.param.value,
+    precursor_id_true.param.value,
+    precursor_start.param.value,
+    precursor_end.param.value,
     upload_button.param.clicks,
     change_axis.param.clicks
 )
@@ -1068,30 +1213,33 @@ def show_plots(
     scan_values,
     quad_values,
     tof_values,
+    intensity_threshold_value,
     select_precursors_check,
+    precursor_id_true,
+    precursor_start_value,
+    precursor_end_value,
     upload_button,
     change_axis
 ):
     if DATASET:
-        if select_precursors.value:
-            quad_values = (0, 1)
-        df = DATASET.as_dataframe(
-            DATASET[
-                slice(*frame_values),
-                slice(*scan_values),
-                slice(*quad_values),
-                slice(*tof_values),
-            ]
-        )
-        df.rt_values /= 60
+        global SELECTED_INDICES
+        if precursor_id_true:
+            quad_prec_values = (precursor_start_value, precursor_end_value)
+        elif select_precursors.value:
+            quad_prec_values = (-1, 1)
+        else:
+            quad_prec_values = quad_values
+        SELECTED_INDICES = DATASET[
+            slice(*frame_values),
+            slice(*scan_values),
+            slice(*quad_prec_values),
+            slice(*tof_values),
+            intensity_threshold_value:
+        ]
         layout_plots = pn.Column(
             visualize_chrom(),
-            visualize_scatter(
-                df
-            ),
-            visualize_spectrum(
-                df
-            )
+            visualize_scatter(),
+            visualize_spectrum()
         )
         return layout_plots
 
