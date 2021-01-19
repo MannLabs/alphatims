@@ -19,6 +19,7 @@ import alphatims
 
 BASE_PATH = os.path.dirname(__file__)
 EXT_PATH = os.path.join(BASE_PATH, "ext")
+IMG_PATH = os.path.join(BASE_PATH, "img")
 LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(os.path.dirname(BASE_PATH), "logs")
 with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:

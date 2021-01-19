@@ -630,6 +630,16 @@ class TimsTOF(object):
         return self._mz_max_value
 
     @property
+    def quad_mz_min_value(self):
+        """: float : The minimum quad mz value."""
+        return self._quad_min_mz_value
+
+    @property
+    def quad_mz_max_value(self):
+        """: float : The maximum quad mz value."""
+        return self._quad_max_mz_value
+
+    @property
     def mobility_min_value(self):
         """: float : The minimum mobility value."""
         return self._mobility_min_value
@@ -1319,7 +1329,8 @@ class TimsTOF(object):
         self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
         self._precursor_indices = np.array(precursor_indices)
         self._quad_indptr = self.tof_indptr[quad_indptr]
-        self._quad_max_mz_value = int(np.max(self.quad_mz_values[:, 1]))
+        self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
+        self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
         self._precursor_max_index = int(np.max(self.precursor_indices))
 
 
