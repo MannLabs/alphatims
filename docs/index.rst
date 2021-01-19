@@ -15,3 +15,4 @@ This documentation is intended as an API for direct Python use. For more informa
 
    alphatims.utils
    alphatims.bruker
+   alphatims.plotting

@@ -863,7 +863,7 @@ def visualize_chrom():
 
 
 def visualize_scatter():
-    return alphatims.plotting.plot_2d(
+    return alphatims.plotting.scatter_plot(
         DATAFRAME,
         plot1_x_axis.value,
         plot1_y_axis.value,
@@ -872,13 +872,11 @@ def visualize_scatter():
 
 
 def visualize_spectrum():
-    return alphatims.plotting.plot_1d(
+    return alphatims.plotting.line_plot(
         DATASET,
-        DATAFRAME,
         SELECTED_INDICES,
         plot2_x_axis.value,
-        plot2_y_axis.value,
-        WHOLE_TITLE
+        WHOLE_TITLE,
     )
 
 

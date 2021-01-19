@@ -1,125 +1,165 @@
 #!python
+"""This module provides basic LC-TIMS-MSMS plots."""
 
-# holoviz libraries
+# external
+import numpy as np
 import colorcet
 import hvplot.pandas
 import holoviews as hv
 from holoviews import opts
 
 
-def plot_1d(data, df, selected_indices, x_axis_label, y_axis_label, title):
-    # df = DATAFRAME
-    # selected_indices = SELECTED_INDICES
-    # x_axis_label = plot2_x_axis_label.value
-    # y_axis_label =plot2_y_axis_label.value
-    # title = title
+def line_plot(
+    data,
+    selected_indices,
+    x_axis_label: str,
+    title: str,
+    y_axis_label: str = "Intensity",
+    remove_zeros: bool = False,
+):
+    """Plot an XIC, mobilogram or spectrum as a lineplot.
+
+    Parameters
+    ----------
+    data : aphatims.bruker.TimsTOF
+        An aphatims.bruker.TimsTOF data object.
+    selected_indices : np.int64[:]
+        The raw indices that are selected for this plot
+    x_axis_label : str
+        A label that is used for projection
+        (i.e. intensities are summed) on the x-axis. Options are:
+
+            - m/z, Th
+            - RT, min
+            - Inversed IM, V·s·cm\u207B\u00B2
+    title : str
+        The title of this plot.
+        Will be prepended with "Spectrum", "Mobilogram" or "XIC"
+    y_axis_label : str
+        Should not be set for a 1D line plot.
+        Default is "Intensity".
+    remove_zeros : bool
+        If True, zeros are removed.
+        Note that a line plot connects consecutive points,
+        which can lead to misleading plots if non-zeros are removed.
+        If False, use the full range of the appropriate dimension of the data.
+        Defauls is False.
+
+    Returns
+    -------
+    : hv.Curve
+        A curve plot that represents an XIC, mobilogram or spectrum.
+    """
+    labels = {
+        'm/z, Th': "mz_values",
+        'RT, min': "rt_values",
+        'Inversed IM, V·s·cm\u207B\u00B2': "mobility_values",
+    }
+    x_dimension = labels[x_axis_label]
+    intensities = data.bin_intensities(selected_indices, [x_dimension])
+    plot_opts = {
+        "width": 1000,
+        "height": 300,
+        "align": 'center',
+        "tools": ['hover'],
+        "line_width": 1,
+        "yformatter": '%.1e',
+        "align": 'center',
+    }
+    if x_dimension == "mz_values":
+        x_ticks = data.mz_values
+        plot_opts["title"] = f"Spectrum - {title}"
+    elif x_dimension == "mobility_values":
+        x_ticks = data.mobility_values
+        plot_opts["title"] = f"Mobilogram - {title}"
+    elif x_dimension == "rt_values":
+        x_ticks = data.rt_values / 60
+        plot_opts["title"] = f"XIC - {title}"
+    if remove_zeros:
+        non_zeros = np.flatnonzero(intensities)
+        x_ticks = x_ticks[non_zeros]
+        intensities = x_ticks[intensities]
+    plot = hv.Curve(
+        (x_ticks, intensities),
+        x_axis_label,
+        y_axis_label,
+    )
+    plot.opts(**plot_opts)
+    return plot
+
+
+def scatter_plot(
+    df,
+    x_axis_label: str,
+    y_axis_label: str,
+    title: str,
+    z_axis_label: str = "Intensity",
+):
+    """Create a scatterplot / heatmap for a dataframe.
+
+    The coordinates of the dataframe are projected
+    (i.e. their intensities are summed) on the requested axes.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        A dataframe wirth coordinates.
+        This should be obtained by slicing an alphatims.bruker.TimsTOF object.
+    x_axis_label : str
+        A label that is used for projection
+        (i.e. intensities are summed) on the x-axis. Options are:
+
+            - m/z, Th
+            - RT, min
+            - Inversed IM, V·s·cm\u207B\u00B2
+    y_axis_label : str
+        A label that is used for projection
+        (i.e. intensities are summed) on the x-axis. Options are:
+
+            - m/z, Th
+            - RT, min
+            - Inversed IM, V·s·cm\u207B\u00B2
+    title : str
+        The title of this plot.
+        Will be prepended with "Heatmap".
+    z_axis_label : str
+        Should not be set for a 2D scatterplot / heatmap.
+        Default is "Intensity".
+
+    Returns
+    -------
+    hv.Scatter
+        A scatter plot projected on the 2 dimensions.
+    """
     labels = {
         'm/z, Th': "mz_values",
         'RT, min': "rt_values",
         'Inversed IM, V·s·cm\u207B\u00B2': "mobility_values",
         'Intensity': "intensity_values",
     }
-    x_coor = labels[x_axis_label]
-    if x_coor == 'mz_values':
-        mz_intensities = data.bin_intensities(selected_indices, [x_coor])
-        spectrum = hv.Spikes(
-            (
-                sorted(df[x_coor].unique()),
-                mz_intensities[mz_intensities > 0]
-            ),
-            x_axis_label,
-            y_axis_label,
-        )
-        spectrum.opts(
-            title='Spectrum - ' + title,
-            tools=['hover'],
-            color='Intensity',
-            cmap=colorcet.kb,
-            width=1000,
-            height=300,
-            align='center',
-        )
-    elif x_coor == 'mobility_values':
-        im_intensities = data.bin_intensities(selected_indices, [x_coor])
-        spectrum = hv.Curve(
-            (
-                sorted(df[x_coor].unique(), reverse=True),
-                im_intensities[im_intensities > 0]
-            ),
-            x_axis_label,
-            y_axis_label,
-        )
-        spectrum.opts(
-            title="Mobilogram - " + title,
-            width=1000,
-            height=300,
-            align='center',
-            line_width=1,
-            yformatter='%.1e',
-            tools=['hover']
-        )
-    elif x_coor == 'rt_values':
-        rt_intensities = data.bin_intensities(selected_indices, [x_coor])
-        spectrum = hv.Curve(
-            (
-                sorted(df[x_coor].unique()/60),
-                rt_intensities[rt_intensities > 0]
-            ),
-            x_axis_label,
-            y_axis_label,
-        )
-        spectrum.opts(
-            title="XIC - " + title,
-            width=1000,
-            height=300,
-            color='darkred',
-            align='center',
-            line_width=1,
-            yformatter='%.1e',
-            tools=['hover']
-        )
-    return spectrum
-
-
-def plot_2d(
-    df,
-    x_axis,
-    y_axis,
-    title,
-):
-    # df = DATAFRAME
-    # x_axis = plot1_x_axis.value
-    # y_axis = plot1_y_axis.value
-    # title = WHOLE_TITLE
-    labels = {
-        'mz_values': 'm/z, Th',
-        'rt_values': 'RT, min',
-        'mobility_values': 'Inversed IM, V·s·cm\u207B\u00B2',
-        'intensity_values': 'Intensity'
-    }
-    x_coor = [k for k, v in labels.items() if v == x_axis][0]
-    y_coor = [k for k, v in labels.items() if v == y_axis][0]
-    z_coor = "intensity_values"
+    x_dimension = labels[x_axis_label]
+    y_dimension = labels[y_axis_label]
+    z_dimension = labels[z_axis_label]
     scatter = df.hvplot.scatter(
-        x=x_coor,
-        y=y_coor,
-        c=z_coor,
-        xlabel=labels[x_coor],
-        ylabel=labels[y_coor],
-        ylim=(
-            df[y_coor].min(),
-            df[y_coor].max()
-        ),
-        xlim=(
-            df[x_coor].min(),
-            df[x_coor].max()
-        ),
-        title='Heatmap - ' + title,
-        tools=['hover'],
+        x=x_dimension,
+        y=y_dimension,
+        c=z_dimension,
+        xlabel=x_axis_label,
+        ylabel=y_axis_label,
+        clabel=z_axis_label,
+        # ylim=(
+        #     df[y_dimension].min(),
+        #     df[y_dimension].max()
+        # ),
+        # xlim=(
+        #     df[x_dimension].min(),
+        #     df[x_dimension].max()
+        # ),
+        title=f'Heatmap - {title}',
+        # tools=['hover'],
         datashade=True,
         dynspread=True,
         cmap=colorcet.fire,
-        clabel=z_coor,
         nonselection_color='green',
         selection_color='blue',
         color="white",
