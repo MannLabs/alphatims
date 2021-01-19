@@ -1168,7 +1168,7 @@ class TimsTOF(object):
             the selected axis.
         axis : tuple
             Must be length 1 or 2 and can only contain the elements
-            "rt", "mobility" and "mz".
+            "rt_values", "mobility_values" and "mz_values".
 
         Returns
         -------
@@ -1178,21 +1178,21 @@ class TimsTOF(object):
         """
         intensities = self.intensity_values[indices].astype(np.float64)
         max_index = {
-            "rt": self.frame_max_index,
-            "mobility": self.scan_max_index,
-            "mz": self.tof_max_index,
+            "rt_values": self.frame_max_index,
+            "mobility_values": self.scan_max_index,
+            "mz_values": self.tof_max_index,
         }
         parsed_indices = self.convert_from_indices(
             indices,
-            return_frame_indices="rt" in axis,
-            return_scan_indices="mobility" in axis,
-            return_tof_indices="mz" in axis,
+            return_frame_indices="rt_values" in axis,
+            return_scan_indices="mobility_values" in axis,
+            return_tof_indices="mz_values" in axis,
         )
         binned_intensities = np.zeros(tuple([max_index[ax] for ax in axis]))
         parse_dict = {
-            "rt": "frame_indices",
-            "mobility": "scan_indices",
-            "mz": "tof_indices",
+            "rt_values": "frame_indices",
+            "mobility_values": "scan_indices",
+            "mz_values": "tof_indices",
         }
         add_intensity_to_bin(
             range(indices.size),

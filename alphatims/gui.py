@@ -15,6 +15,7 @@ from bokeh.models import HoverTool
 # local
 import alphatims.bruker
 import alphatims.utils
+import alphatims.plotting
 
 
 # extensions
@@ -526,31 +527,6 @@ redo_button = pn.widgets.Button(
 
 def export_sliced_data():
     from io import StringIO
-    # if select_precursors.value:
-    #     quad_values = (-1, 1)
-    # else:
-    #     quad_values = quad_slider.value
-    # # if precursor_id_true:
-    # #     quad_prec_values = (precursor_start_value, precursor_end_value)
-    # # elif select_precursors.value:
-    # #     quad_prec_values = (-1, 1)
-    # # else:
-    # #     quad_prec_values = (float(quad_values[0]), float(quad_values[0]))
-    # # SELECTED_INDICES = DATASET[
-    # #     slice(*frame_values),
-    # #     slice(*scan_values),
-    # #     slice(*quad_prec_values),
-    # #     slice(*tof_values),
-    # #     intensity_threshold_value:
-    # # ]
-    # df = DATASET[
-    #     slice(*frame_slider.value),
-    #     slice(*scan_slider.value),
-    #     slice(*quad_values),
-    #     slice(*tof_slider.value),
-    #     intensity_threshold.value:,
-    #     'df'
-    # ]
     sio = StringIO()
     DATAFRAME.to_csv(sio, index=False)
     sio.seek(0)
@@ -886,116 +862,24 @@ def visualize_chrom():
     return fig.opts(responsive=True)
 
 
-def visualize_scatter(
-):
-    labels = {
-        'mz_values': 'm/z, Th',
-        'rt_values': 'RT, min',
-        'mobility_values': 'Inversed IM, V·s·cm\u207B\u00B2',
-        'intensity_values': 'Intensity'
-    }
-    x_coor = [k for k, v in labels.items() if v == plot1_x_axis.value][0]
-    y_coor = [k for k, v in labels.items() if v == plot1_y_axis.value][0]
-    z_coor = "intensity_values"
-    df = DATAFRAME
-    scatter = df.hvplot.scatter(
-        x=x_coor,
-        y=y_coor,
-        c=z_coor,
-        xlabel=labels[x_coor],
-        ylabel=labels[y_coor],
-        ylim=(
-            df[y_coor].min(),
-            df[y_coor].max()
-        ),
-        xlim=(
-            df[x_coor].min(),
-            df[x_coor].max()
-        ),
-        title='Heatmap - ' + WHOLE_TITLE,
-        tools=['hover'],
-        datashade=True,
-        dynspread=True,
-        cmap=colorcet.fire,
-        clabel=z_coor,
-        nonselection_color='green',
-        selection_color='blue',
-        color="white",
-        width=1000,
-        height=300,
+def visualize_scatter():
+    return alphatims.plotting.plot_2d(
+        DATAFRAME,
+        plot1_x_axis.value,
+        plot1_y_axis.value,
+        WHOLE_TITLE,
     )
-    return scatter
 
 
-def visualize_spectrum(
-):
-    labels = {
-        'mz_values': 'm/z, Th',
-        'rt_values': 'RT, min',
-        'mobility_values': 'Inversed IM, V·s·cm\u207B\u00B2',
-        'intensity_values': 'Intensity'
-    }
-    x_coor = [k for k, v in labels.items() if v == plot2_x_axis.value][0]
-    y_coor = [k for k, v in labels.items() if v == plot2_y_axis.value][0]
-    df = DATAFRAME
-    if x_coor == 'mz_values':
-        mz_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['mz'])
-        spectrum = hv.Spikes(
-            (
-                sorted(df[x_coor].unique()),
-                mz_intensities[mz_intensities > 0]
-            ),
-            labels[x_coor],
-            labels[y_coor])
-        spectrum.opts(
-            title='Spectrum - ' + WHOLE_TITLE,
-            tools=['hover'],
-            color='Intensity',
-            cmap=colorcet.kb,
-            width=1000,
-            height=300,
-            align='center',
-        )
-    elif x_coor == 'mobility_values':
-        im_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['mobility'])
-        spectrum = hv.Curve(
-            (
-                sorted(df[x_coor].unique(), reverse=True),
-                im_intensities[im_intensities > 0]
-            ),
-            labels[x_coor],
-            labels[y_coor]
-        )
-        spectrum.opts(
-            title="Mobilogram - " + WHOLE_TITLE,
-            width=1000,
-            height=300,
-            align='center',
-            line_width=1,
-            yformatter='%.1e',
-            tools=['hover']
-        )
-    elif x_coor == 'rt_values':
-        rt_intensities = DATASET.bin_intensities(SELECTED_INDICES, ['rt'])
-        spectrum = hv.Curve(
-            (
-                sorted(df[x_coor].unique()/60),
-                rt_intensities[rt_intensities > 0]
-            ),
-            labels[x_coor],
-            labels[y_coor]
-        )
-        spectrum.opts(
-            title="XIC - " + WHOLE_TITLE,
-            width=1000,
-            height=300,
-            color='darkred',
-            align='center',
-            line_width=1,
-            yformatter='%.1e',
-            tools=['hover']
-        )
-    return spectrum
+def visualize_spectrum():
+    return alphatims.plotting.plot_1d(
+        DATASET,
+        DATAFRAME,
+        SELECTED_INDICES,
+        plot2_x_axis.value,
+        plot2_y_axis.value,
+        WHOLE_TITLE
+    )
 
 
 ### SHOW SETTINGS/PLOTS
