@@ -630,6 +630,11 @@ class TimsTOF(object):
         return self._mz_max_value
 
     @property
+    def rt_max_value(self):
+        """: float : The maximum rt value."""
+        return self.rt_values[-1]
+
+    @property
     def quad_mz_min_value(self):
         """: float : The minimum quad mz value."""
         return self._quad_min_mz_value
@@ -648,6 +653,16 @@ class TimsTOF(object):
     def mobility_max_value(self):
         """: float : The maximum mobility value."""
         return self._mobility_max_value
+
+    @property
+    def intensity_min_value(self):
+        """: float : The minimum intensity value."""
+        return self._intensity_min_value
+
+    @property
+    def intensity_max_value(self):
+        """: float : The maximum intensity value."""
+        return self._intensity_max_value
 
     @property
     def frames(self):
@@ -830,6 +845,8 @@ class TimsTOF(object):
                 tof_intercept + tof_slope * np.arange(self.tof_max_index)
             )**2
         self._parse_quad_indptr()
+        self._intensity_min_value = int(np.min(self.intensity_values))
+        self._intensity_max_value = int(np.max(self.intensity_values))
 
     def save_as_hdf(
         self,
@@ -1352,7 +1369,7 @@ def parse_keys(data: TimsTOF, keys) -> dict:
     keys : tuple
         A tuple of at most 5 elemens, containing
         slices, ints, floats, Nones, and/or iterables.
-        See `alphatims.bruker.convert_slice_key_to_integer_array` and
+        See `alphatims.bruker.convert_slice_key_to_int_array` and
         `alphatims.bruker.convert_slice_key_to_float_array` for more details.
 
     Returns
@@ -1394,7 +1411,7 @@ def parse_keys(data: TimsTOF, keys) -> dict:
         try:
             dimension_slices[
                 dimension
-            ] = convert_slice_key_to_integer_array(
+            ] = convert_slice_key_to_int_array(
                 data,
                 keys[i] if (i < len(keys)) else slice(None),
                 dimension
@@ -1402,7 +1419,7 @@ def parse_keys(data: TimsTOF, keys) -> dict:
         except PrecursorFloatError:
             dimension_slices[
                 "precursor_indices"
-            ] = convert_slice_key_to_integer_array(
+            ] = convert_slice_key_to_int_array(
                 data,
                 slice(None),
                 "precursor_indices"
@@ -1476,7 +1493,7 @@ def convert_slice_key_to_float_array(data: TimsTOF, key):
             raise ValueError
 
 
-def convert_slice_key_to_integer_array(data: TimsTOF, key, dimension: str):
+def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
     """Convert a key of a data dimension to a slice integer array.
 
     Parameters
