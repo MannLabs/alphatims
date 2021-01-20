@@ -1190,7 +1190,6 @@ def check_frames_stack():
         updated_option, updated_value = GLOBAL_STACK.update(
             "frames", (int(start_), int(end_))
         )
-        print()
     return updated_option, updated_value
 
 
