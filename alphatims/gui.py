@@ -1091,12 +1091,15 @@ def run():
 
 def update_global_selection(updated_option, updated_value):
     global PLOTS
+    global GLOBAL_INIT_LOCK
     if updated_value is None:
         GLOBAL_STACK.is_locked = GLOBAL_INIT_LOCK
         return PLOTS
     if updated_value != "plot_axis":
         print("updating selection")
+        GLOBAL_INIT_LOCK = True
         update_widgets(updated_option)
+        GLOBAL_INIT_LOCK = False
         update_selected_indices_and_dataframe()
     if DATASET:
         PLOTS = pn.Column(
@@ -1179,20 +1182,15 @@ def check_frames_stack():
         updated_option, updated_value = GLOBAL_STACK.update(
             "frames", (frame_start.value, frame_end.value)
         )
-    # if updated_value is None:
-    #     start, end = DATASET.convert_to_indices(
-    #         np.array([rt_start.value, rt_end.value]),
-    #         return_frame_indices=True
-    #     )
-    #     updated_option, updated_value = GLOBAL_STACK.update(
-    #         "frames", (int(start), int(end))
-    #     )
-    #     print(
-    #         start,
-    #         end,
-    #         updated_option,
-    #         updated_value
-    #     )
+    if updated_value is None:
+        start_, end_ = DATASET.convert_to_indices(
+            np.array([rt_start.value, rt_end.value]) * 60,
+            return_frame_indices=True
+        )
+        updated_option, updated_value = GLOBAL_STACK.update(
+            "frames", (int(start_), int(end_))
+        )
+        print()
     return updated_option, updated_value
 
 
@@ -1204,20 +1202,14 @@ def check_scans_stack():
         updated_option, updated_value = GLOBAL_STACK.update(
             "scans", (scan_start.value, scan_end.value)
         )
-    # if updated_value is None:
-    #     start, end = DATASET.convert_to_indices(
-    #         np.array([rt_start.value, rt_end.value]),
-    #         return_frame_indices=True
-    #     )
-    #     updated_option, updated_value = GLOBAL_STACK.update(
-    #         "frames", (int(start), int(end))
-    #     )
-    #     print(
-    #         start,
-    #         end,
-    #         updated_option,
-    #         updated_value
-    #     )
+    if updated_value is None:
+        start_, end_ = DATASET.convert_to_indices(
+            np.array([im_start.value, im_end.value])[::-1],
+            return_scan_indices=True
+        )[::-1]
+        updated_option, updated_value = GLOBAL_STACK.update(
+            "scans", (int(start_), int(end_))
+        )
     return updated_option, updated_value
 
 
@@ -1251,20 +1243,14 @@ def check_tofs_stack():
         updated_option, updated_value = GLOBAL_STACK.update(
             "tofs", (tof_start.value, tof_end.value)
         )
-    # if updated_value is None:
-    #     start, end = DATASET.convert_to_indices(
-    #         np.array([rt_start.value, rt_end.value]),
-    #         return_frame_indices=True
-    #     )
-    #     updated_option, updated_value = GLOBAL_STACK.update(
-    #         "frames", (int(start), int(end))
-    #     )
-    #     print(
-    #         start,
-    #         end,
-    #         updated_option,
-    #         updated_value
-    #     )
+    if updated_value is None:
+        start_, end_ = DATASET.convert_to_indices(
+            np.array([mz_start.value, mz_end.value]),
+            return_tof_indices=True
+        )
+        updated_option, updated_value = GLOBAL_STACK.update(
+            "tofs", (int(start_), int(end_))
+        )
     return updated_option, updated_value
 
 
