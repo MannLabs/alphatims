@@ -7,10 +7,11 @@ import colorcet
 import hvplot.pandas
 import holoviews as hv
 from holoviews import opts
+import bokeh.models
 
 
 def line_plot(
-    data,
+    timstof_data,
     selected_indices,
     x_axis_label: str,
     title: str,
@@ -21,7 +22,7 @@ def line_plot(
 
     Parameters
     ----------
-    data : aphatims.bruker.TimsTOF
+    timstof_data : aphatims.bruker.TimsTOF
         An aphatims.bruker.TimsTOF data object.
     selected_indices : np.int64[:]
         The raw indices that are selected for this plot
@@ -42,8 +43,9 @@ def line_plot(
         If True, zeros are removed.
         Note that a line plot connects consecutive points,
         which can lead to misleading plots if non-zeros are removed.
-        If False, use the full range of the appropriate dimension of the data.
-        Defauls is False.
+        If False, use the full range of the appropriate dimension of
+        the timstof_data.
+        Default is False.
 
     Returns
     -------
@@ -56,7 +58,7 @@ def line_plot(
         'Inversed IM, V·s·cm\u207B\u00B2': "mobility_values",
     }
     x_dimension = labels[x_axis_label]
-    intensities = data.bin_intensities(selected_indices, [x_dimension])
+    intensities = timstof_data.bin_intensities(selected_indices, [x_dimension])
     plot_opts = {
         "width": 1000,
         "height": 300,
@@ -67,13 +69,13 @@ def line_plot(
         "align": 'center',
     }
     if x_dimension == "mz_values":
-        x_ticks = data.mz_values
+        x_ticks = timstof_data.mz_values
         plot_opts["title"] = f"Spectrum - {title}"
     elif x_dimension == "mobility_values":
-        x_ticks = data.mobility_values
+        x_ticks = timstof_data.mobility_values
         plot_opts["title"] = f"Mobilogram - {title}"
     elif x_dimension == "rt_values":
-        x_ticks = data.rt_values / 60
+        x_ticks = timstof_data.rt_values / 60
         plot_opts["title"] = f"XIC - {title}"
     if remove_zeros:
         non_zeros = np.flatnonzero(intensities)
@@ -109,16 +111,16 @@ def scatter_plot(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - m/z, Th
-            - RT, min
-            - Inversed IM, V·s·cm\u207B\u00B2
+            - "m/z, Th"
+            - "RT, min"
+            - "Inversed IM, V·s·cm\u207B\u00B2"
     y_axis_label : str
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - m/z, Th
-            - RT, min
-            - Inversed IM, V·s·cm\u207B\u00B2
+            - "m/z, Th"
+            - "RT, min"
+            - "Inversed IM, V·s·cm\u207B\u00B2"
     title : str
         The title of this plot.
         Will be prepended with "Heatmap".
@@ -140,6 +142,13 @@ def scatter_plot(
     x_dimension = labels[x_axis_label]
     y_dimension = labels[y_axis_label]
     z_dimension = labels[z_axis_label]
+    # hover = bokeh.models.HoverTool(
+    #     tooltips=[
+    #         (f'{x_axis_label}', f'@{x_dimension}'),
+    #         (f'{y_axis_label}', f'@{y_dimension}'),
+    #         (f'{z_axis_label}', f'@{z_dimension}'),
+    #     ]
+    # )
     scatter = df.hvplot.scatter(
         x=x_dimension,
         y=y_dimension,
@@ -156,7 +165,7 @@ def scatter_plot(
         #     df[x_dimension].max()
         # ),
         title=f'Heatmap - {title}',
-        # tools=['hover'],
+        # tools=[hover],
         datashade=True,
         dynspread=True,
         cmap=colorcet.fire,
@@ -167,3 +176,50 @@ def scatter_plot(
         height=300,
     )
     return scatter
+
+
+def tic_plot(timstof_data, title: str):
+    """Create a total ion chromatogram (TIC) for the data.
+
+    Parameters
+    ----------
+    timstof_data : aphatims.bruker.TimsTOF
+        An aphatims.bruker.TimsTOF data object.
+    title : str
+        The title of this plot.
+        Will be prepended with "TIC".
+
+    Returns
+    -------
+    hv.Curve
+        The TIC of the provided dataset.
+    """
+    hover = bokeh.models.HoverTool(
+        tooltips=[('RT, min', '@RT'), ('Intensity', '@SummedIntensities')],
+        mode='vline'
+    )
+    tic_opts = opts.Curve(
+        width=1000,
+        height=310,
+        xlabel='RT, min',
+        ylabel='Intensity',
+        line_width=1,
+        yformatter='%.1e',
+        shared_axes=True,
+        tools=[hover]
+    )
+    data = timstof_data.frames.query('MsMsType == 0')[[
+        'Time', 'SummedIntensities']
+    ]
+    data['RT'] = data['Time'] / 60
+    tic = hv.Curve(
+        data=data,
+        kdims=['RT'],
+        vdims=['SummedIntensities']
+    ).opts(
+        tic_opts,
+        opts.Curve(
+            title="TIC - " + title
+        )
+    )
+    return tic
