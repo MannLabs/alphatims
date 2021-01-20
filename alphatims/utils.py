@@ -712,4 +712,144 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
     return result
 
 
+class Option_Stack(object):
+    """TODO: docstring"""
+    # TODO: docstring
+
+    def __init__(self, option_name, option_initial_value):
+        self._stack = [option_initial_value]
+        self._stack_pointer = 0
+        self._option_name = option_name
+
+    @property
+    def current_value(self):
+        return self._stack[self._stack_pointer]
+
+    @property
+    def size(self):
+        return len(self._stack) - 1
+
+    @property
+    def option_name(self):
+        return self._option_name
+
+    def update(self, option_value):
+        if self.current_value != option_value:
+            self.trim()
+            self._stack.append(option_value)
+            self._stack_pointer += 1
+            return True
+        return False
+
+    def redo(self):
+        if self._stack_pointer < self.size:
+            self._stack_pointer += 1
+            return self.current_value
+        return None
+
+    def undo(self):
+        if self._stack_pointer > 0:
+            self._stack_pointer -= 1
+            return self.current_value
+        return None
+
+    def trim(self):
+        if self._stack_pointer != self.size:
+            self._stack = self._stack[:self._stack_pointer + 1]
+
+    def __str__(self):
+        return f"{self._stack_pointer} {self._option_name} {self._stack}"
+
+
+class Global_Stack(object):
+    """TODO: docstring"""
+    # TODO: docstring
+
+    def __init__(self, all_available_options):
+        self._option_stacks = {
+            option_key: Option_Stack(
+                option_key,
+                option_value
+            ) for option_key, option_value in all_available_options.items()
+        }
+        self._number_of_options = len(all_available_options)
+        self._stack_pointer = 0
+        self._stack = [None]
+        self.is_locked = len(all_available_options) == 0
+
+    @property
+    def current_values(self):
+        return {
+            option_key: option_stack.current_value for (
+                option_key,
+                option_stack
+            ) in self._option_stacks.items()
+        }
+
+    @property
+    def size(self):
+        return len(self._stack) - 1
+
+    def __getitem__(self, key):
+        return self._option_stacks[key].current_value
+
+    def update(self, option_key, option_value):
+        if self.is_locked:
+            return "", None
+        current_value = self[option_key]
+        if current_value == option_value:
+            return "", None
+        self._option_stacks[option_key].update(option_value)
+        self.trim()
+        self._stack_pointer += 1
+        self._stack.append(option_key)
+        self.is_locked = True
+        return option_key, option_value
+
+    def redo(self):
+        if self.is_locked:
+            return "", None
+        if self._stack_pointer < self.size:
+            self._stack_pointer += 1
+            option_key = self._stack[self._stack_pointer]
+            option_value = self._option_stacks[option_key].redo()
+            if option_value is not None:
+                self.is_locked = True
+                return option_key, option_value
+        return "", None
+
+    def undo(self):
+        if self.is_locked:
+            return "", None
+        if self._stack_pointer > 0:
+            option_key = self._stack[self._stack_pointer]
+            self._stack_pointer -= 1
+            option_value = self._option_stacks[option_key].undo()
+            if option_value is not None:
+                self.is_locked = True
+                return option_key, option_value
+        return "", None
+
+    def trim(self):
+        if self._stack_pointer != self.size:
+            self._stack = self._stack[:self._stack_pointer + 1]
+            for stack in self._option_stacks.values():
+                stack.trim()
+
+    def __str__(self):
+        result = " ".join(
+            [
+                str(stack) for stack in self._option_stacks.values()
+            ]
+        )
+        # values = str(self.current_values)
+        return result + " " + " ".join(
+            [
+                str(self._stack_pointer),
+                "global",
+                str(self._stack)
+            ]
+        )
+
+
 set_threads(MAX_THREADS)
