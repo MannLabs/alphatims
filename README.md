@@ -251,7 +251,9 @@ Options:
 
 ### Python and jupyter notebooks
 
-AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. An [exemplary jupyter notebook](nbs/example_analysis.ipynb) (with the extra option `gui` activated for all plotting capabilities) is present in the [nbs folder](nbs).
+AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html).
+
+An [exemplary jupyter notebook](nbs/example_analysis.ipynb) with a default use case is present in the [nbs folder](nbs).
 
 ---
 ## Performance
@@ -268,10 +270,10 @@ Typical performance statistics on data in-/output and slicing of standard [HeLa 
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
-* **LC:** 100.0 <= retention_time <= 100.5
+* **LC:** 100.0 <= retention_time < 100.5
 * **TIMS:** scan_index = 450
-* **Quadrupole:** 700.0 <= quad_mz_values <= 710.0
-* **TOF:** 621.9 <= tof_mz_values <= 622.1
+* **Quadrupole:** 700.0 <= quad_mz_values < 710.0
+* **TOF:** 621.9 <= tof_mz_values < 622.1
 
 All of these analyses were timed with `timeit` and are the average of at least 7 runs. They were obtained on the following system:
 

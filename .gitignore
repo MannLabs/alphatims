@@ -133,3 +133,4 @@ dmypy.json
 logs/*
 *sandbox*
 misc/releases/*
+!docs/_build
