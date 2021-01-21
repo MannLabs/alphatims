@@ -405,9 +405,19 @@ mz_end = pn.widgets.FloatInput(
 
 
 # Precursor selection
-precursor_fragment_toggle_button = pn.widgets.Toggle(
-    name='Showing only MS1 ions (precursors)',
-    button_type='primary'
+# precursor_fragment_toggle_button = pn.widgets.Toggle(
+#     name='Showing only MS1 ions (precursors)',
+#     button_type='primary'
+# )
+select_ms1_precursors = pn.widgets.Checkbox(
+    name='Show MS1 ions (precursors)',
+    value=True,
+    width=200,
+)
+select_ms2_fragments = pn.widgets.Checkbox(
+    name='Show MS2 ions (fragments)',
+    value=False,
+    width=200,
 )
 
 # quad selection
@@ -673,7 +683,9 @@ settings = pn.Column(
     ),
     sliders_divider,
 
-    precursor_fragment_toggle_button,
+    # precursor_fragment_toggle_button,
+    select_ms1_precursors,
+    select_ms2_fragments,
 
     quad_slider,
     pn.Row(
@@ -858,7 +870,8 @@ def init_settings(*args):
                 "tofs": (0,  DATASET.tof_max_index),
                 "quads": (0, DATASET.quad_mz_max_value),
                 "precursors": (1, DATASET.precursor_max_index),
-                "show_fragments": False,
+                "show_fragments": select_ms2_fragments.value,
+                "show_precursors": select_ms1_precursors.value,
                 "plot_axis": (
                     plot1_y_axis.value,
                     plot2_x_axis.value,
@@ -975,14 +988,21 @@ def exit_button_event(*args):
     plot1_y_axis.param.value,
     plot2_x_axis.param.value,
 
-    precursor_fragment_toggle_button.param.value,
+    # precursor_fragment_toggle_button.param.value,
+    select_ms1_precursors.param.value,
+    select_ms2_fragments.param.value,
 )
 def update_plots_and_settings(*args):
     if DATASET:
         updated_option, updated_value = STACK.update(
             "show_fragments",
-            precursor_fragment_toggle_button.value
+            select_ms2_fragments.value
         )
+        if updated_value is None:
+            updated_option, updated_value = STACK.update(
+                "show_precursors",
+                select_ms1_precursors.value
+            )
         if updated_value is None:
             updated_option, updated_value = check_frames_stack()
         if updated_value is None:
@@ -1038,16 +1058,21 @@ def update_selected_indices_and_dataframe():
         scan_values = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*scan_slider.value), "scan_indices"
         )
-        if precursor_fragment_toggle_button.value:
-            quad_values = alphatims.bruker.convert_slice_key_to_float_array(
-                DATASET, slice(*quad_slider.value)
-            )
-            precursor_values = alphatims.bruker.convert_slice_key_to_int_array(
-                DATASET, slice(*precursor_slider.value), "precursor_indices"
-            )
-        else:
+        if select_ms1_precursors.value:
             quad_values = np.array([[-1, 0]])
             precursor_values = np.array([[0, 1, 1]])
+        else:
+            quad_values = np.empty(shape=(0, 2), dtype=np.float64)
+            precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
+        if select_ms2_fragments.value:
+            quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
+                DATASET, slice(*quad_slider.value)
+            )
+            precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*precursor_slider.value), "precursor_indices"
+            )
+            quad_values = np.vstack([quad_values, quad_values_])
+            precursor_values = np.vstack([precursor_values, precursor_values_])
         tof_values = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*tof_slider.value), "tof_indices"
         )
@@ -1111,7 +1136,7 @@ def update_global_selection(updated_option, updated_value):
 
 def update_widgets(updated_option):
     if updated_option == "show_fragments":
-        update_toggle_precusors_and_fragment()
+        update_toggle_fragments()
     if updated_option == "frames":
         update_frame_widgets_to_stack()
     if updated_option == "scans":
@@ -1126,12 +1151,7 @@ def update_widgets(updated_option):
         update_intensity_widgets_to_stack()
 
 
-def update_toggle_precusors_and_fragment():
-    if precursor_fragment_toggle_button.value:
-        name = 'Showing only MS2 ions (fragments)'
-    else:
-        name = 'Showing only MS1 ions (precursors)'
-    precursor_fragment_toggle_button.name = name
+def update_toggle_fragments():
     quad_slider.disabled = not quad_slider.disabled
     quad_start.disabled = not quad_start.disabled
     quad_end.disabled = not quad_end.disabled
