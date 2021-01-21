@@ -765,7 +765,7 @@ class Global_Stack(object):
     """TODO: docstring"""
     # TODO: docstring
 
-    def __init__(self, all_available_options):
+    def __init__(self, all_available_options, is_locked=True):
         self._option_stacks = {
             option_key: Option_Stack(
                 option_key,
@@ -775,7 +775,7 @@ class Global_Stack(object):
         self._number_of_options = len(all_available_options)
         self._stack_pointer = 0
         self._stack = [None]
-        self.is_locked = len(all_available_options) == 0
+        self.is_locked = is_locked
 
     @property
     def current_values(self):

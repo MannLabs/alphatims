@@ -104,7 +104,7 @@ PLOTS = None
 WHOLE_TITLE = str()
 SELECTED_INDICES = np.array([])
 DATAFRAME = pd.DataFrame()
-GLOBAL_STACK = alphatims.utils.Global_Stack({})
+STACK = alphatims.utils.Global_Stack({})
 GLOBAL_INIT_LOCK = True
 
 
@@ -404,6 +404,12 @@ mz_end = pn.widgets.FloatInput(
 )
 
 
+# Precursor selection
+precursor_fragment_toggle_button = pn.widgets.Toggle(
+    name='Showing only MS1 ions (precursors)',
+    button_type='primary'
+)
+
 # quad selection
 quad_slider = pn.widgets.RangeSlider(
     # name='Quad',
@@ -414,7 +420,7 @@ quad_slider = pn.widgets.RangeSlider(
     value=(0, 0),
     step=1,
     margin=(5, 20),
-    disabled=False
+    disabled=True
 )
 quad_start = pn.widgets.FloatInput(
     name='Start QUAD',
@@ -425,7 +431,7 @@ quad_start = pn.widgets.FloatInput(
     width=80,
     format='0.00',
     margin=(5, 20),
-    disabled=False
+    disabled=True
 )
 quad_end = pn.widgets.FloatInput(
     name='End QUAD',
@@ -436,7 +442,7 @@ quad_end = pn.widgets.FloatInput(
     width=80,
     format='0.00',
     margin=(0, 0, 0, 20),
-    disabled=False
+    disabled=True
 )
 
 
@@ -448,7 +454,8 @@ precursor_slider = pn.widgets.IntRangeSlider(
     align="center",
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(5, 20),
+    disabled=True
 )
 precursor_start = pn.widgets.IntInput(
     name='Start precursor',
@@ -458,7 +465,7 @@ precursor_start = pn.widgets.IntInput(
     start=1,
     width=80,
     margin=(0, 0, 0, 0),
-    disabled=False
+    disabled=True
 )
 precursor_end = pn.widgets.IntInput(
     name='End precursor',
@@ -468,7 +475,7 @@ precursor_end = pn.widgets.IntInput(
     start=1,
     width=80,
     margin=(0, 0, 0, 20),
-    disabled=False
+    disabled=True
 )
 
 
@@ -596,16 +603,8 @@ plot2_x_axis = pn.widgets.Select(
     margin=(0, 20, 0, 20),
     align='center',
 )
-change_axis = pn.widgets.Button(
-    name='Change Axis',
-    button_type='default',
-    height=31,
-    width=200,
-    align='center',
-    margin=(15, 0, -10, 0)
-)
 
-axis_selection = pn.Card(
+axis_selection_card = pn.Card(
     plot1_title,
     pn.Row(
         plot1_x_axis,
@@ -619,7 +618,6 @@ axis_selection = pn.Card(
     #     # plot2_y_axis
     # ),
     card_divider,
-    change_axis,
     title='Select axis for plots',
     collapsed=True,
     width=430,
@@ -628,14 +626,14 @@ axis_selection = pn.Card(
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
 )
-axis_selection.jscallback(
+axis_selection_card.jscallback(
     collapsed="""
         var $container = $("html,body");
         var $scrollTo = $('.test');
 
         $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
         """,
-    args={'card': axis_selection}
+    args={'card': axis_selection_card}
 )
 
 
@@ -648,7 +646,7 @@ settings = pn.Column(
         save_spinner
     ),
     save_message,
-    axis_selection,
+    axis_selection_card,
     player_title,
     player,
     sliders_divider,
@@ -675,6 +673,8 @@ settings = pn.Column(
     ),
     sliders_divider,
 
+    precursor_fragment_toggle_button,
+
     quad_slider,
     pn.Row(
         quad_start,
@@ -682,7 +682,7 @@ settings = pn.Column(
         quad_end,
         align='center',
     ),
-    sliders_divider,
+    # sliders_divider,
 
     precursor_slider,
     pn.Row(
@@ -847,20 +847,18 @@ def save_hdf(*args):
 )
 def init_settings(*args):
     if DATASET:
-        global GLOBAL_STACK
+        global STACK
         global GLOBAL_INIT_LOCK
-        global PLOTS
-        GLOBAL_STACK = alphatims.utils.Global_Stack(
+        GLOBAL_INIT_LOCK = True
+        STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, DATASET.intensity_max_value),
-                "frames": (0, 1),
+                "frames": (0, DATASET.frame_max_index),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
-                "quads": (
-                    DATASET.quad_mz_min_value,
-                    DATASET.quad_mz_max_value,
-                ),
-                "precursors": (0, 1),
+                "quads": (0, DATASET.quad_mz_max_value),
+                "precursors": (1, DATASET.precursor_max_index),
+                "show_fragments": False,
                 "plot_axis": (
                     plot1_y_axis.value,
                     plot2_x_axis.value,
@@ -868,54 +866,41 @@ def init_settings(*args):
                 ),
             }
         )
+
         frames_msmstype = DATASET.frames.query('MsMsType == 0')
         step = len(frames_msmstype) // 10
         player.options = frames_msmstype.loc[1::step, 'Id'].to_list()
-        player.start, player.end = GLOBAL_STACK["frames"]
+        player.start, player.end = STACK["frames"]
 
-        GLOBAL_STACK.is_locked = True
-        GLOBAL_INIT_LOCK = True
-        frame_slider.start, frame_slider.end = (0, DATASET.frame_max_index)
-        frame_start.start, frame_start.end = (0, DATASET.frame_max_index)
-        frame_end.start, frame_end.end = (0, DATASET.frame_max_index)
+        frame_slider.start, frame_slider.end = STACK["frames"]
+        frame_start.start, frame_start.end = STACK["frames"]
+        frame_end.start, frame_end.end = STACK["frames"]
         rt_start.start, rt_start.end = (0, DATASET.rt_max_value / 60)
         rt_end.start, rt_end.end = (0, DATASET.rt_max_value / 60)
 
-        scan_slider.start, scan_slider.end = GLOBAL_STACK["scans"]
-        scan_start.start, scan_start.end = GLOBAL_STACK["scans"]
-        scan_end.start, scan_end.end = GLOBAL_STACK["scans"]
+        scan_slider.start, scan_slider.end = STACK["scans"]
+        scan_start.start, scan_start.end = STACK["scans"]
+        scan_end.start, scan_end.end = STACK["scans"]
         im_start.start, im_start.end = (0, DATASET.mobility_max_value)
         im_end.start, im_end.end = (0, DATASET.mobility_max_value)
 
-        quad_slider.start, quad_slider.end = GLOBAL_STACK["quads"]
-        quad_start.start, quad_start.end = GLOBAL_STACK["quads"]
-        quad_end.start, quad_end.end = GLOBAL_STACK["quads"]
+        quad_slider.start, quad_slider.end = STACK["quads"]
+        quad_start.start, quad_start.end = STACK["quads"]
+        quad_end.start, quad_end.end = STACK["quads"]
 
-        precursor_slider.start, precursor_slider.end = (
-            0, DATASET.precursor_max_index + 1
-        )
-        precursor_start.start, precursor_start.end = (
-            0, DATASET.precursor_max_index + 1
-        )
-        precursor_end.start, precursor_end.end = (
-            0, DATASET.precursor_max_index + 1
-        )
+        precursor_slider.start, precursor_slider.end = STACK["precursors"]
+        precursor_start.start, precursor_start.end = STACK["precursors"]
+        precursor_end.start, precursor_end.end = STACK["precursors"]
 
-        tof_slider.start, tof_slider.end = GLOBAL_STACK["tofs"]
-        tof_start.start, tof_start.end = GLOBAL_STACK["tofs"]
-        tof_end.start, tof_end.end = GLOBAL_STACK["tofs"]
+        tof_slider.start, tof_slider.end = STACK["tofs"]
+        tof_start.start, tof_start.end = STACK["tofs"]
+        tof_end.start, tof_end.end = STACK["tofs"]
         mz_start.start, mz_start.end = (0, DATASET.mz_max_value)
         mz_end.start, mz_end.end = (0, DATASET.mz_max_value)
 
-        intensity_slider.start, intensity_slider.end = GLOBAL_STACK[
-            "intensities"
-        ]
-        intensity_start.start, intensity_start.end = GLOBAL_STACK[
-            "intensities"
-        ]
-        intensity_end.start, intensity_end.end = GLOBAL_STACK[
-            "intensities"
-        ]
+        intensity_slider.start, intensity_slider.end = STACK["intensities"]
+        intensity_start.start, intensity_start.end = STACK["intensities"]
+        intensity_end.start, intensity_end.end = STACK["intensities"]
 
         update_frame_widgets_to_stack()
         update_scan_widgets_to_stack()
@@ -925,7 +910,7 @@ def init_settings(*args):
         update_intensity_widgets_to_stack()
 
         GLOBAL_INIT_LOCK = False
-        GLOBAL_STACK.is_locked = False
+        STACK.is_locked = False
         # first init needed:
         frame_slider.value = (1, 2)
 
@@ -986,11 +971,20 @@ def exit_button_event(*args):
     intensity_start.param.value,
     intensity_end.param.value,
 
-    change_axis.param.clicks,
+    plot1_x_axis.param.value,
+    plot1_y_axis.param.value,
+    plot2_x_axis.param.value,
+
+    precursor_fragment_toggle_button.param.value,
 )
 def update_plots_and_settings(*args):
     if DATASET:
-        updated_option, updated_value = check_frames_stack()
+        updated_option, updated_value = STACK.update(
+            "show_fragments",
+            precursor_fragment_toggle_button.value
+        )
+        if updated_value is None:
+            updated_option, updated_value = check_frames_stack()
         if updated_value is None:
             updated_option, updated_value = check_scans_stack()
         if updated_value is None:
@@ -1002,7 +996,7 @@ def update_plots_and_settings(*args):
         if updated_value is None:
             updated_option, updated_value = check_intensities_stack()
         if updated_value is None:
-            updated_option, updated_value = GLOBAL_STACK.update(
+            updated_option, updated_value = STACK.update(
                 "plot_axis",
                 (
                     plot1_y_axis.value,
@@ -1020,7 +1014,7 @@ def update_plots_and_settings(*args):
     watch=True,
 )
 def redo(*args):
-    updated_option, updated_value = GLOBAL_STACK.redo()
+    updated_option, updated_value = STACK.redo()
     return update_global_selection(updated_option, updated_value)
 
 
@@ -1029,7 +1023,7 @@ def redo(*args):
     watch=True,
 )
 def undo(*args):
-    updated_option, updated_value = GLOBAL_STACK.undo()
+    updated_option, updated_value = STACK.undo()
     return update_global_selection(updated_option, updated_value)
 
 
@@ -1044,12 +1038,16 @@ def update_selected_indices_and_dataframe():
         scan_values = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*scan_slider.value), "scan_indices"
         )
-        quad_values = alphatims.bruker.convert_slice_key_to_float_array(
-            DATASET, slice(*quad_slider.value)
-        )
-        precursor_values = alphatims.bruker.convert_slice_key_to_int_array(
-            DATASET, slice(*precursor_slider.value), "precursor_indices"
-        )
+        if precursor_fragment_toggle_button.value:
+            quad_values = alphatims.bruker.convert_slice_key_to_float_array(
+                DATASET, slice(*quad_slider.value)
+            )
+            precursor_values = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*precursor_slider.value), "precursor_indices"
+            )
+        else:
+            quad_values = np.array([[-1, 0]])
+            precursor_values = np.array([[0, 1, 1]])
         tof_values = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*tof_slider.value), "tof_indices"
         )
@@ -1093,7 +1091,7 @@ def update_global_selection(updated_option, updated_value):
     global PLOTS
     global GLOBAL_INIT_LOCK
     if updated_value is None:
-        GLOBAL_STACK.is_locked = GLOBAL_INIT_LOCK
+        STACK.is_locked = GLOBAL_INIT_LOCK
         return PLOTS
     if updated_value != "plot_axis":
         print("updating selection")
@@ -1107,11 +1105,13 @@ def update_global_selection(updated_option, updated_value):
             visualize_scatter(),
             visualize_1d_plot()
         )
-        GLOBAL_STACK.is_locked = GLOBAL_INIT_LOCK
+        STACK.is_locked = GLOBAL_INIT_LOCK
         return PLOTS
 
 
 def update_widgets(updated_option):
+    if updated_option == "show_fragments":
+        update_toggle_precusors_and_fragment()
     if updated_option == "frames":
         update_frame_widgets_to_stack()
     if updated_option == "scans":
@@ -1126,11 +1126,25 @@ def update_widgets(updated_option):
         update_intensity_widgets_to_stack()
 
 
+def update_toggle_precusors_and_fragment():
+    if precursor_fragment_toggle_button.value:
+        name = 'Showing only MS2 ions (fragments)'
+    else:
+        name = 'Showing only MS1 ions (precursors)'
+    precursor_fragment_toggle_button.name = name
+    quad_slider.disabled = not quad_slider.disabled
+    quad_start.disabled = not quad_start.disabled
+    quad_end.disabled = not quad_end.disabled
+    precursor_slider.disabled = not precursor_slider.disabled
+    precursor_start.disabled = not precursor_start.disabled
+    precursor_end.disabled = not precursor_end.disabled
+
+
 def update_frame_widgets_to_stack():
-    frame_slider.value = GLOBAL_STACK["frames"]
-    frame_start.value, frame_end.value = GLOBAL_STACK["frames"]
-    rt_start.value = DATASET.rt_values[GLOBAL_STACK["frames"][0]] / 60
-    index = GLOBAL_STACK["frames"][1]
+    frame_slider.value = STACK["frames"]
+    frame_start.value, frame_end.value = STACK["frames"]
+    rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
+    index = STACK["frames"][1]
     if index < len(DATASET.rt_values):
         rt_end.value = DATASET.rt_values[index] / 60
     else:
@@ -1138,10 +1152,10 @@ def update_frame_widgets_to_stack():
 
 
 def update_scan_widgets_to_stack():
-    scan_slider.value = GLOBAL_STACK["scans"]
-    scan_start.value, scan_end.value = GLOBAL_STACK["scans"]
-    im_start.value = DATASET.mobility_values[GLOBAL_STACK["scans"][0]]
-    index = GLOBAL_STACK["scans"][1]
+    scan_slider.value = STACK["scans"]
+    scan_start.value, scan_end.value = STACK["scans"]
+    im_start.value = DATASET.mobility_values[STACK["scans"][0]]
+    index = STACK["scans"][1]
     if index < len(DATASET.mobility_values):
         im_end.value = DATASET.mobility_values[index]
     else:
@@ -1149,20 +1163,20 @@ def update_scan_widgets_to_stack():
 
 
 def update_quad_widgets_to_stack():
-    quad_slider.value = GLOBAL_STACK["quads"]
-    quad_start.value, quad_end.value = GLOBAL_STACK["quads"]
+    quad_slider.value = STACK["quads"]
+    quad_start.value, quad_end.value = STACK["quads"]
 
 
 def update_precursor_widgets_to_stack():
-    precursor_slider.value = GLOBAL_STACK["precursors"]
-    precursor_start.value, precursor_end.value = GLOBAL_STACK["precursors"]
+    precursor_slider.value = STACK["precursors"]
+    precursor_start.value, precursor_end.value = STACK["precursors"]
 
 
 def update_tof_widgets_to_stack():
-    tof_slider.value = GLOBAL_STACK["tofs"]
-    tof_start.value, tof_end.value = GLOBAL_STACK["tofs"]
-    mz_start.value = DATASET.mz_values[GLOBAL_STACK["tofs"][0]]
-    index = GLOBAL_STACK["tofs"][1]
+    tof_slider.value = STACK["tofs"]
+    tof_start.value, tof_end.value = STACK["tofs"]
+    mz_start.value = DATASET.mz_values[STACK["tofs"][0]]
+    index = STACK["tofs"][1]
     if index < len(DATASET.mz_values):
         mz_end.value = DATASET.mz_values[index]
     else:
@@ -1170,16 +1184,16 @@ def update_tof_widgets_to_stack():
 
 
 def update_intensity_widgets_to_stack():
-    intensity_slider.value = GLOBAL_STACK["intensities"]
-    intensity_start.value, intensity_end.value = GLOBAL_STACK["intensities"]
+    intensity_slider.value = STACK["intensities"]
+    intensity_start.value, intensity_end.value = STACK["intensities"]
 
 
 def check_frames_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "frames", frame_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "frames", (frame_start.value, frame_end.value)
         )
     if updated_value is None:
@@ -1187,18 +1201,18 @@ def check_frames_stack():
             np.array([rt_start.value, rt_end.value]) * 60,
             return_frame_indices=True
         )
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "frames", (int(start_), int(end_))
         )
     return updated_option, updated_value
 
 
 def check_scans_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "scans", scan_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "scans", (scan_start.value, scan_end.value)
         )
     if updated_value is None:
@@ -1206,40 +1220,40 @@ def check_scans_stack():
             np.array([im_start.value, im_end.value])[::-1],
             return_scan_indices=True
         )[::-1]
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "scans", (int(start_), int(end_))
         )
     return updated_option, updated_value
 
 
 def check_quads_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "quads", quad_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "quads", (quad_start.value, quad_end.value)
         )
     return updated_option, updated_value
 
 
 def check_precursors_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "precursors", precursor_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "precursors", (precursor_start.value, precursor_end.value)
         )
     return updated_option, updated_value
 
 
 def check_tofs_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "tofs", tof_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "tofs", (tof_start.value, tof_end.value)
         )
     if updated_value is None:
@@ -1247,18 +1261,18 @@ def check_tofs_stack():
             np.array([mz_start.value, mz_end.value]),
             return_tof_indices=True
         )
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "tofs", (int(start_), int(end_))
         )
     return updated_option, updated_value
 
 
 def check_intensities_stack():
-    updated_option, updated_value = GLOBAL_STACK.update(
+    updated_option, updated_value = STACK.update(
         "intensities", intensity_slider.value
     )
     if updated_value is None:
-        updated_option, updated_value = GLOBAL_STACK.update(
+        updated_option, updated_value = STACK.update(
             "intensities", (intensity_start.value, intensity_end.value)
         )
     return updated_option, updated_value
