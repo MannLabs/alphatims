@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.0.201209"
+__version__ = "0.0.210121"
 __license__ = "MIT"
 __description__ = "A python package for Bruker TimsTOF raw data accession and visualization"
 __author__ = "Sander Willems"
@@ -41,4 +41,4 @@ __requirements__ = {
     "cli": "requirements/requirements_cli.txt",
     "nbs": "requirements/requirements_nbs.txt",
 }
-__strict_requirements__ = False
+__strict_requirements__ = True

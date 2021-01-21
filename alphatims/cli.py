@@ -4,6 +4,7 @@
 # builtin
 import contextlib
 import os
+import logging
 # external
 import click
 # local
@@ -12,12 +13,38 @@ import alphatims.utils
 
 
 @contextlib.contextmanager
-def parse_cli_settings(command_name, **kwargs):
-    import logging
+def parse_cli_settings(command_name: str, **kwargs):
+    """A context manager that parses and logs CLI settings.
+
+    Parameters
+    ----------
+    command_name : str
+        The name of the command that utilizes these CLI settings.
+    **kwargs
+        All values that need to be logged.
+        Values (if included) that explicitly will be parsed are:
+            output_folder
+            parameter_file
+            threads
+            log_file
+            disable_log_stream
+
+    Returns
+    -------
+    : dict
+        A dictionary with parsed parameters.
+    """
     import time
     try:
         start_time = time.time()
         kwargs = {key: arg for key, arg in kwargs.items() if arg is not None}
+        if "output_folder" in kwargs:
+            if kwargs["output_folder"] is not None:
+                kwargs["output_folder"] = os.path.abspath(
+                    kwargs["output_folder"]
+                )
+                if not os.path.exists(kwargs["output_folder"]):
+                    os.makedirs(kwargs["output_folder"])
         if ("parameter_file" in kwargs):
             kwargs["parameter_file"] = os.path.abspath(
                 kwargs["parameter_file"]
@@ -38,7 +65,9 @@ def parse_cli_settings(command_name, **kwargs):
                 "log_file"
             ]["default"]
         if "disable_log_stream" not in kwargs:
-            kwargs["disable_log_stream"] = alphatims.utils.INTERFACE_PARAMETERS[
+            kwargs[
+                "disable_log_stream"
+            ] = alphatims.utils.INTERFACE_PARAMETERS[
                 "disable_log_stream"
             ]["default"]
         kwargs["log_file"] = alphatims.utils.set_logger(
@@ -70,7 +99,36 @@ def parse_cli_settings(command_name, **kwargs):
         alphatims.utils.set_logger(log_file_name=None)
 
 
-def cli_option(parameter_name, **kwargs):
+def cli_option(
+    parameter_name: str,
+    as_argument: bool = False,
+    **kwargs
+):
+    """A wrapper for click.options and click.arguments using local defaults.
+
+    Parameters
+    ----------
+    parameter_name : str
+        The name of the parameter or argument.
+        It's default values need to be present in
+        lib/interface_parameters.json.
+    as_argument : bool
+        If True, a click.argument is returned.
+        If False, a click.option is returned.
+        Default is False.
+    **kwargs
+        Items that overwrite the default values of
+        lib/interface_parameters.json.
+        These need to be valid items for click.
+        A special "type" dict can be used to pass a click.Path or click.Choice,
+        that has the following format:
+        type = {"name": "path" or "choice", **choice_or_path_kwargs}
+
+    Returns
+    -------
+    : click.option, click.argument
+        A click.option or click.argument decorator.
+    """
     names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
     parameters.update(kwargs)
@@ -91,10 +149,16 @@ def cli_option(parameter_name, **kwargs):
         parameters["show_default"] = True
     if "short_name" in parameters:
         names.append(parameters.pop("short_name"))
-    return click.option(
-        f"--{parameter_name}",
-        **parameters,
-    )
+    if not as_argument:
+        return click.option(
+            f"--{parameter_name}",
+            **parameters,
+        )
+    else:
+        return click.argument(
+            parameter_name,
+            type=parameters["type"],
+        )
 
 
 @click.group(
@@ -115,8 +179,7 @@ def run(ctx, **kwargs):
 
 @run.command("gui", help="Start graphical user interface.")
 def gui():
-    with parse_cli_settings("gui") as parameters:
-        import logging
+    with parse_cli_settings("gui"):
         logging.info("Loading GUI..")
         import alphatims.gui
         alphatims.gui.run()
@@ -132,8 +195,8 @@ def detect(**kwargs):
     pass
 
 
-@export.command("hdf", help="Export raw file as hdf file.")
-@cli_option("bruker_d_folder")
+@export.command("hdf", help="Export BRUKER_D_FOLDER as hdf file.")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -141,27 +204,28 @@ def detect(**kwargs):
 @cli_option("parameter_file")
 @cli_option("compress")
 def export_hdf(**kwargs):
-    if kwargs["output_folder"] is None:
-        kwargs["output_folder"] = os.path.dirname(kwargs["bruker_d_folder"])
-    if not os.path.exists(kwargs["output_folder"]):
-        os.makedirs(kwargs["output_folder"])
     with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
-        file_name = os.path.basename(data.bruker_d_folder_name)
-        file_name = f"{'.'.join(file_name.split('.')[:-1])}.hdf"
+        if "output_folder" not in parameters:
+            directory = data.directory
+        else:
+            directory = parameters["output_folder"]
         data.save_as_hdf(
             overwrite=True,
-            directory=parameters["output_folder"],
-            file_name=file_name,
+            directory=directory,
+            file_name=f"{data.sample_name}.hdf",
             compress=parameters["compress"],
         )
 
 
-@export.command("parameters", help="Export (non-required) parameters as json")
+@export.command(
+    "parameters",
+    help="Export (non-required) parameters as PARAMETER_FILE"
+)
 @cli_option(
     "parameter_file",
-    required=True,
+    as_argument=True,
     type={
       "name": "path",
       "dir_okay": False,
@@ -172,10 +236,8 @@ def export_hdf(**kwargs):
 @cli_option("output_folder")
 @cli_option("disable_log_stream")
 def export_parameters(**kwargs):
-    import json
     kwargs["parameter_file"] = os.path.abspath(kwargs["parameter_file"])
-    with open(kwargs["parameter_file"], "w") as truncated_file:
-        json.dump({}, truncated_file, indent=4, sort_keys=True)
+    alphatims.utils.save_parameters(kwargs["parameter_file"], {})
     with parse_cli_settings("export parameters", **kwargs) as parameters:
         parameter_file_name = parameters.pop("parameter_file")
         alphatims.utils.save_parameters(
@@ -184,8 +246,55 @@ def export_parameters(**kwargs):
         )
 
 
+@export.command(
+    "slice",
+    help="Load a BRUKER_D_FOLDER and export a data slice to a csv file."
+)
+@cli_option(
+    "bruker_d_folder",
+    as_argument=True,
+    type={
+        "name": "path",
+        "exists": True,
+        "file_okay": True,
+        "dir_okay": True
+    }
+)
+@cli_option("slice")
+@cli_option("slice_file")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("disable_log_stream")
+@cli_option("parameter_file")
+def export_slice(**kwargs):
+    with parse_cli_settings("export slice", **kwargs) as parameters:
+        slice = parameters["slice"]
+        import alphatims.bruker
+        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        logging.info(f"Slicing data with slice '{slice}'")
+        # TODO: Slicing with eval is very unsafe!
+        # TODO: update help function
+        slice_function = eval(f"lambda d: d[{slice}]")
+        data_slice = slice_function(data)
+        if "slice_file" not in parameters:
+            parameters["slice_file"] = f"{data.sample_name}_slice.csv"
+        if "output_folder" not in parameters:
+            output_folder = data.directory
+        else:
+            output_folder = parameters["output_folder"]
+        output_file_name = os.path.join(
+            output_folder,
+            parameters["slice_file"]
+        )
+        logging.info(
+            f"Saving {len(data_slice)} datapoints to {output_file_name}"
+        )
+        data_slice.to_csv(output_file_name, index=False)
+
+
 @detect.command("ions", help="Detect ions (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -197,7 +306,7 @@ def detect_ions(**kwargs):
 
 
 @detect.command("features", help="Detect features (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -209,7 +318,7 @@ def detect_features(**kwargs):
 
 
 @detect.command("analytes", help="Detect analytes (NotImplemented yet).")
-@cli_option("bruker_d_folder")
+@cli_option("bruker_d_folder", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")

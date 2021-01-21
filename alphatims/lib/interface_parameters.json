@@ -1,6 +1,6 @@
 {
   "log_file": {
-    "help": "Save all log data to a file (blank means 'log_[date].txt' with data format yymmddhhmmss in 'log' folder of AlphaTims directory).",
+    "help": "Save all log data to a file (blank means 'log_[date].txt' with date format yymmddhhmmss in 'log' folder of AlphaTims directory).",
     "default": "",
     "type": {
       "name": "path",
@@ -55,6 +55,18 @@
     "help": "Compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 3-6 longer accession times.",
     "default": false,
     "is_flag": true,
+    "required": false
+  },
+  "slice": {
+    "help": "A slice of interest. WARNING: the larger the slice, the longer it takes to fetch it.",
+    "required": true
+  },
+  "slice_file": {
+    "help": "The path where to store the file slice. If empty, the input file is appended with _slice.csv. WARNING This will overwrite pre-existing files!",
+    "type": {
+      "name": "path",
+      "dir_okay": false
+    },
     "required": false
   }
 }
