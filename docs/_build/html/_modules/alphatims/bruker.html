@@ -186,8 +186,9 @@
         <span class="s2">&quot;No Bruker libraries are available for this operating system. &quot;</span>
         <span class="s2">&quot;Intensities are uncalibrated, resulting in (very) small differences. &quot;</span>
         <span class="s2">&quot;However, mobility and m/z values need to be estimated. &quot;</span>
-        <span class="s2">&quot;Possibly these have huge errors (e.g. offsets of 6 Th have &quot;</span>
-        <span class="s2">&quot;already been observed)!&quot;</span>
+        <span class="s2">&quot;While this estimation often returns acceptable results with errors &quot;</span>
+        <span class="s2">&quot;&lt; 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been &quot;</span>
+        <span class="s2">&quot;observed for some samples!&quot;</span>
     <span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">BRUKER_DLL_FILE_NAME</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -905,6 +906,7 @@
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">, while the current version of &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;AlphaTims is </span><span class="si">{</span><span class="n">alphatims</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Succesfully importing data from </span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">slice_as_dataframe</span> <span class="o">=</span> <span class="n">slice_as_dataframe</span></div>
 
     <span class="k">def</span> <span class="nf">_import_data_from_d_folder</span><span class="p">(</span>
@@ -1056,7 +1058,7 @@
                 <span class="n">file_name</span>
             <span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Writing TimsTOF data to </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Writing TimsTOF data to </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compressed</span> <span class="o">=</span> <span class="n">compress</span>
         <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">,</span> <span class="n">hdf_mode</span><span class="p">,</span> <span class="n">swmr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_root</span><span class="p">:</span>
@@ -1068,6 +1070,10 @@
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">return_as_bytes_io</span><span class="p">:</span>
             <span class="n">full_file_name</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Succesfully wrote TimsTOF data to </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">full_file_name</span></div>
 
     <span class="k">def</span> <span class="nf">_import_data_from_hdf_file</span><span class="p">(</span>

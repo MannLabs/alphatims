@@ -191,6 +191,7 @@
     <span class="n">log_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Set the log stream and file.</span>
 
@@ -213,6 +214,10 @@
 <span class="sd">        The logging level. Usable values are defined in Python&#39;s &quot;logging&quot;</span>
 <span class="sd">        module.</span>
 <span class="sd">        Default is logging.INFO.</span>
+<span class="sd">    overwrite : bool</span>
+<span class="sd">        If True, overwrite the log_file if one exists.</span>
+<span class="sd">        If False, append to this log file.</span>
+<span class="sd">        Default is False.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -257,7 +262,7 @@
         <span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
-        <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
         <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
@@ -685,7 +690,7 @@
 <span class="sd">        If no valid style (-1, 0, 1, 2) is provided.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">tqdm</span>
-    <span class="k">if</span> <span class="n">style</span> <span class="ow">is</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
         <span class="n">style</span> <span class="o">=</span> <span class="n">PROGRESS_CALLBACK_STYLE</span>
     <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="n">PROGRESS_CALLBACK_STYLE_NONE</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">iterable</span>
@@ -919,7 +924,7 @@
     <span class="sd">&quot;&quot;&quot;TODO: docstring&quot;&quot;&quot;</span>
     <span class="c1"># TODO: docstring</span>
 
-<div class="viewcode-block" id="Global_Stack.__init__"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_available_options</span><span class="p">):</span>
+<div class="viewcode-block" id="Global_Stack.__init__"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_available_options</span><span class="p">,</span> <span class="n">is_locked</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_option_stacks</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">option_key</span><span class="p">:</span> <span class="n">Option_Stack</span><span class="p">(</span>
                 <span class="n">option_key</span><span class="p">,</span>
@@ -929,7 +934,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_options</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_available_options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack_pointer</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_available_options</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="n">is_locked</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1007,6 +1012,7 @@
 
 
 <span class="n">set_threads</span><span class="p">(</span><span class="n">MAX_THREADS</span><span class="p">)</span>
+<span class="n">set_logger</span><span class="p">(</span><span class="n">log_file_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 </pre></div>
 
            </div>

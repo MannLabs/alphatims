@@ -766,7 +766,7 @@ def visualize_tic():
 
 
 def visualize_scatter():
-    return alphatims.plotting.scatter_plot(
+    return alphatims.plotting.heatmap(
         DATAFRAME,
         plot1_x_axis.value,
         plot1_y_axis.value,

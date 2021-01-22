@@ -14,9 +14,11 @@ def line_plot(
     timstof_data,
     selected_indices,
     x_axis_label: str,
-    title: str,
+    title: str = "",
     y_axis_label: str = "Intensity",
     remove_zeros: bool = False,
+    width: int = 1000,
+    height: int = 300,
 ):
     """Plot an XIC, mobilogram or spectrum as a lineplot.
 
@@ -30,12 +32,13 @@ def line_plot(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - m/z, Th
-            - RT, min
-            - Inversed IM, V·s·cm\u207B\u00B2
+            - "m/z, Th"
+            - "RT, min"
+            - "Inversed IM, V·s·cm\u207B\u00B2"
     title : str
         The title of this plot.
-        Will be prepended with "Spectrum", "Mobilogram" or "XIC"
+        Will be prepended with "Spectrum", "Mobilogram" or "XIC".
+        Default is "".
     y_axis_label : str
         Should not be set for a 1D line plot.
         Default is "Intensity".
@@ -46,6 +49,12 @@ def line_plot(
         If False, use the full range of the appropriate dimension of
         the timstof_data.
         Default is False.
+    width : int
+        The width of this plot.
+        Default is 1000.
+    height : int
+        The height of this plot.
+        Default is 300.
 
     Returns
     -------
@@ -60,8 +69,8 @@ def line_plot(
     x_dimension = labels[x_axis_label]
     intensities = timstof_data.bin_intensities(selected_indices, [x_dimension])
     plot_opts = {
-        "width": 1000,
-        "height": 300,
+        "width": width,
+        "height": height,
         "align": 'center',
         "tools": ['hover'],
         "line_width": 1,
@@ -90,12 +99,14 @@ def line_plot(
     return plot
 
 
-def scatter_plot(
+def heatmap(
     df,
     x_axis_label: str,
     y_axis_label: str,
-    title: str,
+    title: str = "",
     z_axis_label: str = "Intensity",
+    width: int = 1000,
+    height: int = 300,
 ):
     """Create a scatterplot / heatmap for a dataframe.
 
@@ -124,9 +135,16 @@ def scatter_plot(
     title : str
         The title of this plot.
         Will be prepended with "Heatmap".
+        Default is "".
     z_axis_label : str
         Should not be set for a 2D scatterplot / heatmap.
         Default is "Intensity".
+    width : int
+        The width of this plot.
+        Default is 1000.
+    height : int
+        The height of this plot.
+        Default is 300.
 
     Returns
     -------
@@ -149,6 +167,7 @@ def scatter_plot(
     #         (f'{z_axis_label}', f'@{z_dimension}'),
     #     ]
     # )
+    df["rt_values"] /= 60
     scatter = df.hvplot.scatter(
         x=x_dimension,
         y=y_dimension,
@@ -172,13 +191,18 @@ def scatter_plot(
         nonselection_color='green',
         selection_color='blue',
         color="white",
-        width=1000,
-        height=300,
+        width=width,
+        height=height,
     )
     return scatter
 
 
-def tic_plot(timstof_data, title: str):
+def tic_plot(
+    timstof_data,
+    title: str = "",
+    width: int = 1000,
+    height: int = 310,
+):
     """Create a total ion chromatogram (TIC) for the data.
 
     Parameters
@@ -188,6 +212,13 @@ def tic_plot(timstof_data, title: str):
     title : str
         The title of this plot.
         Will be prepended with "TIC".
+        Default is False
+    width : int
+        The width of this plot.
+        Default is 1000.
+    height : int
+        The height of this plot.
+        Default is 310.
 
     Returns
     -------
@@ -199,8 +230,8 @@ def tic_plot(timstof_data, title: str):
         mode='vline'
     )
     tic_opts = opts.Curve(
-        width=1000,
-        height=310,
+        width=width,
+        height=height,
         xlabel='RT, min',
         ylabel='Intensity',
         line_width=1,

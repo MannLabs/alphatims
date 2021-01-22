@@ -174,7 +174,7 @@ These utilities primarily focus on:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options[, is_locked])</p></td>
 <td><p>TODO: docstring</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Option_Stack</span></code>(option_name, option_initial_value)</p></td>
@@ -213,7 +213,7 @@ These utilities primarily focus on:</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_parameters</span></code>(parameter_file_name, paramaters)</p></td>
 <td><p>Save parameters to a parameter file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logger</span></code>(*[, log_file_name, stream, log_level])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logger</span></code>(*[, log_file_name, stream, …])</p></td>
 <td><p>Set the log stream and file.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_threads</span></code>(threads[, set_global])</p></td>
@@ -232,7 +232,7 @@ These utilities primarily focus on:</p>
 </table>
 <dl class="py class">
 <dt id="alphatims.utils.Global_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>TODO: docstring</p>
 <p><strong>Methods:</strong></p>
@@ -242,7 +242,7 @@ These utilities primarily focus on:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options[, is_locked])</p></td>
 <td><p>Initialize self.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">redo</span></code>()</p></td>
@@ -276,7 +276,7 @@ These utilities primarily focus on:</p>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
@@ -615,7 +615,7 @@ Default is True (in contrast to numba) .</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.set_logger">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the log stream and file.</p>
 <p>All previously set handlers will be disabled with this command.</p>
 <dl class="field-list simple">
@@ -633,6 +633,9 @@ Default is True</p></li>
 <li><p><strong>log_level</strong> (<em>int</em>) – The logging level. Usable values are defined in Python’s “logging”
 module.
 Default is logging.INFO.</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – If True, overwrite the log_file if one exists.
+If False, append to this log file.
+Default is False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

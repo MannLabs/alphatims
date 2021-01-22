@@ -37,6 +37,7 @@ def set_logger(
     log_file_name: str = "",
     stream: bool = True,
     log_level: int = logging.INFO,
+    overwrite: bool = False
 ) -> str:
     """Set the log stream and file.
 
@@ -59,6 +60,10 @@ def set_logger(
         The logging level. Usable values are defined in Python's "logging"
         module.
         Default is logging.INFO.
+    overwrite : bool
+        If True, overwrite the log_file if one exists.
+        If False, append to this log file.
+        Default is False.
 
     Returns
     -------
@@ -103,7 +108,7 @@ def set_logger(
         directory = os.path.dirname(log_file_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        file_handler = logging.FileHandler(log_file_name, mode="w")
+        file_handler = logging.FileHandler(log_file_name, mode="a")
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
@@ -531,7 +536,7 @@ def progress_callback(iterable, style: int = -1):
         If no valid style (-1, 0, 1, 2) is provided.
     """
     import tqdm
-    if style is -1:
+    if style == -1:
         style = PROGRESS_CALLBACK_STYLE
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
@@ -853,3 +858,4 @@ class Global_Stack(object):
 
 
 set_threads(MAX_THREADS)
+set_logger(log_file_name="")
