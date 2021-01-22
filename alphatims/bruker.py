@@ -32,8 +32,9 @@ else:
         "No Bruker libraries are available for this operating system. "
         "Intensities are uncalibrated, resulting in (very) small differences. "
         "However, mobility and m/z values need to be estimated. "
-        "Possibly these have huge errors (e.g. offsets of 6 Th have "
-        "already been observed)!"
+        "While this estimation often returns acceptable results with errors "
+        "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
+        "observed for some samples!"
     )
     logging.info("")
     BRUKER_DLL_FILE_NAME = ""
@@ -751,6 +752,7 @@ class TimsTOF(object):
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
+        logging.info(f"Succesfully importing data from {bruker_d_folder_name}")
         self.slice_as_dataframe = slice_as_dataframe
 
     def _import_data_from_d_folder(
@@ -902,7 +904,7 @@ class TimsTOF(object):
                 file_name
             )
         logging.info(
-            f"Writing TimsTOF data to {full_file_name}"
+            f"Writing TimsTOF data to {full_file_name}."
         )
         self._compressed = compress
         with h5py.File(full_file_name, hdf_mode, swmr=True) as hdf_root:
@@ -914,6 +916,10 @@ class TimsTOF(object):
             )
         if return_as_bytes_io:
             full_file_name.seek(0)
+        else:
+            logging.info(
+                f"Succesfully wrote TimsTOF data to {full_file_name}."
+            )
         return full_file_name
 
     def _import_data_from_hdf_file(

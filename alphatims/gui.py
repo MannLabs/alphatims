@@ -413,11 +413,13 @@ select_ms1_precursors = pn.widgets.Checkbox(
     name='Show MS1 ions (precursors)',
     value=True,
     width=200,
+    align="center",
 )
 select_ms2_fragments = pn.widgets.Checkbox(
     name='Show MS2 ions (fragments)',
     value=False,
     width=200,
+    align="center",
 )
 
 # quad selection
@@ -517,7 +519,7 @@ intensity_end = pn.widgets.IntInput(
 
 
 selection_actions = pn.pane.Markdown(
-    'Redo/Undo',
+    'Redo / Undo',
     align='center',
     margin=(-18, 0, 0, 0)
 )
@@ -614,20 +616,168 @@ plot2_x_axis = pn.widgets.Select(
     align='center',
 )
 
+
+# Collapsing all options to cards
+frame_selection_card = pn.Card(
+    player_title,
+    player,
+    sliders_divider,
+    frame_slider,
+    pn.Row(
+        frame_start,
+        rt_start,
+        selectors_divider,
+        frame_end,
+        rt_end,
+        align='center',
+    ),
+    title='Select rt_values / frame_indices',
+    collapsed=False,
+    width=430,
+    margin=(20, 10, 10, 17),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+frame_selection_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': frame_selection_card}
+)
+
+scan_selection_card = pn.Card(
+    scan_slider,
+    pn.Row(
+        scan_start,
+        im_start,
+        selectors_divider,
+        scan_end,
+        im_end,
+        align='center',
+    ),
+    title='Select mobility_values / scan_indices',
+    collapsed=True,
+    width=430,
+    margin=(20, 10, 10, 17),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+scan_selection_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': scan_selection_card}
+)
+
+
+quad_selection_card = pn.Card(
+    # precursor_fragment_toggle_button,
+    select_ms1_precursors,
+    select_ms2_fragments,
+    quad_slider,
+    pn.Row(
+        quad_start,
+        selectors_divider,
+        quad_end,
+        align='center',
+    ),
+    # sliders_divider,
+    sliders_divider,
+    precursor_slider,
+    pn.Row(
+        precursor_start,
+        selectors_divider,
+        precursor_end,
+        align='center',
+    ),
+    title='Select quad_values / precursor_indices',
+    collapsed=True,
+    width=430,
+    margin=(20, 10, 10, 17),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+quad_selection_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': quad_selection_card}
+)
+
+tof_selection_card = pn.Card(
+    tof_slider,
+    pn.Row(
+        tof_start,
+        mz_start,
+        selectors_divider,
+        tof_end,
+        mz_end,
+        align='center',
+    ),
+    title='Select mz_values / tof_indices',
+    collapsed=True,
+    width=430,
+    margin=(20, 10, 10, 17),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+tof_selection_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': tof_selection_card}
+)
+
+intensity_selection_card = pn.Card(
+    intensity_slider,
+    pn.Row(
+        intensity_start,
+        selectors_divider,
+        intensity_end,
+        align='center',
+    ),
+    title='Select intensity_values',
+    collapsed=True,
+    width=430,
+    margin=(20, 10, 10, 17),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+intensity_selection_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': intensity_selection_card}
+)
+
 axis_selection_card = pn.Card(
     plot1_title,
     pn.Row(
         plot1_x_axis,
         plot1_y_axis
     ),
-    card_divider,
     plot2_title,
     plot2_x_axis,
-    # pn.Row(
-    #     plot2_x_axis,
-    #     # plot2_y_axis
-    # ),
-    card_divider,
     title='Select axis for plots',
     collapsed=True,
     width=430,
@@ -650,80 +800,25 @@ axis_selection_card.jscallback(
 # putting together all settings widget
 settings = pn.Column(
     settings_title,
-    settings_divider,
+    card_divider,
     pn.Row(
         save_hdf_button,
         save_spinner
     ),
     save_message,
+    card_divider,
     axis_selection_card,
-    player_title,
-    player,
-    sliders_divider,
-
-    frame_slider,
-    pn.Row(
-        frame_start,
-        rt_start,
-        selectors_divider,
-        frame_end,
-        rt_end,
-        align='center',
-    ),
-    sliders_divider,
-
-    scan_slider,
-    pn.Row(
-        scan_start,
-        im_start,
-        selectors_divider,
-        scan_end,
-        im_end,
-        align='center',
-    ),
-    sliders_divider,
-
-    # precursor_fragment_toggle_button,
-    select_ms1_precursors,
-    select_ms2_fragments,
-
-    quad_slider,
-    pn.Row(
-        quad_start,
-        selectors_divider,
-        quad_end,
-        align='center',
-    ),
-    # sliders_divider,
-
-    precursor_slider,
-    pn.Row(
-        precursor_start,
-        selectors_divider,
-        precursor_end,
-        align='center',
-    ),
-    sliders_divider,
-
-    tof_slider,
-    pn.Row(
-        tof_start,
-        mz_start,
-        selectors_divider,
-        tof_end,
-        mz_end,
-        align='center',
-    ),
-    sliders_divider,
-
-    intensity_slider,
-    pn.Row(
-        intensity_start,
-        selectors_divider,
-        intensity_end,
-        align='center',
-    ),
-    sliders_divider,
+    card_divider,
+    frame_selection_card,
+    card_divider,
+    scan_selection_card,
+    card_divider,
+    quad_selection_card,
+    card_divider,
+    tof_selection_card,
+    card_divider,
+    intensity_selection_card,
+    card_divider,
 
     pn.Row(
         pn.Column(
@@ -734,8 +829,9 @@ settings = pn.Column(
             ),
             align="center"
         ),
+        align="center",
     ),
-    sliders_divider,
+    card_divider,
     download_selection,
     width=460,
     align='center',
@@ -766,7 +862,7 @@ def visualize_tic():
 
 
 def visualize_scatter():
-    return alphatims.plotting.scatter_plot(
+    return alphatims.plotting.heatmap(
         DATAFRAME,
         plot1_x_axis.value,
         plot1_y_axis.value,
@@ -865,7 +961,7 @@ def init_settings(*args):
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, DATASET.intensity_max_value),
-                "frames": (0, DATASET.frame_max_index),
+                "frames": (1, 2),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
                 "quads": (0, DATASET.quad_mz_max_value),
@@ -885,9 +981,9 @@ def init_settings(*args):
         player.options = frames_msmstype.loc[1::step, 'Id'].to_list()
         player.start, player.end = STACK["frames"]
 
-        frame_slider.start, frame_slider.end = STACK["frames"]
-        frame_start.start, frame_start.end = STACK["frames"]
-        frame_end.start, frame_end.end = STACK["frames"]
+        frame_slider.start, frame_slider.end = (0, DATASET.frame_max_index)
+        frame_start.start, frame_start.end = (0, DATASET.frame_max_index)
+        frame_end.start, frame_end.end = (0, DATASET.frame_max_index)
         rt_start.start, rt_start.end = (0, DATASET.rt_max_value / 60)
         rt_end.start, rt_end.end = (0, DATASET.rt_max_value / 60)
 
@@ -925,7 +1021,7 @@ def init_settings(*args):
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
         # first init needed:
-        frame_slider.value = (1, 2)
+        plot2_x_axis.value = 'm/z, Th'
 
         upload_spinner.value = False
         return settings

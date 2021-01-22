@@ -174,11 +174,11 @@ These utilities primarily focus on:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options)</p></td>
-<td><p>TODO: docstring</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options, is_locked)</p></td>
+<td><p>A stack that holds multiple option stacks.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Option_Stack</span></code>(option_name, option_initial_value)</p></td>
-<td><p>TODO: docstring</p></td>
+<td><p>A stack with the option to redo and undo.</p></td>
 </tr>
 </tbody>
 </table>
@@ -213,7 +213,7 @@ These utilities primarily focus on:</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_parameters</span></code>(parameter_file_name, paramaters)</p></td>
 <td><p>Save parameters to a parameter file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logger</span></code>(*[, log_file_name, stream, log_level])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logger</span></code>(*[, log_file_name, stream, …])</p></td>
 <td><p>Set the log stream and file.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_threads</span></code>(threads[, set_global])</p></td>
@@ -232,9 +232,22 @@ These utilities primarily focus on:</p>
 </table>
 <dl class="py class">
 <dt id="alphatims.utils.Global_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>TODO: docstring</p>
+<p>A stack that holds multiple option stacks.</p>
+<p>The current value of each option stack can be retrieved by indexing,
+i.e. option_value = self[option_key]</p>
+<p>Attributes</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>is_locked<span class="classifier">bool</span></dt><dd><p>After each succesful update, undo or redo,
+the stack is locked and cannot be modified unless explicitly unlocked.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
 <p><strong>Methods:</strong></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -242,20 +255,20 @@ These utilities primarily focus on:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options)</p></td>
-<td><p>Initialize self.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options[, is_locked])</p></td>
+<td><p>Create a global stack.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">redo</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Increase the stack pointer with 1.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Remove all elements above of the current stack pointer</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">undo</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Reduce the stack pointer with 1.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(option_key, option_value)</p></td>
-<td><p></p></td>
+<td><p>Update an option stack with a value.</p></td>
 </tr>
 </tbody>
 </table>
@@ -267,56 +280,129 @@ These utilities primarily focus on:</p>
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_values</span></code></p></td>
-<td><p></p></td>
+<td><p>A dict with (option_key: option_value) mapping.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></p></td>
-<td><p></p></td>
+<td><p>The size of this stack without the initial value.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a global stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_available_options</strong> (<em>dict</em>) – A dictionary whose items are (str, type),
+which can be used to create an Option_Stack.</p></li>
+<li><p><strong>is_locked</strong> (<em>bool</em>) – If True, this stack cannot be modified.
+If False, the stack is modifiable
+Default is True.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.current_values">
 <em class="property">property </em><code class="sig-name descname">current_values</code><a class="headerlink" href="#alphatims.utils.Global_Stack.current_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A dict with (option_key: option_value) mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.redo">
-<code class="sig-name descname">redo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.redo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">redo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.redo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase the stack pointer with 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(“”, None) if the pointer was already at the maximum.
+Otherwise (option_name, new_value) if the pointer was increased.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.size">
 <em class="property">property </em><code class="sig-name descname">size</code><a class="headerlink" href="#alphatims.utils.Global_Stack.size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The size of this stack without the initial value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.trim">
-<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.trim" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.trim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all elements above of the current stack pointer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if something was removed,
+i.e. if stack pointer was not at the top.
+False if nothing could be deleted,
+i.e. the stack pointer was at the top.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.undo">
-<code class="sig-name descname">undo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.undo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">undo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce the stack pointer with 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(“”, None) if the pointer was already at the maximum.
+Otherwise (option_name, new_value) if the pointer was reduced.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_key</span></em>, <em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_key</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update an option stack with a value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>option_key</strong> (<em>str</em>) – The name of the option stack to update.</p></li>
+<li><p><strong>option_value</strong> (<em>type</em>) – An value to add to this stack.
+Can be any object that supports the “!=” operator.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(“”, None) if the pointer was not updated,
+i.e. the latest update was equal to the current update.
+Otherwise (option_name, new_value).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="alphatims.utils.Option_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Option_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Option_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>TODO: docstring</p>
+<p>A stack with the option to redo and undo.</p>
 <p><strong>Methods:</strong></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -325,19 +411,19 @@ These utilities primarily focus on:</p>
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(option_name, option_initial_value)</p></td>
-<td><p>Initialize self.</p></td>
+<td><p>Create an option stack.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">redo</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Increase the stack pointer with 1.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Remove all elements above of the current stack pointer</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">undo</span></code>()</p></td>
-<td><p></p></td>
+<td><p>Reduce the stack pointer with 1.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(option_value)</p></td>
-<td><p></p></td>
+<td><p>Update this stack with the value.</p></td>
 </tr>
 </tbody>
 </table>
@@ -349,56 +435,129 @@ These utilities primarily focus on:</p>
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_value</span></code></p></td>
-<td><p></p></td>
+<td><p>The current value of this stack.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">option_name</span></code></p></td>
-<td><p></p></td>
+<td><p>The name of this stack.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></p></td>
-<td><p></p></td>
+<td><p>The size of this stack without the initial value.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an option stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>option_name</strong> (<em>str</em>) – The name of this option.</p></li>
+<li><p><strong>option_initial_value</strong> (<em>type</em>) – The initial value of this stack.
+Can be any object that supports the “!=” operator.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.current_value">
 <em class="property">property </em><code class="sig-name descname">current_value</code><a class="headerlink" href="#alphatims.utils.Option_Stack.current_value" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The current value of this stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.option_name">
 <em class="property">property </em><code class="sig-name descname">option_name</code><a class="headerlink" href="#alphatims.utils.Option_Stack.option_name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The name of this stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.redo">
 <code class="sig-name descname">redo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.redo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Increase the stack pointer with 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None if the pointer was already at the maximum.
+Otherwise the new value if the pointer was increased.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.size">
 <em class="property">property </em><code class="sig-name descname">size</code><a class="headerlink" href="#alphatims.utils.Option_Stack.size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The size of this stack without the initial value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.trim">
-<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.trim" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.trim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all elements above of the current stack pointer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if something was removed,
+i.e. if stack pointer was not at the top.
+False if nothing could be deleted,
+i.e. the stack pointer was at the top.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.undo">
 <code class="sig-name descname">undo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.undo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Reduce the stack pointer with 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None if the pointer was already at the maximum.
+Otherwise the new value if the pointer was reduced.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this stack with the value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>option_value</strong> (<em>type</em>) – An value to add to this stack.
+Can be any object that supports the “!=” operator.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the stack was updated.
+False if the provided value equald the current value of this stack.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -615,7 +774,7 @@ Default is True (in contrast to numba) .</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.set_logger">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the log stream and file.</p>
 <p>All previously set handlers will be disabled with this command.</p>
 <dl class="field-list simple">
@@ -633,6 +792,9 @@ Default is True</p></li>
 <li><p><strong>log_level</strong> (<em>int</em>) – The logging level. Usable values are defined in Python’s “logging”
 module.
 Default is logging.INFO.</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – If True, overwrite the log_file if one exists.
+If False, append to this log file.
+Default is False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

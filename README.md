@@ -253,7 +253,7 @@ Options:
 
 AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTIMS repository and open `docs/_build/html/index.html` in a local browser.)
 
-An [exemplary jupyter notebook](nbs/example_analysis.ipynb) with a default use case is present in the [nbs folder](nbs).
+An [tutorial jupyter notebook](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs). When running locally it provides interactive plot, which are not rendered on GitHub. Instead, they are available as individual html pages in the [nbs folder](nbs).
 
 ---
 ## Performance

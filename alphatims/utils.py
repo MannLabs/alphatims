@@ -37,6 +37,7 @@ def set_logger(
     log_file_name: str = "",
     stream: bool = True,
     log_level: int = logging.INFO,
+    overwrite: bool = False
 ) -> str:
     """Set the log stream and file.
 
@@ -59,6 +60,10 @@ def set_logger(
         The logging level. Usable values are defined in Python's "logging"
         module.
         Default is logging.INFO.
+    overwrite : bool
+        If True, overwrite the log_file if one exists.
+        If False, append to this log file.
+        Default is False.
 
     Returns
     -------
@@ -103,7 +108,10 @@ def set_logger(
         directory = os.path.dirname(log_file_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        file_handler = logging.FileHandler(log_file_name, mode="w")
+        if overwrite:
+            file_handler = logging.FileHandler(log_file_name, mode="w")
+        else:
+            file_handler = logging.FileHandler(log_file_name, mode="a")
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
@@ -531,7 +539,7 @@ def progress_callback(iterable, style: int = -1):
         If no valid style (-1, 0, 1, 2) is provided.
     """
     import tqdm
-    if style is -1:
+    if style == -1:
         style = PROGRESS_CALLBACK_STYLE
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
@@ -713,27 +721,53 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
 
 
 class Option_Stack(object):
-    """TODO: docstring"""
-    # TODO: docstring
+    """A stack with the option to redo and undo."""
 
-    def __init__(self, option_name, option_initial_value):
+    def __init__(self, option_name: str, option_initial_value):
+        """Create an option stack.
+
+        Parameters
+        ----------
+        option_name : str
+            The name of this option.
+        option_initial_value : type
+            The initial value of this stack.
+            Can be any object that supports the "!=" operator.
+        """
         self._stack = [option_initial_value]
         self._stack_pointer = 0
         self._option_name = option_name
 
     @property
     def current_value(self):
+        """: type : The current value of this stack."""
         return self._stack[self._stack_pointer]
 
     @property
-    def size(self):
+    def size(self) -> int:
+        """: int : The size of this stack without the initial value."""
         return len(self._stack) - 1
 
     @property
-    def option_name(self):
+    def option_name(self) -> str:
+        """: str : The name of this stack."""
         return self._option_name
 
-    def update(self, option_value):
+    def update(self, option_value) -> bool:
+        """Update this stack with the value.
+
+        Parameters
+        ----------
+        option_value : type
+            An value to add to this stack.
+            Can be any object that supports the "!=" operator.
+
+        Returns
+        -------
+        bool
+            True if the stack was updated.
+            False if the provided value equald the current value of this stack.
+        """
         if self.current_value != option_value:
             self.trim()
             self._stack.append(option_value)
@@ -742,30 +776,79 @@ class Option_Stack(object):
         return False
 
     def redo(self):
+        """Increase the stack pointer with 1.
+
+        Returns
+        -------
+        type
+            None if the pointer was already at the maximum.
+            Otherwise the new value if the pointer was increased.
+        """
         if self._stack_pointer < self.size:
             self._stack_pointer += 1
             return self.current_value
         return None
 
     def undo(self):
+        """Reduce the stack pointer with 1.
+
+        Returns
+        -------
+        type
+            None if the pointer was already at the maximum.
+            Otherwise the new value if the pointer was reduced.
+        """
         if self._stack_pointer > 0:
             self._stack_pointer -= 1
             return self.current_value
         return None
 
-    def trim(self):
+    def trim(self) -> bool:
+        """Remove all elements above of the current stack pointer
+
+        Returns
+        -------
+        bool
+            True if something was removed,
+            i.e. if stack pointer was not at the top.
+            False if nothing could be deleted,
+            i.e. the stack pointer was at the top.
+        """
         if self._stack_pointer != self.size:
             self._stack = self._stack[:self._stack_pointer + 1]
+            return True
+        return False
 
     def __str__(self):
         return f"{self._stack_pointer} {self._option_name} {self._stack}"
 
 
 class Global_Stack(object):
-    """TODO: docstring"""
-    # TODO: docstring
+    """A stack that holds multiple option stacks.
 
-    def __init__(self, all_available_options, is_locked=True):
+    The current value of each option stack can be retrieved by indexing,
+    i.e. option_value = self[option_key]
+
+    Attributes
+    
+        - is_locked : bool
+            After each succesful update, undo or redo,
+            the stack is locked and cannot be modified unless explicitly unlocked.
+    """
+
+    def __init__(self, all_available_options: dict, is_locked: bool = True):
+        """Create a global stack.
+
+        Parameters
+        ----------
+        all_available_options : dict
+            A dictionary whose items are (str, type),
+            which can be used to create an Option_Stack.
+        is_locked : bool
+            If True, this stack cannot be modified.
+            If False, the stack is modifiable
+            Default is True.
+        """
         self._option_stacks = {
             option_key: Option_Stack(
                 option_key,
@@ -778,7 +861,8 @@ class Global_Stack(object):
         self.is_locked = is_locked
 
     @property
-    def current_values(self):
+    def current_values(self) -> dict:
+        """: dict : A dict with (option_key: option_value) mapping."""
         return {
             option_key: option_stack.current_value for (
                 option_key,
@@ -788,12 +872,30 @@ class Global_Stack(object):
 
     @property
     def size(self):
+        """: int : The size of this stack without the initial value."""
         return len(self._stack) - 1
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str):
         return self._option_stacks[key].current_value
 
-    def update(self, option_key, option_value):
+    def update(self, option_key: str, option_value) -> tuple:
+        """Update an option stack with a value.
+
+        Parameters
+        ----------
+        option_key : str
+            The name of the option stack to update.
+        option_value : type
+            An value to add to this stack.
+            Can be any object that supports the "!=" operator.
+
+        Returns
+        -------
+        tuple
+            ("", None) if the pointer was not updated,
+            i.e. the latest update was equal to the current update.
+            Otherwise (option_name, new_value).
+        """
         if self.is_locked:
             return "", None
         current_value = self[option_key]
@@ -806,7 +908,15 @@ class Global_Stack(object):
         self.is_locked = True
         return option_key, option_value
 
-    def redo(self):
+    def redo(self) -> tuple:
+        """Increase the stack pointer with 1.
+
+        Returns
+        -------
+        tuple
+            ("", None) if the pointer was already at the maximum.
+            Otherwise (option_name, new_value) if the pointer was increased.
+        """
         if self.is_locked:
             return "", None
         if self._stack_pointer < self.size:
@@ -818,7 +928,15 @@ class Global_Stack(object):
                 return option_key, option_value
         return "", None
 
-    def undo(self):
+    def undo(self) -> tuple:
+        """Reduce the stack pointer with 1.
+
+        Returns
+        -------
+        tuple
+            ("", None) if the pointer was already at the maximum.
+            Otherwise (option_name, new_value) if the pointer was reduced.
+        """
         if self.is_locked:
             return "", None
         if self._stack_pointer > 0:
@@ -830,11 +948,23 @@ class Global_Stack(object):
                 return option_key, option_value
         return "", None
 
-    def trim(self):
+    def trim(self) -> bool:
+        """Remove all elements above of the current stack pointer
+
+        Returns
+        -------
+        bool
+            True if something was removed,
+            i.e. if stack pointer was not at the top.
+            False if nothing could be deleted,
+            i.e. the stack pointer was at the top.
+        """
         if self._stack_pointer != self.size:
             self._stack = self._stack[:self._stack_pointer + 1]
             for stack in self._option_stacks.values():
                 stack.trim()
+            return True
+        return False
 
     def __str__(self):
         result = " ".join(
@@ -853,3 +983,4 @@ class Global_Stack(object):
 
 
 set_threads(MAX_THREADS)
+set_logger(log_file_name="")
