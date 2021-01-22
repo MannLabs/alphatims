@@ -181,7 +181,9 @@
 <span class="sd">    timstof_data : alphatims.bruker.TimsTOF</span>
 <span class="sd">        An alphatims.bruker.TimsTOF data object.</span>
 <span class="sd">    selected_indices : np.int64[:]</span>
-<span class="sd">        The raw indices that are selected for this plot</span>
+<span class="sd">        The raw indices that are selected for this plot.</span>
+<span class="sd">        These are typically obtained by slicing the TimsTOF data object with</span>
+<span class="sd">        e.g. data[..., &quot;raw&quot;].</span>
 <span class="sd">    x_axis_label : str</span>
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
@@ -270,7 +272,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    df : pd.DataFrame</span>
-<span class="sd">        A dataframe wirth coordinates.</span>
+<span class="sd">        A dataframe with coordinates.</span>
 <span class="sd">        This should be obtained by slicing an alphatims.bruker.TimsTOF object.</span>
 <span class="sd">    x_axis_label : str</span>
 <span class="sd">        A label that is used for projection</span>
@@ -281,7 +283,7 @@
 <span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
 <span class="sd">    y_axis_label : str</span>
 <span class="sd">        A label that is used for projection</span>
-<span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
+<span class="sd">        (i.e. intensities are summed) on the y-axis. Options are:</span>
 
 <span class="sd">            - &quot;m/z, Th&quot;</span>
 <span class="sd">            - &quot;RT, min&quot;</span>

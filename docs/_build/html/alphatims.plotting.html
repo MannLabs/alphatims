@@ -184,7 +184,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A dataframe wirth coordinates.
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – A dataframe with coordinates.
 This should be obtained by slicing an alphatims.bruker.TimsTOF object.</p></li>
 <li><p><strong>x_axis_label</strong> (<em>str</em>) – <p>A label that is used for projection
 (i.e. intensities are summed) on the x-axis. Options are:</p>
@@ -197,7 +197,7 @@ This should be obtained by slicing an alphatims.bruker.TimsTOF object.</p></li>
 </div></blockquote>
 </p></li>
 <li><p><strong>y_axis_label</strong> (<em>str</em>) – <p>A label that is used for projection
-(i.e. intensities are summed) on the x-axis. Options are:</p>
+(i.e. intensities are summed) on the y-axis. Options are:</p>
 <blockquote>
 <div><ul>
 <li><p>”m/z, Th”</p></li>
@@ -234,7 +234,9 @@ Default is 300.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>timstof_data</strong> (<a class="reference internal" href="alphatims.bruker.html#alphatims.bruker.TimsTOF" title="alphatims.bruker.TimsTOF"><em>alphatims.bruker.TimsTOF</em></a>) – An alphatims.bruker.TimsTOF data object.</p></li>
-<li><p><strong>selected_indices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The raw indices that are selected for this plot</p></li>
+<li><p><strong>selected_indices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The raw indices that are selected for this plot.
+These are typically obtained by slicing the TimsTOF data object with
+e.g. data[…, “raw”].</p></li>
 <li><p><strong>x_axis_label</strong> (<em>str</em>) – <p>A label that is used for projection
 (i.e. intensities are summed) on the x-axis. Options are:</p>
 <blockquote>
