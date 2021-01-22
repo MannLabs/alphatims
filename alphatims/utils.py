@@ -108,7 +108,10 @@ def set_logger(
         directory = os.path.dirname(log_file_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        file_handler = logging.FileHandler(log_file_name, mode="a")
+        if overwrite:
+            file_handler = logging.FileHandler(log_file_name, mode="w")
+        else:
+            file_handler = logging.FileHandler(log_file_name, mode="a")
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
