@@ -752,7 +752,7 @@ class TimsTOF(object):
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
-        logging.info(f"Succesfully importing data from {bruker_d_folder_name}")
+        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
         self.slice_as_dataframe = slice_as_dataframe
 
     def _import_data_from_d_folder(
