@@ -939,6 +939,7 @@ class TimsTOF(object):
         quad_indices=None,
         scan_indices=None,
         tof_indices=None,
+        return_raw_indices: bool = False,
         return_frame_indices: bool = False,
         return_scan_indices: bool = False,
         return_quad_indices: bool = False,
@@ -964,6 +965,9 @@ class TimsTOF(object):
             The scan indices for which coordinates need to be retrieved.
         tof_indices : np.int64[:], None
             The tof indices for which coordinates need to be retrieved.
+        return_raw_indices : bool
+            If True, include "raw_indices" in the dict.
+            Default is False.
         return_frame_indices : bool
             If True, include "frame_indices" in the dict.
             Default is False.
@@ -1040,6 +1044,8 @@ class TimsTOF(object):
             )
         if (return_tof_indices or return_mz_values) and (tof_indices is None):
             tof_indices = self.tof_indices[raw_indices]
+        if return_raw_indices:
+            result["raw_indices"] = raw_indices
         if return_frame_indices:
             result["frame_indices"] = frame_indices
         if return_scan_indices:
@@ -1231,8 +1237,9 @@ class TimsTOF(object):
 
     def as_dataframe(
         self,
-        raw_indices: np.ndarray,
+        indices: np.ndarray,
         *,
+        raw_indices: bool = True,
         frame_indices: bool = True,
         scan_indices: bool = True,
         quad_indices: bool = False,
@@ -1248,8 +1255,11 @@ class TimsTOF(object):
 
         Parameters
         ----------
-        raw_indices : np.int64[:]
+        indices : np.int64[:]
             The raw indices for which coordinates need to be retrieved.
+        raw_indices : bool
+            If True, include "raw_indices" in the dataframe.
+            Default is True.
         frame_indices : bool
             If True, include "frame_indices" in the dataframe.
             Default is True.
@@ -1289,7 +1299,7 @@ class TimsTOF(object):
         """
         return pd.DataFrame(
            self.convert_from_indices(
-                raw_indices,
+                indices,
                 return_frame_indices=frame_indices,
                 return_scan_indices=scan_indices,
                 return_quad_indices=quad_indices,
