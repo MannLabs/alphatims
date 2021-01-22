@@ -961,7 +961,7 @@ def init_settings(*args):
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, DATASET.intensity_max_value),
-                "frames": (0, DATASET.frame_max_index),
+                "frames": (1, 2),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
                 "quads": (0, DATASET.quad_mz_max_value),
@@ -981,9 +981,9 @@ def init_settings(*args):
         player.options = frames_msmstype.loc[1::step, 'Id'].to_list()
         player.start, player.end = STACK["frames"]
 
-        frame_slider.start, frame_slider.end = STACK["frames"]
-        frame_start.start, frame_start.end = STACK["frames"]
-        frame_end.start, frame_end.end = STACK["frames"]
+        frame_slider.start, frame_slider.end = (0, DATASET.frame_max_index)
+        frame_start.start, frame_start.end = (0, DATASET.frame_max_index)
+        frame_end.start, frame_end.end = (0, DATASET.frame_max_index)
         rt_start.start, rt_start.end = (0, DATASET.rt_max_value / 60)
         rt_end.start, rt_end.end = (0, DATASET.rt_max_value / 60)
 
@@ -1021,7 +1021,7 @@ def init_settings(*args):
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
         # first init needed:
-        frame_slider.value = (1, 2)
+        plot2_x_axis.value = 'm/z, Th'
 
         upload_spinner.value = False
         return settings
