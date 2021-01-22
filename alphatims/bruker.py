@@ -1300,6 +1300,7 @@ class TimsTOF(object):
         return pd.DataFrame(
            self.convert_from_indices(
                 indices,
+                return_raw_indices=raw_indices,
                 return_frame_indices=frame_indices,
                 return_scan_indices=scan_indices,
                 return_quad_indices=quad_indices,
