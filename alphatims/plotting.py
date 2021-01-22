@@ -24,8 +24,8 @@ def line_plot(
 
     Parameters
     ----------
-    timstof_data : aphatims.bruker.TimsTOF
-        An aphatims.bruker.TimsTOF data object.
+    timstof_data : alphatims.bruker.TimsTOF
+        An alphatims.bruker.TimsTOF data object.
     selected_indices : np.int64[:]
         The raw indices that are selected for this plot
     x_axis_label : str
@@ -207,8 +207,8 @@ def tic_plot(
 
     Parameters
     ----------
-    timstof_data : aphatims.bruker.TimsTOF
-        An aphatims.bruker.TimsTOF data object.
+    timstof_data : alphatims.bruker.TimsTOF
+        An alphatims.bruker.TimsTOF data object.
     title : str
         The title of this plot.
         Will be prepended with "TIC".
