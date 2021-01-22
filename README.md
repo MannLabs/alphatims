@@ -275,12 +275,15 @@ All slices were performed in a single dimension. Including more slices makes the
 * **Quadrupole:** 700.0 <= quad_mz_values < 710.0
 * **TOF:** 621.9 <= tof_mz_values < 622.1
 
-All of these analyses were timed with `timeit` and are the average of at least 7 runs. They were obtained on the following system:
+All of these analyses were timed with `timeit` and are the average of 5 runs. They were obtained on the following system:
 
 * **MacBook Pro:** (13-inch, 2020, Four Thunderbolt 3 ports)
+* **OS version:** macOS Catalina 10.15.7
 * **Processor:** 2.3 GHz Quad-Core Intel Core i7
 * **Memory:** 32 GB 3733 MHz LPDDR4X
 * **Startup Disk:** Macintosh HD
+
+Full details are available in the [perfomance notebook](nbs/performance.ipynb).
 
 ---
 ## How it works
