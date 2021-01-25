@@ -280,7 +280,7 @@ def set_threads(threads: int, set_global: bool = True) -> int:
     threads : int
         The number of threads.
         If larger than available cores, it is trimmed to the available maximum.
-        If 0, it is set the the maximum cores available.
+        If 0, it is set to the maximum cores available.
         If negative, it indicates how many cores NOT to use.
     set_global : bool
         If False, the number of threads is only parsed to a valid value.
@@ -830,7 +830,7 @@ class Global_Stack(object):
     i.e. option_value = self[option_key]
 
     Attributes
-    
+
         - is_locked : bool
             After each succesful update, undo or redo,
             the stack is locked and cannot be modified unless explicitly unlocked.
