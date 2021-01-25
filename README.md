@@ -266,7 +266,7 @@ Typical performance statistics on data in-/output and slicing of standard [HeLa 
 | DIA  | 6 min    | 158,552,099   | 1.09 s / 381 ms    | 403 ms | 6.40 / 26.7 / 626 / 109     |
 | DDA  | 21 min   | 295,251,252   | 3.07 s / 913 ms    | 757 ms | 1.74 / 72.5 / 122 / 186      |
 | DIA  | 21 min   | 730,564,765   | 4.54 s / 2.20 s    | 1.85 s | 0.855 / 122 / 5040 / 404    |
-| DDA  | 120 min  | 2,074,019,899 | 24.1 s / 10.6 s    | 5.7 s  | 0.709 / 371 / 609 / 1200    |
+| DDA  | 120 min  | 2,074,019,899 | 24.1 s / 10.6 s    | 5.70 s  | 0.709 / 371 / 609 / 1200    |
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
@@ -291,7 +291,7 @@ Full details are available in the [perfomance notebook](nbs/performance.ipynb).
 The basic workflow of AlphaTims looks as follows:
 
 * Read data from a [Bruker `.d` folder](#bruker-raw-data).
-* Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and store them as a persistent HDF5 file.
+* Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and store them as a persistent [HDF5 file](https://www.hdfgroup.org/solutions/hdf5/).
 * Use Python's [slicing mechanism](#slicing-timstof-objects) to retrieve data from this object e.g. for visualisation.
 
 ### Bruker raw data
@@ -315,20 +315,20 @@ After reading the `PasefFrameMSMSInfo` or `DiaFrameMsMsWindows` table from the `
 * A `quad_indptr` array that indexes the `tof_indptr` array. Each element points to an index of the `tof_indptr` where the voltage on the quadrupole and collision cell is adjusted. For PASEF acquisitions, this is typically 20 times per MSMS frame (turning on and off a value for 10 precursor selections) and once per change from an MS (precursor) frame to an MSMS (fragment) frame. For diaPASEF, this is typically twice to 10 times per frame and with a repetitive pattern over the frame cycle. This results in an array of approximately `len(quad_indptr) = 100 * gradient_length_in_seconds`. As with the `tof_indptr` array, this array is converted to an offset array with size `+1`.
 * A `quad_low_values` array of `len(quad_indptr) - 1`. This array stores the lower m/z boundary that is selected with the quadrupole. For precursors without quadrupole selection, this value is set to -1.
 * A `quad_high_values` array, similar to `quad_low_values`.
-* A `precursor_indices` array of `len(quad_indptr) - 1`. For PASEF this array stores the index of the selected precursor. For diaPASEF, this array stores the `WindowGroup` of the fragment frame. As with the `quad_low_values` and `quad_high_values`, a value of -1 indicates a precursor without quadrupole selection.
+* A `precursor_indices` array of `len(quad_indptr) - 1`. For PASEF this array stores the index of the selected precursor. For diaPASEF, this array stores the `WindowGroup` of the fragment frame. A value of 0 indicates an MS1 ion (i.e. precursor) without quadrupole selection.
 
-After processing this summarising information from the `analysis.tdf` SQL database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays. This is done with the `tims_read_scans_v2` function from Bruker's `timsdata.dll` library (available in the [alphatims/ext](alphatims/ext) folder).
+After processing this summarising information from the `analysis.tdf` SQL database, the actual raw data from the `analysis.tdf_bin` binary file is read and stored in the empty `tof_indices`, `intensities` and `tof_indptr` arrays.
 
-Finally, three arrays are defined that allows quick translation of `frame_`, `scan_` and `tof_indices` to `rt_values`, `mobility_values` and `mz_values` arrays.
+Finally, three arrays are defined that allow quick translation of `frame_`, `scan_` and `tof_indices` to `rt_values`, `mobility_values` and `mz_values` arrays.
 * The `rt_values` array is read read directly from the `Frames` table in `analysis.tdf` and has a length equal to `frame_max_index + 1`. Note that an empty zeroth frame with `rt = 0` is created to make Python's 0-indexing compatible with Bruker's 1-indexing.
 * The `mobility_values` array is defined by using the function `tims_scannum_to_oneoverk0` from `timsdata.dll` on the first frame and typically has a length of `1000`.
 * Similarly, the `mz_values` array is defined by using the function `tims_index_to_mz` from `timsdata.dll` on the first frame. Typically this has a length of `400000`.
 
-All these arrays can be loaded into memory, taking up roughly twice as much RAM as the `.d` folder on disk. This increase in RAM memory is mainly due to the compression used in the `analysis.tdf_bin` file. If the Python object is stored as an HDF5 file, the empty `tof_indices` and `intensity` arrays can be created and filled on-disk, thereby minimizing RAM memory usage to less than 1 GB even for files that take up several GB on-disk. The HDF5 file can also be compressed so that its size is roughly halved and thereby has the same size as the Bruker `.d` folder, but (de)compression reduces accession times by 3-6 fold.
+All these arrays can be loaded into memory, taking up roughly twice as much RAM as the `.d` folder on disk. This increase in RAM memory is mainly due to the compression used in the `analysis.tdf_bin` file. The HDF5 file can also be compressed so that its size is roughly halved and thereby has the same size as the Bruker `.d` folder, but (de)compression reduces accession times by 3-6 fold.
 
 ### Slicing TimsTOF objects
 
-Once a Python TimsTOF object is available, it can be loaded into memory for ultrafast accession. Accession of the `data` object is done by simple Python slicing such as e.g. `selected_ion_indices = data[frame_selection, scan_selection, quad_selection, tof_selection]`. These ion indices are then easily parsed to a `pd.DataFrame` with the function `df = data.as_dataframe(selected_ion_indices)`. The columns of this dataframe contain all information, i.e. `frame`, `scan`, `precursor` and `tof` indices and `rt`, `mobility`, `quad_low`, `quad_high`, `mz` and `intensity` values.
+Once a Python TimsTOF object is available, it can be loaded into memory for ultrafast accession. Accession of the `data` object is done by simple Python slicing such as e.g. `selected_ion_indices = data[frame_selection, scan_selection, quad_selection, tof_selection]`. This slicing returns a `pd.DataFrame` for subsequent analysis. The columns of this dataframe contain all information for all selected ions, i.e. `frame`, `scan`, `precursor` and `tof` indices and `rt`, `mobility`, `quad_low`, `quad_high`, `mz` and `intensity` values. See the [tutorial jupyter notebook](nbs/tutorial.ipynb) for usage examples.
 
 ---
 ## Future perspectives

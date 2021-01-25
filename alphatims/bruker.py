@@ -754,6 +754,8 @@ class TimsTOF(object):
             )
         logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
         self.slice_as_dataframe = slice_as_dataframe
+        # Precompile
+        self[0, "raw"]
 
     def _import_data_from_d_folder(
         self,
