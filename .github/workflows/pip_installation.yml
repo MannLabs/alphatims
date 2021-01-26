@@ -35,5 +35,5 @@ jobs:
       - name: Test pip installation with all dependancies
         run: |
           pip install pip==20.2 --user
-          pip install -e '.[cli,gui,nbs]'
+          pip install -e '.[cli,gui,nbs]' --user
           alphatims
