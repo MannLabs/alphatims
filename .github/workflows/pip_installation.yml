@@ -27,7 +27,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - uses: s-weigand/setup-conda@v1
+      - uses: conda-incubator/setup-miniconda@v2
 
       # Runs a set of commands using the runners shell
       - name: Test pip installation with all dependancies
