@@ -182,7 +182,7 @@ A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.b
 
 ### DIA
 
-The same sample was also acquired with diaPASEF (1.96 Gb) and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed” method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
+The same sample was also acquired with diaPASEF (1.96 Gb) and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed" method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
 ---
 ## Usage
