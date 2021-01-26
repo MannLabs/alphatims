@@ -341,4 +341,4 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
 ---
 ## How to contribute
 
-All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch.
+All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch. For mote information see [the Contributors License Agreement](misc/CLA.md)

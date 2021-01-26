@@ -29,6 +29,7 @@ elif sys.platform[:5] == "linux":
     )
 else:
     logging.warning(
+        "WARNING: "
         "No Bruker libraries are available for this operating system. "
         "Intensities are uncalibrated, resulting in (very) small differences. "
         "However, mobility and m/z values need to be estimated. "

@@ -415,6 +415,7 @@ def pjit(
     *,
     thread_count=None,
     cache: bool = True,
+    **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
 
@@ -439,7 +440,7 @@ def pjit(
         Default is None.
     cache : bool
         See numba.njit decorator.
-        Default is True (in contrast to numba) .
+        Default is True (in contrast to numba).
 
     Returns
     -------
@@ -452,7 +453,11 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True, cache=True)(func)
+        if "cache" in kwargs:
+            cache = kwargs.pop("cache")
+        else:
+            cache = True
+        numba_func = numba.njit(nogil=True, cache=cache, **kwargs)(func)
 
         @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
