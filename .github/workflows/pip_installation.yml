@@ -44,7 +44,6 @@ jobs:
           pip install -e '.[cli,gui,nbs]'
           alphatims
 
-  install:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
