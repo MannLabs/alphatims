@@ -18,7 +18,7 @@ jobs:
           PERSONAL_ACCESS_TOKEN : ${{ secrets.CLA_ACCESS_ALPHATIMS }}
         with:
           path-to-signatures: 'signatures/version1/cla.json'
-          path-to-cla-document: 'https://github.com/MannLabs/alphatims/blob/master/misc/CLA.md'
+          path-to-document: 'https://github.com/MannLabs/alphatims/blob/master/misc/CLA.md'
           # branch should not be protected
           branch: 'cla'
           allowlist: swillems, EugeniaVoytik, straussmaximilian, bot*
