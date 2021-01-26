@@ -280,7 +280,7 @@ def set_threads(threads: int, set_global: bool = True) -> int:
     threads : int
         The number of threads.
         If larger than available cores, it is trimmed to the available maximum.
-        If 0, it is set the the maximum cores available.
+        If 0, it is set to the maximum cores available.
         If negative, it indicates how many cores NOT to use.
     set_global : bool
         If False, the number of threads is only parsed to a valid value.
@@ -415,6 +415,7 @@ def pjit(
     *,
     thread_count=None,
     cache: bool = True,
+    **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
 
@@ -439,7 +440,7 @@ def pjit(
         Default is None.
     cache : bool
         See numba.njit decorator.
-        Default is True (in contrast to numba) .
+        Default is True (in contrast to numba).
 
     Returns
     -------
@@ -452,7 +453,11 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True, cache=True)(func)
+        if "cache" in kwargs:
+            cache = kwargs.pop("cache")
+        else:
+            cache = True
+        numba_func = numba.njit(nogil=True, cache=cache, **kwargs)(func)
 
         @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
@@ -830,7 +835,7 @@ class Global_Stack(object):
     i.e. option_value = self[option_key]
 
     Attributes
-    
+
         - is_locked : bool
             After each succesful update, undo or redo,
             the stack is locked and cannot be modified unless explicitly unlocked.

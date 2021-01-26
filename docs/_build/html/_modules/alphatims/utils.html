@@ -434,7 +434,7 @@
 <span class="sd">    threads : int</span>
 <span class="sd">        The number of threads.</span>
 <span class="sd">        If larger than available cores, it is trimmed to the available maximum.</span>
-<span class="sd">        If 0, it is set the the maximum cores available.</span>
+<span class="sd">        If 0, it is set to the maximum cores available.</span>
 <span class="sd">        If negative, it indicates how many cores NOT to use.</span>
 <span class="sd">    set_global : bool</span>
 <span class="sd">        If False, the number of threads is only parsed to a valid value.</span>
@@ -569,6 +569,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">thread_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A decorator that parallelizes the numba.njit decorator with threads.</span>
 
@@ -593,7 +594,7 @@
 <span class="sd">        Default is None.</span>
 <span class="sd">    cache : bool</span>
 <span class="sd">        See numba.njit decorator.</span>
-<span class="sd">        Default is True (in contrast to numba) .</span>
+<span class="sd">        Default is True (in contrast to numba).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -606,7 +607,11 @@
     <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
     <span class="k">def</span> <span class="nf">parallel_compiled_func_inner</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="n">numba_func</span> <span class="o">=</span> <span class="n">numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;cache&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;cache&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">numba_func</span> <span class="o">=</span> <span class="n">numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)(</span><span class="n">func</span><span class="p">)</span>
 
         <span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">numba_func_parallel</span><span class="p">(</span>
@@ -984,7 +989,7 @@
 <span class="sd">    i.e. option_value = self[option_key]</span>
 
 <span class="sd">    Attributes</span>
-<span class="sd">    </span>
+
 <span class="sd">        - is_locked : bool</span>
 <span class="sd">            After each succesful update, undo or redo,</span>
 <span class="sd">            the stack is locked and cannot be modified unless explicitly unlocked.</span>

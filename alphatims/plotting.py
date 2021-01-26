@@ -24,10 +24,12 @@ def line_plot(
 
     Parameters
     ----------
-    timstof_data : aphatims.bruker.TimsTOF
-        An aphatims.bruker.TimsTOF data object.
+    timstof_data : alphatims.bruker.TimsTOF
+        An alphatims.bruker.TimsTOF data object.
     selected_indices : np.int64[:]
-        The raw indices that are selected for this plot
+        The raw indices that are selected for this plot.
+        These are typically obtained by slicing the TimsTOF data object with
+        e.g. data[..., "raw"].
     x_axis_label : str
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
@@ -116,7 +118,7 @@ def heatmap(
     Parameters
     ----------
     df : pd.DataFrame
-        A dataframe wirth coordinates.
+        A dataframe with coordinates.
         This should be obtained by slicing an alphatims.bruker.TimsTOF object.
     x_axis_label : str
         A label that is used for projection
@@ -127,7 +129,7 @@ def heatmap(
             - "Inversed IM, V·s·cm\u207B\u00B2"
     y_axis_label : str
         A label that is used for projection
-        (i.e. intensities are summed) on the x-axis. Options are:
+        (i.e. intensities are summed) on the y-axis. Options are:
 
             - "m/z, Th"
             - "RT, min"
@@ -207,8 +209,8 @@ def tic_plot(
 
     Parameters
     ----------
-    timstof_data : aphatims.bruker.TimsTOF
-        An aphatims.bruker.TimsTOF data object.
+    timstof_data : alphatims.bruker.TimsTOF
+        An alphatims.bruker.TimsTOF data object.
     title : str
         The title of this plot.
         Will be prepended with "TIC".
