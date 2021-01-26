@@ -15,7 +15,7 @@ jobs:
         uses: cla-assistant/github-action@v2.0.3-alpha
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN : ${{ secrets.CLA_ACCESS }}
+          PERSONAL_ACCESS_TOKEN : ${{ secrets.CLA_ACCESS_ALPHATIMS }}
         with:
           path-to-signatures: 'signatures/version1/cla.json'
           path-to-cla-document: 'https://github.com/MannLabs/alphatims/blob/master/misc/CLA.md'
