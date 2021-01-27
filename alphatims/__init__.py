@@ -4,8 +4,8 @@
 __project__ = "alphatims"
 __version__ = "0.0.210126"
 __license__ = "MIT"
-__description__ = "A python package for Bruker TimsTOF raw data accession and visualization"
-__author__ = "Sander Willems"
+__description__ = "A Python package for Bruker TimsTOF raw data accession and visualization"
+__author__ = "Sander Willems, Eugenia Voytik"
 __author_email__ = "willems@biochem.mpg.de"
 __github__ = "https://github.com/MannLabs/alphatims"
 __keywords__ = [
@@ -18,11 +18,10 @@ __keywords__ = [
 ]
 __python_version__ = ">=3.8,<3.9"
 __classifiers__ = [
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: Microsoft :: Windows",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3 :: Only",
