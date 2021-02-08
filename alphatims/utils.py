@@ -34,10 +34,11 @@ LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/
 
 def set_logger(
     *,
-    log_file_name: str = "",
+    log_file_name="",
     stream: bool = True,
     log_level: int = logging.INFO,
-    overwrite: bool = False
+    overwrite: bool = False,
+    progress_callback: bool = True
 ) -> str:
     """Set the log stream and file.
 
@@ -45,17 +46,18 @@ def set_logger(
 
     Parameters
     ----------
-    log_file_name : str
+    log_file_name : str, None
         The file name to where the log is written.
         Folders are automatically created if needed.
         This is relative to the current path. When an empty string is provided,
         a log is written to the AlphaTims "logs" folder with the name
         "log_yymmddhhmmss" (reversed timestamp year to seconds).
+        If None, no log file is saved.
         Default is "".
     stream : bool
-        If False, no log data is also sent to stream.
+        If False, no log data is sent to stream.
         If True, all logging can be tracked with stdout stream.
-        Default is True
+        Default is True.
     log_level : int
         The logging level. Usable values are defined in Python's "logging"
         module.
@@ -64,6 +66,10 @@ def set_logger(
         If True, overwrite the log_file if one exists.
         If False, append to this log file.
         Default is False.
+    progress_callback : bool
+        If True, continuous progress bars are enabled by default.
+        NOTE: If stream is False, progress bars are always disabled
+        Default is True.
 
     Returns
     -------
@@ -71,6 +77,7 @@ def set_logger(
         The file name to where the log is written.
     """
     import time
+    global PROGRESS_CALLBACK_STYLE
     root = logging.getLogger()
     formatter = logging.Formatter(
         '%(asctime)s> %(message)s', "%Y-%m-%d %H:%M:%S"
@@ -85,8 +92,6 @@ def set_logger(
         root.addHandler(stream_handler)
     if log_file_name is not None:
         if log_file_name == "":
-            if not os.path.exists(LOG_PATH):
-                os.makedirs(LOG_PATH)
             log_file_name = LOG_PATH
         log_file_name = os.path.abspath(log_file_name)
         if os.path.isdir(log_file_name):
@@ -115,6 +120,10 @@ def set_logger(
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
+    if progress_callback and stream:
+        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
+    else:
+        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_NONE
     return log_file_name
 
 

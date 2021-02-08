@@ -213,7 +213,7 @@ alphatims
 conda deactivate
 ```
 
-It is possible to get help about each function and their (required) parameters by using the `-h` flag. For instance,the command `alphatims export hdf -h` will produce the following output:
+It is possible to get help about each function and their (required) parameters by using the `-h` flag. For instance, the command `alphatims export hdf -h` will produce the following output:
 
 ```
 ************************

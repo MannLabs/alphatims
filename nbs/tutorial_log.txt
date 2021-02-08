@@ -1,38 +1,38 @@
-2021-01-22 13:15:43> Platform information:
-2021-01-22 13:15:43> system     - Darwin
-2021-01-22 13:15:43> release    - 19.6.0
-2021-01-22 13:15:43> version    - 10.15.7
-2021-01-22 13:15:43> machine    - x86_64
-2021-01-22 13:15:43> processor  - i386
-2021-01-22 13:15:43> cpu count  - 8
-2021-01-22 13:15:43> ram memory - 20.6/32.0 Gb (available/total)
-2021-01-22 13:15:43> 
-2021-01-22 13:15:43> Python information:
-2021-01-22 13:15:43> alphatims  - 0.0.210121
-2021-01-22 13:15:43> bokeh      - 2.2.3
-2021-01-22 13:15:43> click      - 7.1.2
-2021-01-22 13:15:43> datashader - 0.11.1
-2021-01-22 13:15:43> h5py       - 3.1.0
-2021-01-22 13:15:43> holoviews  - 1.14.0
-2021-01-22 13:15:43> holoviz    - 0.11.6
-2021-01-22 13:15:43> ipykernel  - 5.3.4
-2021-01-22 13:15:43> jupyter    - 1.0.0
-2021-01-22 13:15:43> matplotlib - 3.3.3
-2021-01-22 13:15:43> numba      - 0.52.0
-2021-01-22 13:15:43> numpy      - 1.19.4
-2021-01-22 13:15:43> pandas     - 1.1.4
-2021-01-22 13:15:43> plotly     - 4.13.0
-2021-01-22 13:15:43> python     - 3.8.5
-2021-01-22 13:15:43> pywin32    - 
-2021-01-22 13:15:43> rise       - 5.7.1
-2021-01-22 13:15:43> seaborn    - 0.11.0
-2021-01-22 13:15:43> tqdm       - 4.54.0
-2021-01-22 13:15:43> 
-2021-01-22 13:15:43> No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
-2021-01-22 13:15:43> 
-2021-01-22 13:15:45> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-01-22 13:15:45> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-01-22 13:15:45> Reading 11,886 frames with 295,251,252 TOF arrivals for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-01-22 13:15:48> Succesfully importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-01-22 13:15:48> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
-2021-01-22 13:15:49> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2021-02-08 14:24:55> Platform information:
+2021-02-08 14:24:55> system     - Darwin
+2021-02-08 14:24:55> release    - 19.6.0
+2021-02-08 14:24:55> version    - 10.15.7
+2021-02-08 14:24:55> machine    - x86_64
+2021-02-08 14:24:55> processor  - i386
+2021-02-08 14:24:55> cpu count  - 8
+2021-02-08 14:24:55> ram memory - 17.3/32.0 Gb (available/total)
+2021-02-08 14:24:55> 
+2021-02-08 14:24:56> Python information:
+2021-02-08 14:24:56> alphatims  - 0.0.210126
+2021-02-08 14:24:56> bokeh      - 2.2.3
+2021-02-08 14:24:56> click      - 7.1.2
+2021-02-08 14:24:56> datashader - 0.11.1
+2021-02-08 14:24:56> h5py       - 3.1.0
+2021-02-08 14:24:56> holoviews  - 1.14.0
+2021-02-08 14:24:56> holoviz    - 0.11.6
+2021-02-08 14:24:56> ipykernel  - 5.3.4
+2021-02-08 14:24:56> jupyter    - 1.0.0
+2021-02-08 14:24:56> matplotlib - 3.3.3
+2021-02-08 14:24:56> numba      - 0.52.0
+2021-02-08 14:24:56> numpy      - 1.19.4
+2021-02-08 14:24:56> pandas     - 1.1.4
+2021-02-08 14:24:56> plotly     - 4.13.0
+2021-02-08 14:24:56> python     - 3.8.5
+2021-02-08 14:24:56> pywin32    - 
+2021-02-08 14:24:56> rise       - 5.7.1
+2021-02-08 14:24:56> seaborn    - 0.11.0
+2021-02-08 14:24:56> tqdm       - 4.54.0
+2021-02-08 14:24:56> 
+2021-02-08 14:24:56> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-02-08 14:24:56> 
+2021-02-08 14:24:58> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-02-08 14:24:58> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-02-08 14:24:58> Reading 11,886 frames with 295,251,252 TOF arrivals for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-02-08 14:25:01> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-02-08 14:25:01> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2021-02-08 14:25:02> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.

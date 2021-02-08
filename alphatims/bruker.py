@@ -447,9 +447,9 @@ class TimsTOF(object):
             are detected instead of fragments.
             Equally, this dimension allows to slice precursor indices.
             Precursor index 0 defaults to all precusors (i.e. quad mz values
-            equal to -1). In DDA, precursor indices > 0 point to PASEF
-            MSMS spectra.
-            In DIA, precursor indices > 0 point to windows,
+            equal to -1). In DDA, precursor indices larger than 0 point
+            to PASEF MSMS spectra.
+            In DIA, precursor indices larger than 0 point to windows,
             i.e. all scans in a frame with equal quadrupole and collision
             settings that is repeated once per full cycle.
             Note that these values do not have a one-to-one relationship.
@@ -503,8 +503,12 @@ class TimsTOF(object):
             (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0)
             = True).
 
+    Alternatively, a dictionary can be used to define filters for each
+    dimension (see examples).
+
     The result of such slicing is a pd.DataFrame with the following columns:
 
+        - raw_indices
         - frame_indices
         - scan_indices
         - precursor_indices
@@ -515,6 +519,9 @@ class TimsTOF(object):
         - quad_high_mz_values
         - mz_values
         - intensity_values
+
+    Instead of returning a pd.DataFrame, raw indices can be returned by
+    setting the last slice element to "raw".
 
     Examples
     --------
@@ -533,7 +540,7 @@ class TimsTOF(object):
 
     >>> data[[1, 8, 10], :, 0, 621.9: np.inf]
     # Return all datapoints from frames 1, 8 and 10, which are unfragmented
-    # and with 621.9 <= mz_values < np.inf
+    # (precursor_index = 0) and with 621.9 <= mz_values < np.inf
 
     >>> data[:, :, 999]
     # Return all datapoints from precursor 999
@@ -543,6 +550,19 @@ class TimsTOF(object):
     >>> data[:, scan_slices, :, :, :]
     # Return all datapoints with scan_indices in range(10, 20) or
     # range(100, 200, 10)
+
+    >>> df = data[
+    ...     {
+    ...         "frame_indices": [1, 191],
+    ...         "scan_indices": slice(300, 800, 10),
+    ...         "mz_values": slice(None, 400.5),
+    ...         "intensity_values": 50,
+    ...     }
+    ... ]
+    # Slice by using a dictionary
+
+    >>> data[:, :, 999, "raw"]
+    # Return the raw indices of datapoints from precursor 999
     """
 
     @property
@@ -1419,9 +1439,17 @@ def parse_keys(data: TimsTOF, keys) -> dict:
         )
     if isinstance(keys[0], dict):
         new_keys = []
-        for dimension in dimensions:
-            if dimension in keys[0]:
-                new_keys.append(keys[0][dimension])
+        dimension_translations = {
+            "frame_indices": "rt_values",
+            "scan_indices": "mobility_values",
+            "precursor_indices": "quad_mz_values",
+            "tof_indices": "mz_values",
+        }
+        for indices, values in dimension_translations.items():
+            if indices in keys[0]:
+                new_keys.append(keys[0][indices])
+            elif values in keys[0]:
+                new_keys.append(keys[0][values])
             else:
                 new_keys.append(slice(None))
         if "intensity_values" in keys[0]:
