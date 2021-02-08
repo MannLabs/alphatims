@@ -282,9 +282,9 @@ collision cell are assumed to be inactive, i.e. precursor ions
 are detected instead of fragments.
 Equally, this dimension allows to slice precursor indices.
 Precursor index 0 defaults to all precusors (i.e. quad mz values
-equal to -1). In DDA, precursor indices &gt; 0 point to PASEF
-MSMS spectra.
-In DIA, precursor indices &gt; 0 point to windows,
+equal to -1). In DDA, precursor indices larger than 0 point
+to PASEF MSMS spectra.
+In DIA, precursor indices larger than 0 point to windows,
 i.e. all scans in a frame with equal quadrupole and collision
 settings that is repeated once per full cycle.
 Note that these values do not have a one-to-one relationship.</p>
@@ -354,9 +354,12 @@ disjunct and strictly increasing
 </li>
 </ul>
 </div></blockquote>
+<p>Alternatively, a dictionary can be used to define filters for each
+dimension (see examples).</p>
 <p>The result of such slicing is a pd.DataFrame with the following columns:</p>
 <blockquote>
 <div><ul class="simple">
+<li><p>raw_indices</p></li>
 <li><p>frame_indices</p></li>
 <li><p>scan_indices</p></li>
 <li><p>precursor_indices</p></li>
@@ -369,6 +372,8 @@ disjunct and strictly increasing
 <li><p>intensity_values</p></li>
 </ul>
 </div></blockquote>
+<p>Instead of returning a pd.DataFrame, raw indices can be returned by
+setting the last slice element to “raw”.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[:</span><span class="mf">100.0</span><span class="p">]</span>
 <span class="go"># Return all datapoints with rt_values &lt; 100.0 seconds</span>
@@ -389,7 +394,7 @@ disjunct and strictly increasing
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">621.9</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
 <span class="go"># Return all datapoints from frames 1, 8 and 10, which are unfragmented</span>
-<span class="go"># and with 621.9 &lt;= mz_values &lt; np.inf</span>
+<span class="go"># (precursor_index = 0) and with 621.9 &lt;= mz_values &lt; np.inf</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">999</span><span class="p">]</span>
@@ -401,6 +406,21 @@ disjunct and strictly increasing
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[:,</span> <span class="n">scan_slices</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span>
 <span class="go"># Return all datapoints with scan_indices in range(10, 20) or</span>
 <span class="go"># range(100, 200, 10)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">&quot;frame_indices&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">191</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="s2">&quot;mz_values&quot;</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">400.5</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="s2">&quot;intensity_values&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">}</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="go"># Slice by using a dictionary</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">999</span><span class="p">,</span> <span class="s2">&quot;raw&quot;</span><span class="p">]</span>
+<span class="go"># Return the raw indices of datapoints from precursor 999</span>
 </pre></div>
 </div>
 <p><strong>Methods:</strong></p>

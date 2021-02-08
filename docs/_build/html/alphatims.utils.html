@@ -774,27 +774,31 @@ Default is True (in contrast to numba).</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.set_logger">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress_callback</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the log stream and file.</p>
 <p>All previously set handlers will be disabled with this command.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_file_name</strong> (<em>str</em>) – The file name to where the log is written.
+<li><p><strong>log_file_name</strong> (<em>str</em><em>, </em><em>None</em>) – The file name to where the log is written.
 Folders are automatically created if needed.
 This is relative to the current path. When an empty string is provided,
 a log is written to the AlphaTims “logs” folder with the name
 “log_yymmddhhmmss” (reversed timestamp year to seconds).
+If None, no log file is saved.
 Default is “”.</p></li>
-<li><p><strong>stream</strong> (<em>bool</em>) – If False, no log data is also sent to stream.
+<li><p><strong>stream</strong> (<em>bool</em>) – If False, no log data is sent to stream.
 If True, all logging can be tracked with stdout stream.
-Default is True</p></li>
+Default is True.</p></li>
 <li><p><strong>log_level</strong> (<em>int</em>) – The logging level. Usable values are defined in Python’s “logging”
 module.
 Default is logging.INFO.</p></li>
 <li><p><strong>overwrite</strong> (<em>bool</em>) – If True, overwrite the log_file if one exists.
 If False, append to this log file.
 Default is False.</p></li>
+<li><p><strong>progress_callback</strong> (<em>bool</em>) – If True, continuous progress bars are enabled by default.
+NOTE: If stream is False, progress bars are always disabled
+Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

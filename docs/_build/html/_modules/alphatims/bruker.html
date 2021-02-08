@@ -601,9 +601,9 @@
 <span class="sd">            are detected instead of fragments.</span>
 <span class="sd">            Equally, this dimension allows to slice precursor indices.</span>
 <span class="sd">            Precursor index 0 defaults to all precusors (i.e. quad mz values</span>
-<span class="sd">            equal to -1). In DDA, precursor indices &gt; 0 point to PASEF</span>
-<span class="sd">            MSMS spectra.</span>
-<span class="sd">            In DIA, precursor indices &gt; 0 point to windows,</span>
+<span class="sd">            equal to -1). In DDA, precursor indices larger than 0 point</span>
+<span class="sd">            to PASEF MSMS spectra.</span>
+<span class="sd">            In DIA, precursor indices larger than 0 point to windows,</span>
 <span class="sd">            i.e. all scans in a frame with equal quadrupole and collision</span>
 <span class="sd">            settings that is repeated once per full cycle.</span>
 <span class="sd">            Note that these values do not have a one-to-one relationship.</span>
@@ -657,8 +657,12 @@
 <span class="sd">            (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0)</span>
 <span class="sd">            = True).</span>
 
+<span class="sd">    Alternatively, a dictionary can be used to define filters for each</span>
+<span class="sd">    dimension (see examples).</span>
+
 <span class="sd">    The result of such slicing is a pd.DataFrame with the following columns:</span>
 
+<span class="sd">        - raw_indices</span>
 <span class="sd">        - frame_indices</span>
 <span class="sd">        - scan_indices</span>
 <span class="sd">        - precursor_indices</span>
@@ -669,6 +673,9 @@
 <span class="sd">        - quad_high_mz_values</span>
 <span class="sd">        - mz_values</span>
 <span class="sd">        - intensity_values</span>
+
+<span class="sd">    Instead of returning a pd.DataFrame, raw indices can be returned by</span>
+<span class="sd">    setting the last slice element to &quot;raw&quot;.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -687,7 +694,7 @@
 
 <span class="sd">    &gt;&gt;&gt; data[[1, 8, 10], :, 0, 621.9: np.inf]</span>
 <span class="sd">    # Return all datapoints from frames 1, 8 and 10, which are unfragmented</span>
-<span class="sd">    # and with 621.9 &lt;= mz_values &lt; np.inf</span>
+<span class="sd">    # (precursor_index = 0) and with 621.9 &lt;= mz_values &lt; np.inf</span>
 
 <span class="sd">    &gt;&gt;&gt; data[:, :, 999]</span>
 <span class="sd">    # Return all datapoints from precursor 999</span>
@@ -697,6 +704,19 @@
 <span class="sd">    &gt;&gt;&gt; data[:, scan_slices, :, :, :]</span>
 <span class="sd">    # Return all datapoints with scan_indices in range(10, 20) or</span>
 <span class="sd">    # range(100, 200, 10)</span>
+
+<span class="sd">    &gt;&gt;&gt; df = data[</span>
+<span class="sd">    ...     {</span>
+<span class="sd">    ...         &quot;frame_indices&quot;: [1, 191],</span>
+<span class="sd">    ...         &quot;scan_indices&quot;: slice(300, 800, 10),</span>
+<span class="sd">    ...         &quot;mz_values&quot;: slice(None, 400.5),</span>
+<span class="sd">    ...         &quot;intensity_values&quot;: 50,</span>
+<span class="sd">    ...     }</span>
+<span class="sd">    ... ]</span>
+<span class="sd">    # Slice by using a dictionary</span>
+
+<span class="sd">    &gt;&gt;&gt; data[:, :, 999, &quot;raw&quot;]</span>
+<span class="sd">    # Return the raw indices of datapoints from precursor 999</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
@@ -1573,9 +1593,17 @@
         <span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">new_keys</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">dimensions</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">new_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">dimension</span><span class="p">])</span>
+        <span class="n">dimension_translations</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;frame_indices&quot;</span><span class="p">:</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span> <span class="s2">&quot;mobility_values&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;precursor_indices&quot;</span><span class="p">:</span> <span class="s2">&quot;quad_mz_values&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tof_indices&quot;</span><span class="p">:</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">indices</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">dimension_translations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">new_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">indices</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">new_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">values</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">new_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
         <span class="k">if</span> <span class="s2">&quot;intensity_values&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>

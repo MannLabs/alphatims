@@ -188,10 +188,11 @@
 
 <div class="viewcode-block" id="set_logger"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.set_logger">[docs]</a><span class="k">def</span> <span class="nf">set_logger</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">log_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">log_file_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">log_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
-    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">progress_callback</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Set the log stream and file.</span>
 
@@ -199,17 +200,18 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    log_file_name : str</span>
+<span class="sd">    log_file_name : str, None</span>
 <span class="sd">        The file name to where the log is written.</span>
 <span class="sd">        Folders are automatically created if needed.</span>
 <span class="sd">        This is relative to the current path. When an empty string is provided,</span>
 <span class="sd">        a log is written to the AlphaTims &quot;logs&quot; folder with the name</span>
 <span class="sd">        &quot;log_yymmddhhmmss&quot; (reversed timestamp year to seconds).</span>
+<span class="sd">        If None, no log file is saved.</span>
 <span class="sd">        Default is &quot;&quot;.</span>
 <span class="sd">    stream : bool</span>
-<span class="sd">        If False, no log data is also sent to stream.</span>
+<span class="sd">        If False, no log data is sent to stream.</span>
 <span class="sd">        If True, all logging can be tracked with stdout stream.</span>
-<span class="sd">        Default is True</span>
+<span class="sd">        Default is True.</span>
 <span class="sd">    log_level : int</span>
 <span class="sd">        The logging level. Usable values are defined in Python&#39;s &quot;logging&quot;</span>
 <span class="sd">        module.</span>
@@ -218,6 +220,10 @@
 <span class="sd">        If True, overwrite the log_file if one exists.</span>
 <span class="sd">        If False, append to this log file.</span>
 <span class="sd">        Default is False.</span>
+<span class="sd">    progress_callback : bool</span>
+<span class="sd">        If True, continuous progress bars are enabled by default.</span>
+<span class="sd">        NOTE: If stream is False, progress bars are always disabled</span>
+<span class="sd">        Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -225,6 +231,7 @@
 <span class="sd">        The file name to where the log is written.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">time</span>
+    <span class="k">global</span> <span class="n">PROGRESS_CALLBACK_STYLE</span>
     <span class="n">root</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
     <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
         <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1">&gt; </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
@@ -239,8 +246,6 @@
         <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">stream_handler</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">log_file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">log_file_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">)</span>
             <span class="n">log_file_name</span> <span class="o">=</span> <span class="n">LOG_PATH</span>
         <span class="n">log_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">):</span>
@@ -269,6 +274,10 @@
         <span class="n">file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="p">)</span>
         <span class="n">file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
         <span class="n">root</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">progress_callback</span> <span class="ow">and</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="n">PROGRESS_CALLBACK_STYLE</span> <span class="o">=</span> <span class="n">PROGRESS_CALLBACK_STYLE_TEXT</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">PROGRESS_CALLBACK_STYLE</span> <span class="o">=</span> <span class="n">PROGRESS_CALLBACK_STYLE_NONE</span>
     <span class="k">return</span> <span class="n">log_file_name</span></div>
 
 
