@@ -778,6 +778,9 @@ class TimsTOF(object):
         # Precompile
         self[0, "raw"]
 
+    def __len__(self):
+        return len(self.intensity_values)
+
     def _import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,

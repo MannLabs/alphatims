@@ -190,12 +190,13 @@ def heatmap(
         datashade=True,
         dynspread=True,
         cmap=colorcet.fire,
-        nonselection_color='green',
-        selection_color='blue',
-        color="white",
+        # nonselection_color='green',
+        # selection_color='blue',
+        # color="white",
         width=width,
         height=height,
     )
+    scatter.opts(bgcolor="black")
     return scatter
 
 
