@@ -139,7 +139,7 @@ def show_platform_info() -> None:
         - [timestamp]> machine    - [...]
         - [timestamp]> processor  - [...]
         - [timestamp]> cpu count  - [...]
-        - [timestamp]> ram memory - [...]/[...] Gb (available/total)
+        - [timestamp]> ram        - [...]/[...] Gb (available/total)
     """
     import platform
     import psutil
@@ -157,7 +157,7 @@ def show_platform_info() -> None:
         # f" ({100 - psutil.cpu_percent()}% unused)"
     )
     logging.info(
-        f"ram memory - "
+        f"ram        - "
         f"{psutil.virtual_memory().available/1024**3:.1f}/"
         f"{psutil.virtual_memory().total/1024**3:.1f} Gb "
         f"(available/total)"
