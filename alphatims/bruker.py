@@ -976,6 +976,7 @@ class TimsTOF(object):
         return_quad_mz_values: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
+        raw_indices_sorted: bool = True,
     ) -> dict:
         """Convert selected indices to a dict.
 
@@ -1025,6 +1026,10 @@ class TimsTOF(object):
         return_intensity_values : bool
             If True, include "intensity_values" in the dict.
             Default is False.
+        raw_indices_sorted : bool
+            If True, raw_indices are assumed to be sorted,
+            resulting in a faster conversion.
+            Default is True.
 
         Returns
         -------
@@ -1043,10 +1048,17 @@ class TimsTOF(object):
                 return_precursor_indices
             ]
         ):
-            parsed_indices = indptr_lookup(
-                self.tof_indptr,
-                raw_indices,
-            )
+            if raw_indices_sorted:
+                parsed_indices = indptr_lookup(
+                    self.tof_indptr,
+                    raw_indices,
+                )
+            else:
+                parsed_indices = np.searchsorted(
+                    self.tof_indptr,
+                    raw_indices,
+                    "right"
+                ) - 1
         if (return_frame_indices or return_rt_values) and (
             frame_indices is None
         ):
@@ -1064,10 +1076,17 @@ class TimsTOF(object):
         ) and (
             quad_indices is None
         ):
-            quad_indices = indptr_lookup(
-                self.quad_indptr,
-                raw_indices,
-            )
+            if raw_indices_sorted:
+                quad_indices = indptr_lookup(
+                    self.quad_indptr,
+                    raw_indices,
+                )
+            else:
+                quad_indices = np.searchsorted(
+                    self.quad_indptr,
+                    raw_indices,
+                    "right"
+                ) - 1
         if (return_tof_indices or return_mz_values) and (tof_indices is None):
             tof_indices = self.tof_indices[raw_indices]
         if return_raw_indices:
@@ -1275,7 +1294,8 @@ class TimsTOF(object):
         mobility_values: bool = True,
         quad_mz_values: bool = True,
         mz_values: bool = True,
-        intensity_values: bool = True
+        intensity_values: bool = True,
+        raw_indices_sorted: bool = True,
     ):
         """Convert raw indices to a pd.DataFrame.
 
@@ -1317,6 +1337,10 @@ class TimsTOF(object):
         intensity_values : bool
             If True, include "intensity_values" in the dataframe.
             Default is True.
+        raw_indices_sorted : bool
+            If True, raw_indices are assumed to be sorted,
+            resulting in a faster conversion.
+            Default is True.
 
         Returns
         -------
@@ -1337,6 +1361,7 @@ class TimsTOF(object):
                 return_quad_mz_values=quad_mz_values,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
+                raw_indices_sorted=raw_indices_sorted,
             )
         )
 
