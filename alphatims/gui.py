@@ -241,7 +241,7 @@ selectors_divider = pn.pane.HTML(
 card_divider = pn.pane.HTML(
     '<hr style="height: 1.5px; border:none; background-color: black; width: 415px;">',
     align='center',
-    margin=(10, 10, 5, 10)
+    margin=(3, 10, 3, 10)
 )
 
 
@@ -282,7 +282,7 @@ frame_start = pn.widgets.IntInput(
     step=1,
     start=1,
     width=80,
-    margin=(0, 0, 0, 0)
+    margin=(0, 0, 0, 14)
 )
 rt_start = pn.widgets.FloatInput(
     name='Start RT (min)',
@@ -318,9 +318,10 @@ scan_slider = pn.widgets.IntRangeSlider(
     # name='Scans',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 scan_start = pn.widgets.IntInput(
     name='Start scan',
@@ -363,9 +364,10 @@ tof_slider = pn.widgets.IntRangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 tof_start = pn.widgets.IntInput(
     name='Start TOF',
@@ -405,15 +407,12 @@ mz_end = pn.widgets.FloatInput(
 
 
 # Precursor selection
-# precursor_fragment_toggle_button = pn.widgets.Toggle(
-#     name='Showing only MS1 ions (precursors)',
-#     button_type='primary'
-# )
 select_ms1_precursors = pn.widgets.Checkbox(
     name='Show MS1 ions (precursors)',
     value=True,
     width=200,
     align="center",
+    margin=(20, 0, 10, 0)
 )
 select_ms2_fragments = pn.widgets.Checkbox(
     name='Show MS2 ions (fragments)',
@@ -442,7 +441,7 @@ quad_start = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(5, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 quad_end = pn.widgets.FloatInput(
@@ -453,7 +452,7 @@ quad_end = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
@@ -486,7 +485,7 @@ precursor_end = pn.widgets.IntInput(
     align="center",
     start=1,
     width=80,
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
@@ -496,9 +495,10 @@ intensity_slider = pn.widgets.RangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 intensity_start = pn.widgets.IntInput(
     name='Start intensity',
@@ -542,7 +542,6 @@ redo_button = pn.widgets.Button(
     align="center"
 )
 
-
 # Download selected data
 def export_sliced_data():
     from io import StringIO
@@ -550,7 +549,6 @@ def export_sliced_data():
     DATAFRAME.to_csv(sio, index=False)
     sio.seek(0)
     return sio
-
 
 download_selection = pn.widgets.FileDownload(
     callback=export_sliced_data,
@@ -562,19 +560,18 @@ download_selection = pn.widgets.FileDownload(
     align='center'
 )
 
-
 # player
 player_title = pn.pane.Markdown(
     "Quick Data Overview",
     align='center',
-    margin=(-5, 0, -20, 0)
+    margin=(20, 0, -20, 0)
 )
 player = pn.widgets.DiscretePlayer(
     interval=1800,
     value=1,
     show_loop_controls=True,
     loop_policy='once',
-    width=430,
+    width=400,
     align='center'
 )
 
@@ -591,21 +588,21 @@ plot1_x_axis = pn.widgets.Select(
     value='m/z, Th',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 20),
+    margin=(0, 20, 20, 20),
 )
 plot1_y_axis = pn.widgets.Select(
     name='Y axis',
     value='Inversed IM, V·s·cm\u207B\u00B2',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 10),
+    margin=(0, 20, 20, 10),
 )
 
 # plot 2
 plot2_title = pn.pane.Markdown(
     '#### Axis for XIC/Spectrum/Mobilogram',
     align='center',
-    margin=(-10, 0, -5, 0),
+    margin=(10, 0, -25, 0),
 )
 plot2_x_axis = pn.widgets.Select(
     name='X axis',
@@ -621,7 +618,6 @@ plot2_x_axis = pn.widgets.Select(
 frame_selection_card = pn.Card(
     player_title,
     player,
-    sliders_divider,
     frame_slider,
     pn.Row(
         frame_start,
@@ -629,12 +625,12 @@ frame_selection_card = pn.Card(
         selectors_divider,
         frame_end,
         rt_end,
-        align='center',
+#         align='center',
     ),
     title='Select rt_values / frame_indices',
     collapsed=False,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -662,7 +658,7 @@ scan_selection_card = pn.Card(
     title='Select mobility_values / scan_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -689,7 +685,6 @@ quad_selection_card = pn.Card(
         quad_end,
         align='center',
     ),
-    # sliders_divider,
     sliders_divider,
     precursor_slider,
     pn.Row(
@@ -701,7 +696,7 @@ quad_selection_card = pn.Card(
     title='Select quad_values / precursor_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -709,7 +704,7 @@ quad_selection_card = pn.Card(
 quad_selection_card.jscallback(
     collapsed="""
         var $container = $("html,body");
-        var $scrollTo = $('.test');
+        var $scrollTo = $('.axis_selection_settings');
 
         $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
         """,
@@ -729,7 +724,7 @@ tof_selection_card = pn.Card(
     title='Select mz_values / tof_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -755,7 +750,7 @@ intensity_selection_card = pn.Card(
     title='Select intensity_values',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -781,7 +776,7 @@ axis_selection_card = pn.Card(
     title='Select axis for plots',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
