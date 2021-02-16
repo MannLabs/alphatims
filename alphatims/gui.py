@@ -246,24 +246,30 @@ card_divider = pn.pane.HTML(
 
 
 # SAVE TO HDF
+save_hdf_path = pn.widgets.TextInput(
+    name='Specify a path to save .hdf file:',
+    placeholder='e.g. D:\Bruker',
+    width=240,
+    margin=(5, 0, 0, 28)
+)
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
     button_type='default',
     height=31,
-    width=200,
-    margin=(15, 0, 0, 120)
+    width=100,
+    margin=(23, 10, 0, 15)
 )
 save_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(15, 15, 0, 15),
+    margin=(23, 15, 0, 15),
     width=30,
     height=30
 )
 save_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 15, 20, 85),
+    margin=(-10, 15, 20, 30),
     width=300
 )
 
@@ -797,6 +803,7 @@ settings = pn.Column(
     settings_title,
     card_divider,
     pn.Row(
+        save_hdf_path,
         save_hdf_button,
         save_spinner
     ),
@@ -934,7 +941,13 @@ def save_hdf(*args):
     save_message.object = ''
     save_spinner.value = True
     file_name = os.path.join(DATASET.directory, f"{DATASET.sample_name}.hdf")
-    directory = DATASET.bruker_d_folder_name
+    if save_hdf_path.value:
+        directory = save_hdf_path.value
+    else:
+        directory = DATASET.bruker_d_folder_name
+    print(DATASET.bruker_d_folder_name)
+    file_name = os.path.join(directory, f"{DATASET.sample_name}.hdf")
+    print(directory, file_name)
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
@@ -942,7 +955,10 @@ def save_hdf(*args):
         compress=False,
     )
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved outside .d folder.'
+    if save_hdf_path.value:
+        save_message.object = '#### The HDF file is successfully saved in the specified folder.'
+    else:
+        save_message.object = '#### The HDF file is successfully saved inside original .d folder.'
 
 
 @pn.depends(
