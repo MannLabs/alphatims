@@ -129,7 +129,6 @@ def cli_option(
     : click.option, click.argument
         A click.option or click.argument decorator.
     """
-    names = [parameter_name]
     parameters = alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
     parameters.update(kwargs)
     if "type" in parameters:
@@ -143,17 +142,35 @@ def cli_option(
             parameter_type = parameters["type"].pop("name")
             if parameter_type == "path":
                 parameters["type"] = click.Path(**parameters["type"])
+                if ("default" in parameters) and (parameters["default"]):
+                    parameters["default"] = os.path.join(
+                        os.path.dirname(__file__),
+                        parameters["default"]
+                    )
             elif parameter_type == "choice":
-                parameters["type"] = click.Choice(**parameters["type"])
-    if "default" in parameters:
-        parameters["show_default"] = True
-    if "short_name" in parameters:
-        names.append(parameters.pop("short_name"))
+                options = parameters["type"].pop("options")
+                parameters["type"] = click.Choice(
+                    options,
+                    **parameters["type"]
+                )
+    if ("default" in parameters):
+        if "type" not in parameters:
+            parameters["show_default"] = True
+        elif parameters["type"] != "is_flag":
+            parameters["show_default"] = True
     if not as_argument:
-        return click.option(
-            f"--{parameter_name}",
-            **parameters,
-        )
+        if "short_name" in parameters:
+            short_name = parameters.pop("short_name")
+            return click.option(
+                f"--{parameter_name}",
+                f"-{short_name}",
+                **parameters,
+            )
+        else:
+            return click.option(
+                f"--{parameter_name}",
+                **parameters,
+            )
     else:
         return click.argument(
             parameter_name,
