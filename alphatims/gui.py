@@ -99,13 +99,11 @@ hv.extension('bokeh')
 
 # LOCAL VARIABLES
 DATASET = None
-SERVER = None
-PLOTS = None
+PLOTS = pn.Column(None, None, None)
 WHOLE_TITLE = str()
 SELECTED_INDICES = np.array([])
 DATAFRAME = pd.DataFrame()
 STACK = alphatims.utils.Global_Stack({})
-GLOBAL_INIT_LOCK = True
 
 
 # PATHS
@@ -839,6 +837,11 @@ settings = pn.Column(
     css_classes=['settings']
 )
 
+BROWSER = pn.Row(
+    None,
+    PLOTS,
+)
+
 
 # PLOTTING
 def visualize_tic():
@@ -851,8 +854,6 @@ def visualize_tic():
 
     def get_range_func(color):
         def _range(boundsx):
-            rt_start.value = boundsx[0]
-            rt_end.value = boundsx[1]
             return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
         return _range
 
@@ -879,11 +880,6 @@ def visualize_1d_plot():
     )
 
 
-# Widget dependancies
-@pn.depends(
-    upload_button.param.clicks,
-    watch=True
-)
 def upload_data(*args):
     sys.path.append('../')
     global DATASET
@@ -951,13 +947,13 @@ def save_hdf(*args):
 
 
 @pn.depends(
-    upload_button.param.clicks
+    upload_button.param.clicks,
+    watch=True
 )
 def init_settings(*args):
+    global STACK
+    upload_data()
     if DATASET:
-        global STACK
-        global GLOBAL_INIT_LOCK
-        GLOBAL_INIT_LOCK = True
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, DATASET.intensity_max_value),
@@ -975,7 +971,6 @@ def init_settings(*args):
                 ),
             }
         )
-
         frames_msmstype = DATASET.frames.query('MsMsType == 0')
         step = len(frames_msmstype) // 10
         player.options = frames_msmstype.loc[1::step, 'Id'].to_list()
@@ -1011,6 +1006,7 @@ def init_settings(*args):
         intensity_start.start, intensity_start.end = STACK["intensities"]
         intensity_end.start, intensity_end.end = STACK["intensities"]
 
+        player.value = 1
         update_frame_widgets_to_stack()
         update_scan_widgets_to_stack()
         update_quad_widgets_to_stack()
@@ -1018,15 +1014,24 @@ def init_settings(*args):
         update_tof_widgets_to_stack()
         update_intensity_widgets_to_stack()
 
-        GLOBAL_INIT_LOCK = False
-        STACK.is_locked = False
+        print(STACK["frames"])
+        print(frame_slider.value)
+        print(frame_slider.param.value)
+        print(frame_slider.param.__dict__)
+
         # first init needed:
         plot2_x_axis.value = 'm/z, Th'
 
         upload_spinner.value = False
-        return settings
+
+        BROWSER[0] = settings
     else:
-        return None
+        BROWSER[0] = None
+
+    # import time
+    # print("SLEEPING")
+    # time.sleep(5)
+    # print("DONE SLEEPING")
 
 
 @pn.depends(
@@ -1043,18 +1048,19 @@ def update_frame_with_player(*args):
 )
 def exit_button_event(*args):
     import logging
+    import sys
     logging.info("Quitting server...")
     exit_button.name = "Server closed"
     exit_button.button_type = "danger"
-    SERVER.stop()
+    sys.exit()
 
 
 @pn.depends(
-    frame_slider.param.value,
-    frame_start.param.value,
-    frame_end.param.value,
-    rt_start.param.value,
-    rt_end.param.value,
+    # frame_slider.param.value,
+    # frame_start.param.value,
+    # frame_end.param.value,
+    # rt_start.param.value,
+    # rt_end.param.value,
 
     scan_slider.param.value,
     scan_start.param.value,
@@ -1087,6 +1093,7 @@ def exit_button_event(*args):
     # precursor_fragment_toggle_button.param.value,
     select_ms1_precursors.param.value,
     select_ms2_fragments.param.value,
+    watch=True,
 )
 def update_plots_and_settings(*args):
     if DATASET:
@@ -1099,8 +1106,8 @@ def update_plots_and_settings(*args):
                 "show_precursors",
                 select_ms1_precursors.value
             )
-        if updated_value is None:
-            updated_option, updated_value = check_frames_stack()
+        # if updated_value is None:
+        #     updated_option, updated_value = check_frames_stack()
         if updated_value is None:
             updated_option, updated_value = check_scans_stack()
         if updated_value is None:
@@ -1195,56 +1202,48 @@ def update_selected_indices_and_dataframe():
 
 
 def run():
-    global SERVER
     global LAYOUT
+    global PLOTS
     LAYOUT = pn.Column(
         header,
         main_part,
-        pn.Row(
-            init_settings,
-            update_plots_and_settings,
-        ),
+        BROWSER,
     )
-    SERVER = LAYOUT.show(threaded=True)
+    LAYOUT.show()
 
 
 def update_global_selection(updated_option, updated_value):
-    global PLOTS
-    global GLOBAL_INIT_LOCK
-    if updated_value is None:
-        STACK.is_locked = GLOBAL_INIT_LOCK
-        return PLOTS
-    if updated_value != "plot_axis":
-        print("updating selection")
-        GLOBAL_INIT_LOCK = True
-        update_widgets(updated_option)
-        GLOBAL_INIT_LOCK = False
-        update_selected_indices_and_dataframe()
-    if DATASET:
-        PLOTS = pn.Column(
-            visualize_tic(),
-            visualize_scatter(),
-            visualize_1d_plot()
-        )
-        STACK.is_locked = GLOBAL_INIT_LOCK
-        return PLOTS
+    if updated_value is not None:
+        if updated_value != "plot_axis":
+            print(
+                f"Updating selection of '{updated_option}' "
+                f"with {updated_value}"
+            )
+            update_widgets(updated_option)
+            update_selected_indices_and_dataframe()
+        if DATASET:
+            print("Updating plots")
+            PLOTS[0] = visualize_tic()
+            PLOTS[1] = visualize_scatter()
+            PLOTS[2] = visualize_1d_plot()
 
 
 def update_widgets(updated_option):
-    if updated_option == "show_fragments":
-        update_toggle_fragments()
-    if updated_option == "frames":
-        update_frame_widgets_to_stack()
-    if updated_option == "scans":
-        update_scan_widgets_to_stack()
-    if updated_option == "quads":
-        update_quad_widgets_to_stack()
-    if updated_option == "precursors":
-        update_precursor_widgets_to_stack()
-    if updated_option == "tofs":
-        update_tof_widgets_to_stack()
-    if updated_option == "intensities":
-        update_intensity_widgets_to_stack()
+    with STACK.lock():
+        if updated_option == "show_fragments":
+            update_toggle_fragments()
+        # if updated_option == "frames":
+        #     update_frame_widgets_to_stack()
+        if updated_option == "scans":
+            update_scan_widgets_to_stack()
+        if updated_option == "quads":
+            update_quad_widgets_to_stack()
+        if updated_option == "precursors":
+            update_precursor_widgets_to_stack()
+        if updated_option == "tofs":
+            update_tof_widgets_to_stack()
+        if updated_option == "intensities":
+            update_intensity_widgets_to_stack()
 
 
 def update_toggle_fragments():
@@ -1257,54 +1256,83 @@ def update_toggle_fragments():
 
 
 def update_frame_widgets_to_stack():
-    frame_slider.value = STACK["frames"]
-    frame_start.value, frame_end.value = STACK["frames"]
-    rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
-    index = STACK["frames"][1]
-    if index < len(DATASET.rt_values):
-        rt_end.value = DATASET.rt_values[index] / 60
-    else:
-        rt_end.value = DATASET.rt_values[-1] / 60
+    with STACK.lock():
+        print(f"PRE slider val {frame_slider.value}")
+        print(f"PRE start val {frame_start.value}")
+        print(f"PRE end val {frame_end.value}")
+        print(f"PRE start rt val {rt_start.value}")
+        print(f"PRE end rt val {rt_end.value}")
+        frame_slider.value = STACK["frames"]
+        frame_start.value, frame_end.value = STACK["frames"]
+        rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
+        index = STACK["frames"][1]
+        if index < len(DATASET.rt_values):
+            rt_end.value = DATASET.rt_values[index] / 60
+        else:
+            rt_end.value = DATASET.rt_values[-1] / 60
+        print(f"POST slider val {frame_slider.value}")
+        print(f"POST start val {frame_start.value}")
+        print(f"POST end val {frame_end.value}")
+        print(f"POST start rt val {rt_start.value}")
+        print(f"POST end rt val {rt_end.value}")
+    STACK.update(
+        "frames", frame_slider.value
+    )
 
 
 def update_scan_widgets_to_stack():
-    scan_slider.value = STACK["scans"]
-    scan_start.value, scan_end.value = STACK["scans"]
-    im_start.value = DATASET.mobility_values[STACK["scans"][0]]
-    index = STACK["scans"][1]
-    if index < len(DATASET.mobility_values):
-        im_end.value = DATASET.mobility_values[index]
-    else:
-        im_end.value = DATASET.mobility_values[-1]
+    with STACK.lock():
+        scan_slider.value = STACK["scans"]
+        scan_start.value, scan_end.value = STACK["scans"]
+        im_start.value = DATASET.mobility_values[STACK["scans"][0]]
+        index = STACK["scans"][1]
+        if index < len(DATASET.mobility_values):
+            im_end.value = DATASET.mobility_values[index]
+        else:
+            im_end.value = DATASET.mobility_values[-1]
 
 
 def update_quad_widgets_to_stack():
-    quad_slider.value = STACK["quads"]
-    quad_start.value, quad_end.value = STACK["quads"]
+    with STACK.lock():
+        quad_slider.value = STACK["quads"]
+        quad_start.value, quad_end.value = STACK["quads"]
 
 
 def update_precursor_widgets_to_stack():
-    precursor_slider.value = STACK["precursors"]
-    precursor_start.value, precursor_end.value = STACK["precursors"]
+    with STACK.lock():
+        precursor_slider.value = STACK["precursors"]
+        precursor_start.value, precursor_end.value = STACK["precursors"]
 
 
 def update_tof_widgets_to_stack():
-    tof_slider.value = STACK["tofs"]
-    tof_start.value, tof_end.value = STACK["tofs"]
-    mz_start.value = DATASET.mz_values[STACK["tofs"][0]]
-    index = STACK["tofs"][1]
-    if index < len(DATASET.mz_values):
-        mz_end.value = DATASET.mz_values[index]
-    else:
-        mz_end.value = DATASET.mz_values[-1]
+    with STACK.lock():
+        tof_slider.value = STACK["tofs"]
+        tof_start.value, tof_end.value = STACK["tofs"]
+        mz_start.value = DATASET.mz_values[STACK["tofs"][0]]
+        index = STACK["tofs"][1]
+        if index < len(DATASET.mz_values):
+            mz_end.value = DATASET.mz_values[index]
+        else:
+            mz_end.value = DATASET.mz_values[-1]
 
 
 def update_intensity_widgets_to_stack():
-    intensity_slider.value = STACK["intensities"]
-    intensity_start.value, intensity_end.value = STACK["intensities"]
+    with STACK.lock():
+        intensity_slider.value = STACK["intensities"]
+        intensity_start.value, intensity_end.value = STACK["intensities"]
 
 
-def check_frames_stack():
+@pn.depends(
+    frame_slider.param.value,
+    frame_start.param.value,
+    frame_end.param.value,
+    rt_start.param.value,
+    rt_end.param.value,
+    watch=True
+)
+def check_frames_stack(*args):
+    if STACK.is_locked:
+        return
     updated_option, updated_value = STACK.update(
         "frames", frame_slider.value
     )
@@ -1320,7 +1348,8 @@ def check_frames_stack():
         updated_option, updated_value = STACK.update(
             "frames", (int(start_), int(end_))
         )
-    return updated_option, updated_value
+    update_frame_widgets_to_stack()
+    update_global_selection(updated_option, updated_value)
 
 
 def check_scans_stack():
