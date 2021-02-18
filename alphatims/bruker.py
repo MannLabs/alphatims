@@ -708,8 +708,13 @@ class TimsTOF(object):
 
     @property
     def quad_indptr(self):
-        """: np.ndarray : np.int64[:] : The quad indptr."""
+        """: np.ndarray : np.int64[:] : The quad indptr (tof_indices)."""
         return self._quad_indptr
+
+    @property
+    def raw_quad_indptr(self):
+        """: np.ndarray : np.int64[:] : The raw quad indptr (push indices)."""
+        return self._raw_quad_indptr
 
     @property
     def precursor_indices(self):
@@ -1413,7 +1418,8 @@ class TimsTOF(object):
             precursor_indices.append(0)
         self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
         self._precursor_indices = np.array(precursor_indices)
-        self._quad_indptr = self.tof_indptr[quad_indptr]
+        self._raw_quad_indptr = np.array(quad_indptr)
+        self._quad_indptr = self.tof_indptr[self._raw_quad_indptr]
         self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
         self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
         self._precursor_max_index = int(np.max(self.precursor_indices))
