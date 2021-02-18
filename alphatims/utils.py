@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import json
+import contextlib
 # local
 import alphatims
 
@@ -841,16 +842,10 @@ class Global_Stack(object):
     """A stack that holds multiple option stacks.
 
     The current value of each option stack can be retrieved by indexing,
-    i.e. option_value = self[option_key]
-
-    Attributes
-
-        - is_locked : bool
-            After each succesful update, undo or redo,
-            the stack is locked and cannot be modified unless explicitly unlocked.
+    i.e. option_value = self[option_key].
     """
 
-    def __init__(self, all_available_options: dict, is_locked: bool = True):
+    def __init__(self, all_available_options: dict):
         """Create a global stack.
 
         Parameters
@@ -858,10 +853,6 @@ class Global_Stack(object):
         all_available_options : dict
             A dictionary whose items are (str, type),
             which can be used to create an Option_Stack.
-        is_locked : bool
-            If True, this stack cannot be modified.
-            If False, the stack is modifiable
-            Default is True.
         """
         self._option_stacks = {
             option_key: Option_Stack(
@@ -872,7 +863,28 @@ class Global_Stack(object):
         self._number_of_options = len(all_available_options)
         self._stack_pointer = 0
         self._stack = [None]
-        self.is_locked = is_locked
+        self._is_locked = False
+        self._key = -1
+
+    @property
+    def is_locked(self):
+        """: bool : A flag to check if this stack is modifiable"""
+        return self._is_locked
+
+    @contextlib.contextmanager
+    def lock(self):
+        """A context manager to lock this stack and prevent modification."""
+        import random
+        key = random.random()
+        try:
+            if self._key == -1:
+                self._key = key
+            self._is_locked = True
+            yield self
+        finally:
+            if self._key == key:
+                self._is_locked = False
+                self._key = -1
 
     @property
     def current_values(self) -> dict:
@@ -919,7 +931,6 @@ class Global_Stack(object):
         self.trim()
         self._stack_pointer += 1
         self._stack.append(option_key)
-        self.is_locked = True
         return option_key, option_value
 
     def redo(self) -> tuple:
@@ -938,7 +949,6 @@ class Global_Stack(object):
             option_key = self._stack[self._stack_pointer]
             option_value = self._option_stacks[option_key].redo()
             if option_value is not None:
-                self.is_locked = True
                 return option_key, option_value
         return "", None
 
@@ -958,7 +968,6 @@ class Global_Stack(object):
             self._stack_pointer -= 1
             option_value = self._option_stacks[option_key].undo()
             if option_value is not None:
-                self.is_locked = True
                 return option_key, option_value
         return "", None
 
