@@ -1216,7 +1216,7 @@ def run():
             update_plots_and_settings,
         ),
     )
-    SERVER = LAYOUT.show(threaded=True)
+    SERVER = LAYOUT.show(threaded=True, title='AlphaTims')
 
 
 def update_global_selection(updated_option, updated_value):
