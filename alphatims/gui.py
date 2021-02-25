@@ -861,6 +861,13 @@ settings = pn.Column(
 
 
 # PLOTTING
+def get_range_func(color, boundsx):
+    def _range(boundsx):
+        rt_start.value = boundsx[0]
+        rt_end.value = boundsx[1]
+        return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
+    return _range
+
 def visualize_tic():
     tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE, width=None)
     # implement the selection
@@ -869,14 +876,7 @@ def visualize_tic():
         boundsx=(rt_start.value, rt_end.value)
     )
 
-    def get_range_func(color):
-        def _range(boundsx):
-            rt_start.value = boundsx[0]
-            rt_end.value = boundsx[1]
-            return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
-        return _range
-
-    dmap = hv.DynamicMap(get_range_func('orange'), streams=[bounds_x])
+    dmap = hv.DynamicMap(get_range_func('orange', bounds_x), streams=[bounds_x])
     fig = tic * dmap
     return fig.opts(responsive=True)
 
@@ -892,13 +892,23 @@ def visualize_scatter():
 
 
 def visualize_1d_plot():
-    return alphatims.plotting.line_plot(
+    line_plot = alphatims.plotting.line_plot(
         DATASET,
         SELECTED_INDICES,
         plot2_x_axis.value,
         WHOLE_TITLE,
         width=None
     )
+    if plot2_x_axis.value == "RT, min":
+        bounds_x = hv.streams.BoundsX(
+            source=line_plot,
+            boundsx=(rt_start.value, rt_end.value)
+        )
+        dmap = hv.DynamicMap(get_range_func('khaki', bounds_x), streams=[bounds_x])
+        fig = line_plot * dmap
+        return fig.opts(responsive=True)
+    else:
+        return line_plot
 
 
 # Widget dependancies
