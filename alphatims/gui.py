@@ -160,7 +160,7 @@ project_description = pn.pane.Markdown(
     """### AlphaTIMS is an open-source Python package for fast accessing Bruker TimsTOF data. It provides a very efficient indexed data structure that allows to access four-dimensional TIMS-time of flight data in the standard numerical python (NumPy) manner. AlphaTIMS is a key enabling tool to deal with the large and high dimensional TIMS data.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
-    width=615
+    width=690
 )
 
 divider_descr = pn.pane.HTML(
@@ -215,9 +215,8 @@ main_part = pn.Column(
     ),
     upload_error,
     background='#eaeaea',
-    # width=1510,
     sizing_mode='stretch_width',
-    height=360,
+    height=330,
     margin=(5, 0, 10, 0)
 )
 
@@ -252,7 +251,7 @@ card_divider = pn.pane.HTML(
 
 # SAVE TO HDF
 save_hdf_path = pn.widgets.TextInput(
-    name='Specify a path to save .hdf file:',
+    name='Specify a path to save an .hdf file:',
     placeholder='e.g. D:\Bruker',
     width=240,
     margin=(5, 0, 0, 28)
@@ -278,6 +277,33 @@ save_message = pn.pane.Alert(
     width=300
 )
 
+# SAVE SLICED DATA
+save_sliced_data_path = pn.widgets.TextInput(
+    name='Specify a path to save the sliced data:',
+    placeholder='e.g. D:\Bruker',
+    width=240,
+    margin=(5, 0, 0, 28)
+)
+save_sliced_data_button = pn.widgets.Button(
+    name='Save as CSV',
+    button_type='default',
+    height=31,
+    width=100,
+    margin=(23, 10, 0, 15)
+)
+save_sliced_data_spinner = pn.indicators.LoadingSpinner(
+    value=False,
+    bgcolor='light',
+    color='secondary',
+    margin=(23, 15, 0, 15),
+    width=30,
+    height=30
+)
+save_sliced_data_message = pn.pane.Alert(
+    alert_type='success',
+    margin=(-10, 15, 30, 30),
+    width=300
+)
 
 # frame/RT selection
 frame_slider = pn.widgets.IntRangeSlider(
@@ -553,23 +579,6 @@ redo_button = pn.widgets.Button(
     align="center"
 )
 
-# Download selected data
-def export_sliced_data():
-    from io import StringIO
-    sio = StringIO()
-    DATAFRAME.to_csv(sio, index=False)
-    sio.seek(0)
-    return sio
-
-download_selection = pn.widgets.FileDownload(
-    callback=export_sliced_data,
-    filename='sliced_data.csv',
-    button_type='default',
-    height=31,
-    width=250,
-    margin=(5, 20, 15, 20),
-    align='center'
-)
 
 # player
 player_title = pn.pane.Markdown(
@@ -813,6 +822,12 @@ settings = pn.Column(
         save_spinner
     ),
     save_message,
+    pn.Row(
+        save_sliced_data_path,
+        save_sliced_data_button,
+        save_sliced_data_spinner
+    ),
+    save_sliced_data_message,
     card_divider,
     axis_selection_card,
     card_divider,
@@ -826,7 +841,6 @@ settings = pn.Column(
     card_divider,
     intensity_selection_card,
     card_divider,
-
     pn.Row(
         pn.Column(
             selection_actions,
@@ -837,12 +851,11 @@ settings = pn.Column(
             align="center"
         ),
         align="center",
+        margin=(0,0,20,0)
     ),
-    card_divider,
-    download_selection,
     width=460,
     align='center',
-    margin=(0, 0, 0, 0),
+    margin=(0, 0, 20, 0),
     css_classes=['settings']
 )
 
@@ -947,14 +960,8 @@ def upload_data(*args):
 def save_hdf(*args):
     save_message.object = ''
     save_spinner.value = True
-    file_name = os.path.join(DATASET.directory, f"{DATASET.sample_name}.hdf")
-    if save_hdf_path.value:
-        directory = save_hdf_path.value
-    else:
-        directory = DATASET.bruker_d_folder_name
-    print(DATASET.bruker_d_folder_name)
+    directory = save_hdf_path.value
     file_name = os.path.join(directory, f"{DATASET.sample_name}.hdf")
-    print(directory, file_name)
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
@@ -965,7 +972,24 @@ def save_hdf(*args):
     if save_hdf_path.value:
         save_message.object = '#### The HDF file is successfully saved in the specified folder.'
     else:
-        save_message.object = '#### The HDF file is successfully saved inside original .d folder.'
+        save_message.object = '#### The HDF file is successfully saved outside original .d folder.'
+
+@pn.depends(
+    save_sliced_data_button.param.clicks,
+    watch=True
+)
+def save_sliced_data(*args):
+    save_sliced_data_message.object = ''
+    save_sliced_data_spinner.value = True
+    file_name = 'sliced_data.csv'
+    file_path = os.path.join(save_sliced_data_path.value, file_name)
+    DATAFRAME.to_csv(file_path, index=False)
+    save_sliced_data_spinner.value = False
+    if save_hdf_path.value:
+        save_sliced_data_message.object = '#### The CSV file is successfully saved in the specified folder.'
+    else:
+        save_sliced_data_message.object = '#### The CSV file is successfully saved outside original .d folder.'
+
 
 
 @pn.depends(
@@ -1035,6 +1059,9 @@ def init_settings(*args):
         update_precursor_widgets_to_stack()
         update_tof_widgets_to_stack()
         update_intensity_widgets_to_stack()
+
+        save_hdf_path.value = os.path.dirname(DATASET.bruker_d_folder_name)
+        save_sliced_data_path.value = os.path.dirname(DATASET.bruker_d_folder_name)
 
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
