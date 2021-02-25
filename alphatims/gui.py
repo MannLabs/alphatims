@@ -120,7 +120,7 @@ github_logo_path = os.path.join(alphatims.utils.IMG_PATH, "github.png")
 # HEADER
 header_titel = pn.pane.Markdown(
     '# AlphaTims',
-    width=1250
+    sizing_mode='stretch_width',
 )
 mpi_biochem_logo = pn.pane.PNG(
     biochem_logo_path,
@@ -142,6 +142,7 @@ github_logo = pn.pane.PNG(
     github_logo_path,
     link_url='https://github.com/MannLabs/alphatims',
     height=70,
+    align='end'
 )
 
 header = pn.Row(
@@ -149,7 +150,8 @@ header = pn.Row(
     mpi_logo,
     header_titel,
     github_logo,
-    height=73
+    height=73,
+    sizing_mode='stretch_width'
 )
 
 
@@ -163,7 +165,7 @@ project_description = pn.pane.Markdown(
 
 divider_descr = pn.pane.HTML(
     '<hr style="height: 6px; border:none; background-color: #045082; width: 1140px">',
-    width=1510,
+    sizing_mode='stretch_width',
     align='center'
 )
 upload_file = pn.widgets.TextInput(
@@ -199,6 +201,7 @@ exit_button = pn.widgets.Button(
     width=100,
     margin=(34, 20, 0, 0)
 )
+
 main_part = pn.Column(
     project_description,
     divider_descr,
@@ -207,11 +210,13 @@ main_part = pn.Column(
         upload_button,
         upload_spinner,
         exit_button,
-        align='center'
+        align='center',
+        sizing_mode='stretch_width',
     ),
     upload_error,
     background='#eaeaea',
-    width=1510,
+    # width=1510,
+    sizing_mode='stretch_width',
     height=360,
     margin=(5, 0, 10, 0)
 )
@@ -844,7 +849,7 @@ settings = pn.Column(
 
 # PLOTTING
 def visualize_tic():
-    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE)
+    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE, width=None)
     # implement the selection
     bounds_x = hv.streams.BoundsX(
         source=tic,
@@ -869,6 +874,7 @@ def visualize_scatter():
         plot1_x_axis.value,
         plot1_y_axis.value,
         WHOLE_TITLE,
+        width=None
     )
 
 
@@ -878,6 +884,7 @@ def visualize_1d_plot():
         SELECTED_INDICES,
         plot2_x_axis.value,
         WHOLE_TITLE,
+        width=None
     )
 
 
@@ -1214,7 +1221,9 @@ def run():
         pn.Row(
             init_settings,
             update_plots_and_settings,
+            sizing_mode='stretch_width'
         ),
+        sizing_mode='stretch_width'
     )
     SERVER = LAYOUT.show(threaded=True, title='AlphaTims')
 
@@ -1235,7 +1244,8 @@ def update_global_selection(updated_option, updated_value):
         PLOTS = pn.Column(
             visualize_tic(),
             visualize_scatter(),
-            visualize_1d_plot()
+            visualize_1d_plot(),
+            sizing_mode='stretch_width'
         )
         STACK.is_locked = GLOBAL_INIT_LOCK
         return PLOTS
