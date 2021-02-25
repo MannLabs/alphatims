@@ -196,7 +196,7 @@ upload_error = pn.pane.Alert(
 )
 exit_button = pn.widgets.Button(
     name='Quit',
-    button_type='primary',
+    button_type='default',
     height=31,
     width=100,
     margin=(34, 20, 0, 0)
