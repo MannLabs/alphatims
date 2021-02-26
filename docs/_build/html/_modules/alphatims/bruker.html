@@ -856,14 +856,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tof_indices</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">tof_indptr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">push_indptr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;: np.ndarray : np.int64[:] : The tof indptr.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tof_indptr</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_push_indptr</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">quad_indptr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;: np.ndarray : np.int64[:] : The quad indptr.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;: np.ndarray : np.int64[:] : The quad indptr (tof_indices).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quad_indptr</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_quad_indptr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;: np.ndarray : np.int64[:] : The raw quad indptr (push indices).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_quad_indptr</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">precursor_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -932,6 +937,9 @@
         <span class="c1"># Precompile</span>
         <span class="bp">self</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;raw&quot;</span><span class="p">]</span></div>
 
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intensity_values</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_import_data_from_d_folder</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -946,7 +954,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_fragment_frames</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">read_bruker_sql</span><span class="p">(</span><span class="n">bruker_d_folder_name</span><span class="p">)</span>
         <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tof_indptr</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_push_indptr</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tof_indices</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_intensity_values</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">read_bruker_binary</span><span class="p">(</span>
@@ -1127,6 +1135,7 @@
         <span class="n">return_quad_mz_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">return_mz_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">return_intensity_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Convert selected indices to a dict.</span>
 
@@ -1176,6 +1185,10 @@
 <span class="sd">        return_intensity_values : bool</span>
 <span class="sd">            If True, include &quot;intensity_values&quot; in the dict.</span>
 <span class="sd">            Default is False.</span>
+<span class="sd">        raw_indices_sorted : bool</span>
+<span class="sd">            If True, raw_indices are assumed to be sorted,</span>
+<span class="sd">            resulting in a faster conversion.</span>
+<span class="sd">            Default is True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1194,10 +1207,17 @@
                 <span class="n">return_precursor_indices</span>
             <span class="p">]</span>
         <span class="p">):</span>
-            <span class="n">parsed_indices</span> <span class="o">=</span> <span class="n">indptr_lookup</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tof_indptr</span><span class="p">,</span>
-                <span class="n">raw_indices</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">raw_indices_sorted</span><span class="p">:</span>
+                <span class="n">parsed_indices</span> <span class="o">=</span> <span class="n">indptr_lookup</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">push_indptr</span><span class="p">,</span>
+                    <span class="n">raw_indices</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parsed_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">push_indptr</span><span class="p">,</span>
+                    <span class="n">raw_indices</span><span class="p">,</span>
+                    <span class="s2">&quot;right&quot;</span>
+                <span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">return_frame_indices</span> <span class="ow">or</span> <span class="n">return_rt_values</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">frame_indices</span> <span class="ow">is</span> <span class="kc">None</span>
         <span class="p">):</span>
@@ -1215,10 +1235,17 @@
         <span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
             <span class="n">quad_indices</span> <span class="ow">is</span> <span class="kc">None</span>
         <span class="p">):</span>
-            <span class="n">quad_indices</span> <span class="o">=</span> <span class="n">indptr_lookup</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
-                <span class="n">raw_indices</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">raw_indices_sorted</span><span class="p">:</span>
+                <span class="n">quad_indices</span> <span class="o">=</span> <span class="n">indptr_lookup</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
+                    <span class="n">raw_indices</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">quad_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
+                    <span class="n">raw_indices</span><span class="p">,</span>
+                    <span class="s2">&quot;right&quot;</span>
+                <span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">return_tof_indices</span> <span class="ow">or</span> <span class="n">return_mz_values</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tof_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">tof_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tof_indices</span><span class="p">[</span><span class="n">raw_indices</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">return_raw_indices</span><span class="p">:</span>
@@ -1352,7 +1379,7 @@
             <span class="n">intensity_slices</span><span class="o">=</span><span class="n">parsed_keys</span><span class="p">[</span><span class="s2">&quot;intensity_values&quot;</span><span class="p">],</span>
             <span class="n">frame_max_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">frame_max_index</span><span class="p">,</span>
             <span class="n">scan_max_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scan_max_index</span><span class="p">,</span>
-            <span class="n">tof_indptr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tof_indptr</span><span class="p">,</span>
+            <span class="n">push_indptr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">push_indptr</span><span class="p">,</span>
             <span class="n">precursor_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">,</span>
             <span class="n">quad_mz_values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">,</span>
             <span class="n">quad_indptr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
@@ -1426,7 +1453,8 @@
         <span class="n">mobility_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">quad_mz_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">mz_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">intensity_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">intensity_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert raw indices to a pd.DataFrame.</span>
 
@@ -1468,6 +1496,10 @@
 <span class="sd">        intensity_values : bool</span>
 <span class="sd">            If True, include &quot;intensity_values&quot; in the dataframe.</span>
 <span class="sd">            Default is True.</span>
+<span class="sd">        raw_indices_sorted : bool</span>
+<span class="sd">            If True, raw_indices are assumed to be sorted,</span>
+<span class="sd">            resulting in a faster conversion.</span>
+<span class="sd">            Default is True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1488,6 +1520,7 @@
                 <span class="n">return_quad_mz_values</span><span class="o">=</span><span class="n">quad_mz_values</span><span class="p">,</span>
                 <span class="n">return_mz_values</span><span class="o">=</span><span class="n">mz_values</span><span class="p">,</span>
                 <span class="n">return_intensity_values</span><span class="o">=</span><span class="n">intensity_values</span><span class="p">,</span>
+                <span class="n">raw_indices_sorted</span><span class="o">=</span><span class="n">raw_indices_sorted</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
 
@@ -1539,15 +1572,221 @@
             <span class="n">precursor_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quad_mz_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">quad_low_values</span><span class="p">,</span> <span class="n">quad_high_values</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_precursor_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">precursor_indices</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_quad_indptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tof_indptr</span><span class="p">[</span><span class="n">quad_indptr</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_quad_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quad_indptr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quad_indptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">push_indptr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_quad_indptr</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quad_max_mz_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quad_min_mz_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_precursor_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precursor_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">))</span>
+
+<div class="viewcode-block" id="TimsTOF.index_precursors"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.index_precursors">[docs]</a>    <span class="k">def</span> <span class="nf">index_precursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Retrieve all MS2 spectra acquired with DDA.</span>
+
+<span class="sd">        IMPORTANT NOTE: WThis function is intended for DDA samples.</span>
+<span class="sd">        While it in theory works for DIA sample too, this probably has little</span>
+<span class="sd">        value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        : tuple (np.int64[:], np.uint32[:], np.uint32[:])</span>
+<span class="sd">            The spectrum_indptr array, spectrum_tof_indices array and</span>
+<span class="sd">            spectrum_intensity_values array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">precursor_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">)</span>
+        <span class="n">precursor_offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span>
+        <span class="p">)</span>
+        <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">[</span><span class="n">precursor_order</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">precursor_offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">precursor_order</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">precursor_order</span><span class="p">[</span><span class="n">offset</span><span class="p">:]</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">counts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">counts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">[</span><span class="n">offsets</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">[</span><span class="n">offsets</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">spectrum_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span>
+        <span class="p">)</span>
+        <span class="n">spectrum_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span>
+            <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">spectrum_indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">new_spectrum_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">spectrum_indptr</span><span class="p">)</span>
+        <span class="n">spectrum_tof_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">spectrum_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="n">spectrum_intensity_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">spectrum_tof_indices</span><span class="p">)</span>
+        <span class="n">set_precursor</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">precursor_order</span><span class="p">,</span>
+            <span class="n">precursor_offsets</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tof_indices</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intensity_values</span><span class="p">,</span>
+            <span class="n">spectrum_tof_indices</span><span class="p">,</span>
+            <span class="n">spectrum_intensity_values</span><span class="p">,</span>
+            <span class="n">spectrum_indptr</span><span class="p">,</span>
+            <span class="n">new_spectrum_indptr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">new_spectrum_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">new_spectrum_indptr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">new_spectrum_indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">trimmed_spectrum_tof_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="n">new_spectrum_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span>
+        <span class="p">)</span>
+        <span class="n">trimmed_spectrum_intensity_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span>
+            <span class="n">trimmed_spectrum_tof_indices</span>
+        <span class="p">)</span>
+        <span class="n">spectrum_intensity_values</span>
+        <span class="n">trim_spectra</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">spectrum_tof_indices</span><span class="p">,</span>
+            <span class="n">spectrum_intensity_values</span><span class="p">,</span>
+            <span class="n">spectrum_indptr</span><span class="p">,</span>
+            <span class="n">trimmed_spectrum_tof_indices</span><span class="p">,</span>
+            <span class="n">trimmed_spectrum_intensity_values</span><span class="p">,</span>
+            <span class="n">new_spectrum_indptr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">new_spectrum_indptr</span><span class="p">,</span>
+            <span class="n">trimmed_spectrum_tof_indices</span><span class="p">,</span>
+            <span class="n">trimmed_spectrum_intensity_values</span>
+        <span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="PrecursorFloatError"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.PrecursorFloatError">[docs]</a><span class="k">class</span> <span class="nc">PrecursorFloatError</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Used to indicate that a precursor value is not an int but a float.&quot;&quot;&quot;</span>
     <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="set_precursor"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.set_precursor">[docs]</a><span class="nd">@alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">pjit</span><span class="p">(</span>
+    <span class="n">signature_or_function</span><span class="o">=</span><span class="s2">&quot;void(i8,i8[:],i8[:],i8[:],u4[:],u2[:],u4[:],u4[:],i8[:],i8[:])&quot;</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">set_precursor</span><span class="p">(</span>
+    <span class="n">precursor_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">offset_order</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">precursor_offsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">quad_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">tof_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">intensities</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_counts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Sum the intensities of all pushes belonging to a single precursor.</span>
+
+<span class="sd">    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.</span>
+<span class="sd">    The first argument is thus expected to be provided as an iterable</span>
+<span class="sd">    containing ints instead of a single int.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    precursor_index : int</span>
+<span class="sd">        The precursor index indicating which MS2 spectrum to determine.</span>
+<span class="sd">    offset_order : np.int64[:]</span>
+<span class="sd">        The order of self.precursor_indices, obtained with np.argsort.</span>
+<span class="sd">    precursor_offsets : np.int64[:]</span>
+<span class="sd">        An index pointer array for precursor offsets.</span>
+<span class="sd">    quad_indptr : np.int64[:]</span>
+<span class="sd">        The self.quad_indptr array of a TimsTOF object.</span>
+<span class="sd">    tof_indices : np.uint32[:]</span>
+<span class="sd">        The self.tof_indices array of a TimsTOF object.</span>
+<span class="sd">    intensities : np.uint16[:]</span>
+<span class="sd">        The self.intensity_values array of a TimsTOF object.</span>
+<span class="sd">    spectrum_tof_indices : np.uint32[:]</span>
+<span class="sd">        A buffer array to store tof indices of the new spectrum.</span>
+<span class="sd">    spectrum_intensity_values : np.uint32[:]</span>
+<span class="sd">        A buffer array to store intensity values of the new spectrum.</span>
+<span class="sd">    spectrum_indptr : np.int64[:]</span>
+<span class="sd">        An index pointer array defining the original spectrum boundaries.</span>
+<span class="sd">    spectrum_counts :  np. int64[:]</span>
+<span class="sd">        An buffer array defining how many distinct tof indices the new</span>
+<span class="sd">        spectrum has.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">spectrum_indptr</span><span class="p">[</span><span class="n">precursor_index</span><span class="p">]</span>
+    <span class="n">precursor_offset_lower</span> <span class="o">=</span> <span class="n">precursor_offsets</span><span class="p">[</span><span class="n">precursor_index</span><span class="p">]</span>
+    <span class="n">precursor_offset_upper</span> <span class="o">=</span> <span class="n">precursor_offsets</span><span class="p">[</span><span class="n">precursor_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">selected_offsets</span> <span class="o">=</span> <span class="n">offset_order</span><span class="p">[</span>
+        <span class="n">precursor_offset_lower</span><span class="p">:</span> <span class="n">precursor_offset_upper</span>
+    <span class="p">]</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="n">quad_indptr</span><span class="p">[</span><span class="n">selected_offsets</span><span class="p">]</span>
+    <span class="n">ends</span> <span class="o">=</span> <span class="n">quad_indptr</span><span class="p">[</span><span class="n">selected_offsets</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">offset_index</span> <span class="o">=</span> <span class="n">offset</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">):</span>
+        <span class="n">spectrum_tof_indices</span><span class="p">[</span>
+            <span class="n">offset_index</span><span class="p">:</span> <span class="n">offset_index</span> <span class="o">+</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="n">tof_indices</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
+        <span class="n">spectrum_intensity_values</span><span class="p">[</span>
+            <span class="n">offset_index</span><span class="p">:</span> <span class="n">offset_index</span> <span class="o">+</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">intensities</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
+        <span class="n">offset_index</span> <span class="o">+=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+    <span class="n">offset_end</span> <span class="o">=</span> <span class="n">spectrum_indptr</span><span class="p">[</span><span class="n">precursor_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">spectrum_tof_indices</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span> <span class="n">offset_end</span><span class="p">])</span>
+    <span class="n">current_index</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">previous_tof_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">tof_index</span><span class="p">,</span> <span class="n">intensity</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">spectrum_tof_indices</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span> <span class="n">offset_end</span><span class="p">][</span><span class="n">order</span><span class="p">],</span>
+        <span class="n">spectrum_intensity_values</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span> <span class="n">offset_end</span><span class="p">][</span><span class="n">order</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">tof_index</span> <span class="o">!=</span> <span class="n">previous_tof_index</span><span class="p">:</span>
+            <span class="n">current_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">spectrum_tof_indices</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">tof_index</span>
+            <span class="n">spectrum_intensity_values</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">intensity</span>
+            <span class="n">previous_tof_index</span> <span class="o">=</span> <span class="n">tof_index</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spectrum_intensity_values</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">intensity</span>
+    <span class="n">spectrum_tof_indices</span><span class="p">[</span><span class="n">current_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">offset_end</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">spectrum_intensity_values</span><span class="p">[</span><span class="n">current_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">offset_end</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">spectrum_counts</span><span class="p">[</span><span class="n">precursor_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">offset</span></div>
+
+
+<div class="viewcode-block" id="trim_spectra"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.trim_spectra">[docs]</a><span class="nd">@alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">pjit</span>
+<span class="k">def</span> <span class="nf">trim_spectra</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">trimmed_spectrum_tof_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">trimmed_spectrum_intensity_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">new_spectrum_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Trim remaining bytes after merging of multiple pushes.</span>
+
+<span class="sd">    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.</span>
+<span class="sd">    The first argument is thus expected to be provided as an iterable</span>
+<span class="sd">    containing ints instead of a single int.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    index : int</span>
+<span class="sd">        The push index whose intensity_values and tof_indices will be trimmed.</span>
+<span class="sd">    spectrum_tof_indices : np.uint32[:]</span>
+<span class="sd">        The original array containing tof indices.</span>
+<span class="sd">    spectrum_intensity_values : np.uint32[:]</span>
+<span class="sd">        The original array containing intensity values.</span>
+<span class="sd">    spectrum_indptr : np.int64[:]</span>
+<span class="sd">        An index pointer array defining the original spectrum boundaries.</span>
+<span class="sd">    trimmed_spectrum_tof_indices : np.uint32[:]</span>
+<span class="sd">        A buffer array to store new tof indices.</span>
+<span class="sd">    trimmed_spectrum_intensity_values : np.uint32[:]</span>
+<span class="sd">        A buffer array to store new intensity values.</span>
+<span class="sd">    new_spectrum_indptr : np.int64[:]</span>
+<span class="sd">        An index pointer array defining the trimmed spectrum boundaries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">spectrum_indptr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">new_start</span> <span class="o">=</span> <span class="n">new_spectrum_indptr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">new_end</span> <span class="o">=</span> <span class="n">new_spectrum_indptr</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">trimmed_spectrum_tof_indices</span><span class="p">[</span><span class="n">new_start</span><span class="p">:</span> <span class="n">new_end</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectrum_tof_indices</span><span class="p">[</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">new_end</span> <span class="o">-</span> <span class="n">new_start</span>
+    <span class="p">]</span>
+    <span class="n">trimmed_spectrum_intensity_values</span><span class="p">[</span>
+        <span class="n">new_start</span><span class="p">:</span> <span class="n">new_end</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="n">spectrum_intensity_values</span><span class="p">[</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">new_end</span> <span class="o">-</span> <span class="n">new_start</span>
+    <span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="parse_keys"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.parse_keys">[docs]</a><span class="k">def</span> <span class="nf">parse_keys</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">TimsTOF</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -1864,7 +2103,7 @@
     <span class="n">intensity_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">frame_max_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">scan_max_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">tof_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">push_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">precursor_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">quad_indptr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1903,8 +2142,8 @@
 <span class="sd">        The maximum frame index of a TimsTOF object.</span>
 <span class="sd">    scan_max_index : int</span>
 <span class="sd">        The maximum scan index of a TimsTOF object.</span>
-<span class="sd">    tof_indptr : np.int64[:]</span>
-<span class="sd">        The self.tof_indptr array of a TimsTOF object.</span>
+<span class="sd">    push_indptr : np.int64[:]</span>
+<span class="sd">        The self.push_indptr array of a TimsTOF object.</span>
 <span class="sd">    precursor_indices : np.int64[:]</span>
 <span class="sd">        The self.precursor_indices array of a TimsTOF object.</span>
 <span class="sd">    quad_mz_values : np.float64[:, :]</span>
@@ -1926,11 +2165,11 @@
     <span class="n">new_quad_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">quad_end</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">is_valid_quad_index</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">starts</span> <span class="o">=</span> <span class="n">tof_indptr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="n">push_indptr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
         <span class="n">frame_max_index</span><span class="p">,</span>
         <span class="n">scan_max_index</span>
     <span class="p">)</span>
-    <span class="n">ends</span> <span class="o">=</span> <span class="n">tof_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+    <span class="n">ends</span> <span class="o">=</span> <span class="n">push_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
         <span class="n">frame_max_index</span><span class="p">,</span>
         <span class="n">scan_max_index</span>
     <span class="p">)</span>

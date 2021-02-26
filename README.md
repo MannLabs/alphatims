@@ -38,7 +38,7 @@ With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrome
 ---
 ## License
 
-AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages (available in the [requirements](requirements) folder), additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ---
 ## Installation

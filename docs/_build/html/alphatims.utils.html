@@ -174,7 +174,7 @@ These utilities primarily focus on:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options, is_locked)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Global_Stack</span></code>(all_available_options)</p></td>
 <td><p>A stack that holds multiple option stacks.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Option_Stack</span></code>(option_name, option_initial_value)</p></td>
@@ -232,22 +232,11 @@ These utilities primarily focus on:</p>
 </table>
 <dl class="py class">
 <dt id="alphatims.utils.Global_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A stack that holds multiple option stacks.</p>
 <p>The current value of each option stack can be retrieved by indexing,
-i.e. option_value = self[option_key]</p>
-<p>Attributes</p>
-<blockquote>
-<div><ul class="simple">
-<li><dl class="simple">
-<dt>is_locked<span class="classifier">bool</span></dt><dd><p>After each succesful update, undo or redo,
-the stack is locked and cannot be modified unless explicitly unlocked.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</div></blockquote>
+i.e. option_value = self[option_key].</p>
 <p><strong>Methods:</strong></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -255,19 +244,22 @@ the stack is locked and cannot be modified unless explicitly unlocked.</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options[, is_locked])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(all_available_options)</p></td>
 <td><p>Create a global stack.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">redo</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">lock</span></code>()</p></td>
+<td><p>A context manager to lock this stack and prevent modification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">redo</span></code>()</p></td>
 <td><p>Increase the stack pointer with 1.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code>()</p></td>
 <td><p>Remove all elements above of the current stack pointer</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">undo</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">undo</span></code>()</p></td>
 <td><p>Reduce the stack pointer with 1.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(option_key, option_value)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(option_key, option_value)</p></td>
 <td><p>Update an option stack with a value.</p></td>
 </tr>
 </tbody>
@@ -282,24 +274,22 @@ the stack is locked and cannot be modified unless explicitly unlocked.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_values</span></code></p></td>
 <td><p>A dict with (option_key: option_value) mapping.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_locked</span></code></p></td>
+<td><p>A flag to check if this stack is modifiable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></p></td>
 <td><p>The size of this stack without the initial value.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">is_locked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a global stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>all_available_options</strong> (<em>dict</em>) – A dictionary whose items are (str, type),
-which can be used to create an Option_Stack.</p></li>
-<li><p><strong>is_locked</strong> (<em>bool</em>) – If True, this stack cannot be modified.
-If False, the stack is modifiable
-Default is True.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>all_available_options</strong> (<em>dict</em>) – A dictionary whose items are (str, type),
+which can be used to create an Option_Stack.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -313,6 +303,23 @@ Default is True.</p></li>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="alphatims.utils.Global_Stack.is_locked">
+<em class="property">property </em><code class="sig-name descname">is_locked</code><a class="headerlink" href="#alphatims.utils.Global_Stack.is_locked" title="Permalink to this definition">¶</a></dt>
+<dd><p>A flag to check if this stack is modifiable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="alphatims.utils.Global_Stack.lock">
+<code class="sig-name descname">lock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>A context manager to lock this stack and prevent modification.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -849,7 +856,7 @@ Default is True.</p></li>
 <li><p>[timestamp]&gt; machine    - […]</p></li>
 <li><p>[timestamp]&gt; processor  - […]</p></li>
 <li><p>[timestamp]&gt; cpu count  - […]</p></li>
-<li><p>[timestamp]&gt; ram memory - […]/[…] Gb (available/total)</p></li>
+<li><p>[timestamp]&gt; ram        - […]/[…] Gb (available/total)</p></li>
 </ul>
 </div></blockquote>
 </dd></dl>

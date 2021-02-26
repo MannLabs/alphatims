@@ -1191,7 +1191,7 @@ def update_selected_indices_and_dataframe():
             intensity_slices=intensity_values,
             frame_max_index=DATASET.frame_max_index,
             scan_max_index=DATASET.scan_max_index,
-            tof_indptr=DATASET.tof_indptr,
+            push_indptr=DATASET.push_indptr,
             precursor_indices=DATASET.precursor_indices,
             quad_mz_values=DATASET.quad_mz_values,
             quad_indptr=DATASET.quad_indptr,

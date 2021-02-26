@@ -167,6 +167,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="c1"># local</span>
 <span class="kn">import</span> <span class="nn">alphatims</span>
 
@@ -293,7 +294,7 @@
 <span class="sd">        - [timestamp]&gt; machine    - [...]</span>
 <span class="sd">        - [timestamp]&gt; processor  - [...]</span>
 <span class="sd">        - [timestamp]&gt; cpu count  - [...]</span>
-<span class="sd">        - [timestamp]&gt; ram memory - [...]/[...] Gb (available/total)</span>
+<span class="sd">        - [timestamp]&gt; ram        - [...]/[...] Gb (available/total)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">platform</span>
     <span class="kn">import</span> <span class="nn">psutil</span>
@@ -311,7 +312,7 @@
         <span class="c1"># f&quot; ({100 - psutil.cpu_percent()}% unused)&quot;</span>
     <span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;ram memory - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;ram        - &quot;</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">available</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">total</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> Gb &quot;</span>
         <span class="sa">f</span><span class="s2">&quot;(available/total)&quot;</span>
@@ -995,16 +996,10 @@
     <span class="sd">&quot;&quot;&quot;A stack that holds multiple option stacks.</span>
 
 <span class="sd">    The current value of each option stack can be retrieved by indexing,</span>
-<span class="sd">    i.e. option_value = self[option_key]</span>
-
-<span class="sd">    Attributes</span>
-
-<span class="sd">        - is_locked : bool</span>
-<span class="sd">            After each succesful update, undo or redo,</span>
-<span class="sd">            the stack is locked and cannot be modified unless explicitly unlocked.</span>
+<span class="sd">    i.e. option_value = self[option_key].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Global_Stack.__init__"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_available_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">is_locked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Global_Stack.__init__"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_available_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create a global stack.</span>
 
 <span class="sd">        Parameters</span>
@@ -1012,10 +1007,6 @@
 <span class="sd">        all_available_options : dict</span>
 <span class="sd">            A dictionary whose items are (str, type),</span>
 <span class="sd">            which can be used to create an Option_Stack.</span>
-<span class="sd">        is_locked : bool</span>
-<span class="sd">            If True, this stack cannot be modified.</span>
-<span class="sd">            If False, the stack is modifiable</span>
-<span class="sd">            Default is True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_option_stacks</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">option_key</span><span class="p">:</span> <span class="n">Option_Stack</span><span class="p">(</span>
@@ -1026,7 +1017,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_options</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_available_options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack_pointer</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="n">is_locked</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_locked</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_locked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;: bool : A flag to check if this stack is modifiable&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_locked</span>
+
+<div class="viewcode-block" id="Global_Stack.lock"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.lock">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">lock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A context manager to lock this stack and prevent modification.&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">random</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_locked</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">yield</span> <span class="bp">self</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_is_locked</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -1073,7 +1085,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack_pointer</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">option_key</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">option_key</span><span class="p">,</span> <span class="n">option_value</span></div>
 
 <div class="viewcode-block" id="Global_Stack.redo"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.Global_Stack.redo">[docs]</a>    <span class="k">def</span> <span class="nf">redo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
@@ -1092,7 +1103,6 @@
             <span class="n">option_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack_pointer</span><span class="p">]</span>
             <span class="n">option_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_option_stacks</span><span class="p">[</span><span class="n">option_key</span><span class="p">]</span><span class="o">.</span><span class="n">redo</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">option_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">return</span> <span class="n">option_key</span><span class="p">,</span> <span class="n">option_value</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span></div>
 
@@ -1112,7 +1122,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_stack_pointer</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="n">option_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_option_stacks</span><span class="p">[</span><span class="n">option_key</span><span class="p">]</span><span class="o">.</span><span class="n">undo</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">option_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">is_locked</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">return</span> <span class="n">option_key</span><span class="p">,</span> <span class="n">option_value</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span></div>
 
@@ -1151,7 +1160,7 @@
 
 
 <span class="n">set_threads</span><span class="p">(</span><span class="n">MAX_THREADS</span><span class="p">)</span>
-<span class="n">set_logger</span><span class="p">(</span><span class="n">log_file_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">set_logger</span><span class="p">(</span><span class="n">log_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 
            </div>

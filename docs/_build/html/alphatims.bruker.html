@@ -227,6 +227,12 @@ for Bruker data accession and storage.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_bruker_sql</span></code>(bruker_d_folder_name[, …])</p></td>
 <td><p>Read metadata and (fragment) frames from a Bruker .d folder.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_precursor</span></code>(precursor_index, offset_order, …)</p></td>
+<td><p>Sum the intensities of all pushes belonging to a single precursor.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim_spectra</span></code>(index, spectrum_tof_indices, …)</p></td>
+<td><p>Trim remaining bytes after merging of multiple pushes.</p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">valid_precursor_index</span></code>(precursor_index, …)</p></td>
 <td><p>Check if a precursor index is included in the slices.</p></td>
 </tr>
@@ -445,7 +451,10 @@ setting the last slice element to “raw”.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_to_indices</span></code>(values, *[, …])</p></td>
 <td><p>Convert selected values to a pd.DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_hdf</span></code>(directory, file_name[, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index_precursors</span></code>()</p></td>
+<td><p>Retrieve all MS2 spectra acquired with DDA.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_hdf</span></code>(directory, file_name[, …])</p></td>
 <td><p>Save the TimsTOF object as an hdf file.</p></td>
 </tr>
 </tbody>
@@ -511,17 +520,23 @@ setting the last slice element to “raw”.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">precursor_max_index</span></code></p></td>
 <td><p>The maximum precursor index.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_indptr</span></code></p></td>
-<td><p>np.int64[:] : The quad indptr.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">push_indptr</span></code></p></td>
+<td><p>np.int64[:] : The tof indptr.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_max_value</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_indptr</span></code></p></td>
+<td><p>np.int64[:] : The quad indptr (tof_indices).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_max_value</span></code></p></td>
 <td><p>The maximum quad mz value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_min_value</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_min_value</span></code></p></td>
 <td><p>The minimum quad mz value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_values</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_values</span></code></p></td>
 <td><p>np.float64[:, :] : The (low, high) quad mz values.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_quad_indptr</span></code></p></td>
+<td><p>np.int64[:] : The raw quad indptr (push indices).</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_max_value</span></code></p></td>
 <td><p>The maximum rt value.</p></td>
@@ -538,13 +553,10 @@ setting the last slice element to “raw”.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_indices</span></code></p></td>
 <td><p>np.uint32[:] : The tof indices.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_indptr</span></code></p></td>
-<td><p>np.int64[:] : The tof indptr.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_max_index</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_max_index</span></code></p></td>
 <td><p>The maximum tof index.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">version</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">version</span></code></p></td>
 <td><p>AlphaTims version used to create this TimsTOF object.</p></td>
 </tr>
 </tbody>
@@ -595,7 +607,7 @@ Default is True.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.as_dataframe">
-<code class="sig-name descname">as_dataframe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.as_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.as_dataframe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">as_dataframe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.as_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.as_dataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert raw indices to a pd.DataFrame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -623,6 +635,9 @@ Default is True.</p></li>
 <li><p><strong>mz_values</strong> (<em>bool</em>) – If True, include “mz_values” in the dataframe.
 Default is True.</p></li>
 <li><p><strong>intensity_values</strong> (<em>bool</em>) – If True, include “intensity_values” in the dataframe.
+Default is True.</p></li>
+<li><p><strong>raw_indices_sorted</strong> (<em>bool</em>) – If True, raw_indices are assumed to be sorted,
+resulting in a faster conversion.
 Default is True.</p></li>
 </ul>
 </dd>
@@ -660,7 +675,7 @@ the selected axis.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.convert_from_indices">
-<code class="sig-name descname">convert_from_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_from_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_from_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">convert_from_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_from_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_from_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert selected indices to a dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -693,6 +708,9 @@ Default is False.</p></li>
 Default is False.</p></li>
 <li><p><strong>return_intensity_values</strong> (<em>bool</em>) – If True, include “intensity_values” in the dict.
 Default is False.</p></li>
+<li><p><strong>raw_indices_sorted</strong> (<em>bool</em>) – If True, raw_indices are assumed to be sorted,
+resulting in a faster conversion.
+Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -781,6 +799,24 @@ which corresponds to the requested value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.index_precursors">
+<code class="sig-name descname">index_precursors</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.index_precursors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.index_precursors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve all MS2 spectra acquired with DDA.</p>
+<p>IMPORTANT NOTE: WThis function is intended for DDA samples.
+While it in theory works for DIA sample too, this probably has little
+value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The spectrum_indptr array, spectrum_tof_indices array and
+spectrum_intensity_values array.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple (np.int64[:], np.uint32[:], np.uint32[:])</p>
 </dd>
 </dl>
 </dd></dl>
@@ -929,9 +965,20 @@ which corresponds to the requested value.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.push_indptr">
+<em class="property">property </em><code class="sig-name descname">push_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.push_indptr" title="Permalink to this definition">¶</a></dt>
+<dd><p>np.int64[:] : The tof indptr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.quad_indptr">
 <em class="property">property </em><code class="sig-name descname">quad_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_indptr" title="Permalink to this definition">¶</a></dt>
-<dd><p>np.int64[:] : The quad indptr.</p>
+<dd><p>np.int64[:] : The quad indptr (tof_indices).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -965,6 +1012,17 @@ which corresponds to the requested value.</p>
 <dt id="alphatims.bruker.TimsTOF.quad_mz_values">
 <em class="property">property </em><code class="sig-name descname">quad_mz_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.float64[:, :] : The (low, high) quad mz values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.raw_quad_indptr">
+<em class="property">property </em><code class="sig-name descname">raw_quad_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.raw_quad_indptr" title="Permalink to this definition">¶</a></dt>
+<dd><p>np.int64[:] : The raw quad indptr (push indices).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -1056,17 +1114,6 @@ Default is False.</p></li>
 <dt id="alphatims.bruker.TimsTOF.tof_indices">
 <em class="property">property </em><code class="sig-name descname">tof_indices</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.uint32[:] : The tof indices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="alphatims.bruker.TimsTOF.tof_indptr">
-<em class="property">property </em><code class="sig-name descname">tof_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_indptr" title="Permalink to this definition">¶</a></dt>
-<dd><p>np.int64[:] : The tof indptr.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -1172,7 +1219,7 @@ containing ints instead of a single int.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.filter_indices">
-<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">filter_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">scan_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensity_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">frame_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">scan_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">tof_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#filter_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.filter_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">filter_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">scan_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensity_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">frame_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">scan_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">push_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#filter_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.filter_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter raw indices by slices from all dimensions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1197,7 +1244,7 @@ This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(intensity_slices.ravel()) &gt;= 0) = True).</p></li>
 <li><p><strong>frame_max_index</strong> (<em>int</em>) – The maximum frame index of a TimsTOF object.</p></li>
 <li><p><strong>scan_max_index</strong> (<em>int</em>) – The maximum scan index of a TimsTOF object.</p></li>
-<li><p><strong>tof_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.tof_indptr array of a TimsTOF object.</p></li>
+<li><p><strong>push_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.push_indptr array of a TimsTOF object.</p></li>
 <li><p><strong>precursor_indices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.precursor_indices array of a TimsTOF object.</p></li>
 <li><p><strong>quad_mz_values</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>]</em>) – The self.quad_mz_values array of a TimsTOF object.</p></li>
 <li><p><strong>quad_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.quad_indptr array of a TimsTOF object.</p></li>
@@ -1442,6 +1489,54 @@ The acquisition_mode, global_meta_data, frames and fragment_frames.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ValueError</strong> – When table “MsMsType” is not 8 or 9.
     In this case it is unclear if it is ddaPASEF or diaPASEF.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="alphatims.bruker.set_precursor">
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">set_precursor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">precursor_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">offset_order</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_offsets</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_counts</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#set_precursor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.set_precursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum the intensities of all pushes belonging to a single precursor.</p>
+<p>IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+The first argument is thus expected to be provided as an iterable
+containing ints instead of a single int.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>precursor_index</strong> (<em>int</em>) – The precursor index indicating which MS2 spectrum to determine.</p></li>
+<li><p><strong>offset_order</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The order of self.precursor_indices, obtained with np.argsort.</p></li>
+<li><p><strong>precursor_offsets</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – An index pointer array for precursor offsets.</p></li>
+<li><p><strong>quad_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.quad_indptr array of a TimsTOF object.</p></li>
+<li><p><strong>tof_indices</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – The self.tof_indices array of a TimsTOF object.</p></li>
+<li><p><strong>intensities</strong> (<em>np.uint16</em><em>[</em><em>:</em><em>]</em>) – The self.intensity_values array of a TimsTOF object.</p></li>
+<li><p><strong>spectrum_tof_indices</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – A buffer array to store tof indices of the new spectrum.</p></li>
+<li><p><strong>spectrum_intensity_values</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – A buffer array to store intensity values of the new spectrum.</p></li>
+<li><p><strong>spectrum_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – An index pointer array defining the original spectrum boundaries.</p></li>
+<li><p><strong>spectrum_counts</strong> (<em>np. int64</em><em>[</em><em>:</em><em>]</em>) – An buffer array defining how many distinct tof indices the new
+spectrum has.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="alphatims.bruker.trim_spectra">
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">trim_spectra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">trimmed_spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">trimmed_spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">new_spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#trim_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.trim_spectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trim remaining bytes after merging of multiple pushes.</p>
+<p>IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+The first argument is thus expected to be provided as an iterable
+containing ints instead of a single int.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<em>int</em>) – The push index whose intensity_values and tof_indices will be trimmed.</p></li>
+<li><p><strong>spectrum_tof_indices</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – The original array containing tof indices.</p></li>
+<li><p><strong>spectrum_intensity_values</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – The original array containing intensity values.</p></li>
+<li><p><strong>spectrum_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – An index pointer array defining the original spectrum boundaries.</p></li>
+<li><p><strong>trimmed_spectrum_tof_indices</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – A buffer array to store new tof indices.</p></li>
+<li><p><strong>trimmed_spectrum_intensity_values</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – A buffer array to store new intensity values.</p></li>
+<li><p><strong>new_spectrum_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – An index pointer array defining the trimmed spectrum boundaries.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

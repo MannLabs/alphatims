@@ -702,9 +702,9 @@ class TimsTOF(object):
         return self._tof_indices
 
     @property
-    def tof_indptr(self):
+    def push_indptr(self):
         """: np.ndarray : np.int64[:] : The tof indptr."""
-        return self._tof_indptr
+        return self._push_indptr
 
     @property
     def quad_indptr(self):
@@ -800,7 +800,7 @@ class TimsTOF(object):
             self._fragment_frames,
         ) = read_bruker_sql(bruker_d_folder_name)
         (
-            self._tof_indptr,
+            self._push_indptr,
             self._tof_indices,
             self._intensity_values,
         ) = read_bruker_binary(
@@ -1055,12 +1055,12 @@ class TimsTOF(object):
         ):
             if raw_indices_sorted:
                 parsed_indices = indptr_lookup(
-                    self.tof_indptr,
+                    self.push_indptr,
                     raw_indices,
                 )
             else:
                 parsed_indices = np.searchsorted(
-                    self.tof_indptr,
+                    self.push_indptr,
                     raw_indices,
                     "right"
                 ) - 1
@@ -1225,7 +1225,7 @@ class TimsTOF(object):
             intensity_slices=parsed_keys["intensity_values"],
             frame_max_index=self.frame_max_index,
             scan_max_index=self.scan_max_index,
-            tof_indptr=self.tof_indptr,
+            push_indptr=self.push_indptr,
             precursor_indices=self.precursor_indices,
             quad_mz_values=self.quad_mz_values,
             quad_indptr=self.quad_indptr,
@@ -1419,15 +1419,220 @@ class TimsTOF(object):
         self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
         self._precursor_indices = np.array(precursor_indices)
         self._raw_quad_indptr = np.array(quad_indptr)
-        self._quad_indptr = self.tof_indptr[self._raw_quad_indptr]
+        self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
         self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
         self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
         self._precursor_max_index = int(np.max(self.precursor_indices))
+
+    def index_precursors(self) -> tuple:
+        """Retrieve all MS2 spectra acquired with DDA.
+
+        IMPORTANT NOTE: WThis function is intended for DDA samples.
+        While it in theory works for DIA sample too, this probably has little
+        value.
+
+        Returns
+        -------
+        : tuple (np.int64[:], np.uint32[:], np.uint32[:])
+            The spectrum_indptr array, spectrum_tof_indices array and
+            spectrum_intensity_values array.
+        """
+        precursor_order = np.argsort(self.precursor_indices)
+        precursor_offsets = np.empty(
+            self.precursor_max_index + 2,
+            dtype=np.int64
+        )
+        precursor_offsets[0] = 0
+        precursor_offsets[1:-1] = np.flatnonzero(
+            np.diff(self.precursor_indices[precursor_order]) > 0) + 1
+        precursor_offsets[-1] = len(precursor_order)
+        offset = precursor_offsets[1]
+        offsets = precursor_order[offset:]
+        counts = np.empty(len(offsets) + 1, dtype=np.int)
+        counts[0] = 0
+        counts[1:] = np.cumsum(
+            self.quad_indptr[offsets + 1] - self.quad_indptr[offsets]
+        )
+        spectrum_indptr = np.empty(
+            self.precursor_max_index + 2,
+            dtype=np.int64
+        )
+        spectrum_indptr[1:] = counts[
+            precursor_offsets[1:] - precursor_offsets[1]
+        ]
+        spectrum_indptr[0] = 0
+        new_spectrum_indptr = np.empty_like(spectrum_indptr)
+        spectrum_tof_indices = np.empty(spectrum_indptr[-1], dtype=np.uint32)
+        spectrum_intensity_values = np.empty_like(spectrum_tof_indices)
+        set_precursor(
+            range(1, self.precursor_max_index + 1),
+            precursor_order,
+            precursor_offsets,
+            self.quad_indptr,
+            self.tof_indices,
+            self.intensity_values,
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+            spectrum_indptr,
+            new_spectrum_indptr,
+        )
+        new_spectrum_indptr[1:] = np.cumsum(new_spectrum_indptr[:-1])
+        new_spectrum_indptr[0] = 0
+        trimmed_spectrum_tof_indices = np.empty(
+            new_spectrum_indptr[-1],
+            dtype=np.uint32
+        )
+        trimmed_spectrum_intensity_values = np.empty_like(
+            trimmed_spectrum_tof_indices
+        )
+        spectrum_intensity_values
+        trim_spectra(
+            range(1, self.precursor_max_index + 1),
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+            spectrum_indptr,
+            trimmed_spectrum_tof_indices,
+            trimmed_spectrum_intensity_values,
+            new_spectrum_indptr,
+        )
+        return (
+            new_spectrum_indptr,
+            trimmed_spectrum_tof_indices,
+            trimmed_spectrum_intensity_values
+        )
 
 
 class PrecursorFloatError(TypeError):
     """Used to indicate that a precursor value is not an int but a float."""
     pass
+
+
+@alphatims.utils.pjit(
+    signature_or_function="void(i8,i8[:],i8[:],i8[:],u4[:],u2[:],u4[:],u4[:],i8[:],i8[:])"
+)
+def set_precursor(
+    precursor_index: int,
+    offset_order: np.ndarray,
+    precursor_offsets: np.ndarray,
+    quad_indptr: np.ndarray,
+    tof_indices: np.ndarray,
+    intensities: np.ndarray,
+    spectrum_tof_indices: np.ndarray,
+    spectrum_intensity_values: np.ndarray,
+    spectrum_indptr: np.ndarray,
+    spectrum_counts: np.ndarray,
+) -> None:
+    """Sum the intensities of all pushes belonging to a single precursor.
+
+    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    precursor_index : int
+        The precursor index indicating which MS2 spectrum to determine.
+    offset_order : np.int64[:]
+        The order of self.precursor_indices, obtained with np.argsort.
+    precursor_offsets : np.int64[:]
+        An index pointer array for precursor offsets.
+    quad_indptr : np.int64[:]
+        The self.quad_indptr array of a TimsTOF object.
+    tof_indices : np.uint32[:]
+        The self.tof_indices array of a TimsTOF object.
+    intensities : np.uint16[:]
+        The self.intensity_values array of a TimsTOF object.
+    spectrum_tof_indices : np.uint32[:]
+        A buffer array to store tof indices of the new spectrum.
+    spectrum_intensity_values : np.uint32[:]
+        A buffer array to store intensity values of the new spectrum.
+    spectrum_indptr : np.int64[:]
+        An index pointer array defining the original spectrum boundaries.
+    spectrum_counts :  np. int64[:]
+        An buffer array defining how many distinct tof indices the new
+        spectrum has.
+    """
+    offset = spectrum_indptr[precursor_index]
+    precursor_offset_lower = precursor_offsets[precursor_index]
+    precursor_offset_upper = precursor_offsets[precursor_index + 1]
+    selected_offsets = offset_order[
+        precursor_offset_lower: precursor_offset_upper
+    ]
+    starts = quad_indptr[selected_offsets]
+    ends = quad_indptr[selected_offsets + 1]
+    offset_index = offset
+    for start, end in zip(starts, ends):
+        spectrum_tof_indices[
+            offset_index: offset_index + end - start
+        ] = tof_indices[start: end]
+        spectrum_intensity_values[
+            offset_index: offset_index + end - start
+            ] = intensities[start: end]
+        offset_index += end - start
+    offset_end = spectrum_indptr[precursor_index + 1]
+    order = np.argsort(spectrum_tof_indices[offset: offset_end])
+    current_index = offset - 1
+    previous_tof_index = -1
+    for tof_index, intensity in zip(
+        spectrum_tof_indices[offset: offset_end][order],
+        spectrum_intensity_values[offset: offset_end][order],
+    ):
+        if tof_index != previous_tof_index:
+            current_index += 1
+            spectrum_tof_indices[current_index] = tof_index
+            spectrum_intensity_values[current_index] = intensity
+            previous_tof_index = tof_index
+        else:
+            spectrum_intensity_values[current_index] += intensity
+    spectrum_tof_indices[current_index + 1: offset_end] = 0
+    spectrum_intensity_values[current_index + 1: offset_end] = 0
+    spectrum_counts[precursor_index] = current_index + 1 - offset
+
+
+@alphatims.utils.pjit
+def trim_spectra(
+    index: int,
+    spectrum_tof_indices: np.ndarray,
+    spectrum_intensity_values: np.ndarray,
+    spectrum_indptr: np.ndarray,
+    trimmed_spectrum_tof_indices: np.ndarray,
+    trimmed_spectrum_intensity_values: np.ndarray,
+    new_spectrum_indptr: np.ndarray,
+) -> None:
+    """Trim remaining bytes after merging of multiple pushes.
+
+    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    index : int
+        The push index whose intensity_values and tof_indices will be trimmed.
+    spectrum_tof_indices : np.uint32[:]
+        The original array containing tof indices.
+    spectrum_intensity_values : np.uint32[:]
+        The original array containing intensity values.
+    spectrum_indptr : np.int64[:]
+        An index pointer array defining the original spectrum boundaries.
+    trimmed_spectrum_tof_indices : np.uint32[:]
+        A buffer array to store new tof indices.
+    trimmed_spectrum_intensity_values : np.uint32[:]
+        A buffer array to store new intensity values.
+    new_spectrum_indptr : np.int64[:]
+        An index pointer array defining the trimmed spectrum boundaries.
+    """
+    start = spectrum_indptr[index]
+    new_start = new_spectrum_indptr[index]
+    new_end = new_spectrum_indptr[index + 1]
+    trimmed_spectrum_tof_indices[new_start: new_end] = spectrum_tof_indices[
+        start: start + new_end - new_start
+    ]
+    trimmed_spectrum_intensity_values[
+        new_start: new_end
+    ] = spectrum_intensity_values[
+        start: start + new_end - new_start
+    ]
 
 
 def parse_keys(data: TimsTOF, keys) -> dict:
@@ -1744,7 +1949,7 @@ def filter_indices(
     intensity_slices: np.ndarray,
     frame_max_index: int,
     scan_max_index: int,
-    tof_indptr: np.ndarray,
+    push_indptr: np.ndarray,
     precursor_indices: np.ndarray,
     quad_mz_values: np.ndarray,
     quad_indptr: np.ndarray,
@@ -1783,8 +1988,8 @@ def filter_indices(
         The maximum frame index of a TimsTOF object.
     scan_max_index : int
         The maximum scan index of a TimsTOF object.
-    tof_indptr : np.int64[:]
-        The self.tof_indptr array of a TimsTOF object.
+    push_indptr : np.int64[:]
+        The self.push_indptr array of a TimsTOF object.
     precursor_indices : np.int64[:]
         The self.precursor_indices array of a TimsTOF object.
     quad_mz_values : np.float64[:, :]
@@ -1806,11 +2011,11 @@ def filter_indices(
     new_quad_index = -1
     quad_end = -1
     is_valid_quad_index = True
-    starts = tof_indptr[:-1].reshape(
+    starts = push_indptr[:-1].reshape(
         frame_max_index,
         scan_max_index
     )
-    ends = tof_indptr[1:].reshape(
+    ends = push_indptr[1:].reshape(
         frame_max_index,
         scan_max_index
     )
