@@ -118,7 +118,7 @@ github_logo_path = os.path.join(alphatims.utils.IMG_PATH, "github.png")
 # HEADER
 header_titel = pn.pane.Markdown(
     '# AlphaTims',
-    width=1250
+    sizing_mode='stretch_width',
 )
 mpi_biochem_logo = pn.pane.PNG(
     biochem_logo_path,
@@ -140,6 +140,7 @@ github_logo = pn.pane.PNG(
     github_logo_path,
     link_url='https://github.com/MannLabs/alphatims',
     height=70,
+    align='end'
 )
 
 header = pn.Row(
@@ -147,7 +148,8 @@ header = pn.Row(
     mpi_logo,
     header_titel,
     github_logo,
-    height=73
+    height=73,
+    sizing_mode='stretch_width'
 )
 
 
@@ -156,12 +158,12 @@ project_description = pn.pane.Markdown(
     """### AlphaTIMS is an open-source Python package for fast accessing Bruker TimsTOF data. It provides a very efficient indexed data structure that allows to access four-dimensional TIMS-time of flight data in the standard numerical python (NumPy) manner. AlphaTIMS is a key enabling tool to deal with the large and high dimensional TIMS data.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
-    width=615
+    width=690
 )
 
 divider_descr = pn.pane.HTML(
     '<hr style="height: 6px; border:none; background-color: #045082; width: 1140px">',
-    width=1510,
+    sizing_mode='stretch_width',
     align='center'
 )
 upload_file = pn.widgets.TextInput(
@@ -192,11 +194,12 @@ upload_error = pn.pane.Alert(
 )
 exit_button = pn.widgets.Button(
     name='Quit',
-    button_type='primary',
+    button_type='default',
     height=31,
     width=100,
     margin=(34, 20, 0, 0)
 )
+
 main_part = pn.Column(
     project_description,
     divider_descr,
@@ -205,12 +208,13 @@ main_part = pn.Column(
         upload_button,
         upload_spinner,
         exit_button,
-        align='center'
+        align='center',
+        sizing_mode='stretch_width',
     ),
     upload_error,
     background='#eaeaea',
-    width=1510,
-    height=360,
+    sizing_mode='stretch_width',
+    height=330,
     margin=(5, 0, 10, 0)
 )
 
@@ -239,32 +243,65 @@ selectors_divider = pn.pane.HTML(
 card_divider = pn.pane.HTML(
     '<hr style="height: 1.5px; border:none; background-color: black; width: 415px;">',
     align='center',
-    margin=(10, 10, 5, 10)
+    margin=(3, 10, 3, 10)
 )
 
 
 # SAVE TO HDF
+save_hdf_path = pn.widgets.TextInput(
+    name='Specify a path to save all data as a portable .hdf file:',
+    placeholder='e.g. D:\Bruker',
+    # width=240,
+    margin=(5, 0, 0, 28)
+)
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
     button_type='default',
     height=31,
-    width=200,
-    margin=(15, 0, 0, 120)
+    width=100,
+    margin=(23, 10, 0, 15)
 )
 save_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(15, 15, 0, 15),
+    margin=(23, 15, 0, 15),
     width=30,
     height=30
 )
 save_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 15, 20, 85),
+    margin=(-10, 15, 20, 30),
     width=300
 )
 
+# SAVE SLICED DATA
+save_sliced_data_path = pn.widgets.TextInput(
+    name='Specify a path to save the currently selected data as .csv file:',
+    placeholder='e.g. D:\Bruker',
+    # width=240,
+    margin=(5, 0, 0, 28)
+)
+save_sliced_data_button = pn.widgets.Button(
+    name='Save as CSV',
+    button_type='default',
+    height=31,
+    width=100,
+    margin=(23, 10, 0, 15)
+)
+save_sliced_data_spinner = pn.indicators.LoadingSpinner(
+    value=False,
+    bgcolor='light',
+    color='secondary',
+    margin=(23, 15, 0, 15),
+    width=30,
+    height=30
+)
+save_sliced_data_message = pn.pane.Alert(
+    alert_type='success',
+    margin=(-10, 15, 30, 30),
+    width=300
+)
 
 # frame/RT selection
 frame_slider = pn.widgets.IntRangeSlider(
@@ -280,7 +317,7 @@ frame_start = pn.widgets.IntInput(
     step=1,
     start=1,
     width=80,
-    margin=(0, 0, 0, 0)
+    margin=(0, 0, 0, 14)
 )
 rt_start = pn.widgets.FloatInput(
     name='Start RT (min)',
@@ -316,9 +353,10 @@ scan_slider = pn.widgets.IntRangeSlider(
     # name='Scans',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 scan_start = pn.widgets.IntInput(
     name='Start scan',
@@ -361,9 +399,10 @@ tof_slider = pn.widgets.IntRangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 tof_start = pn.widgets.IntInput(
     name='Start TOF',
@@ -403,15 +442,12 @@ mz_end = pn.widgets.FloatInput(
 
 
 # Precursor selection
-# precursor_fragment_toggle_button = pn.widgets.Toggle(
-#     name='Showing only MS1 ions (precursors)',
-#     button_type='primary'
-# )
 select_ms1_precursors = pn.widgets.Checkbox(
     name='Show MS1 ions (precursors)',
     value=True,
     width=200,
     align="center",
+    margin=(20, 0, 10, 0)
 )
 select_ms2_fragments = pn.widgets.Checkbox(
     name='Show MS2 ions (fragments)',
@@ -440,7 +476,7 @@ quad_start = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(5, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 quad_end = pn.widgets.FloatInput(
@@ -451,7 +487,7 @@ quad_end = pn.widgets.FloatInput(
     start=0.00,
     width=80,
     format='0.00',
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
@@ -484,7 +520,7 @@ precursor_end = pn.widgets.IntInput(
     align="center",
     start=1,
     width=80,
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
@@ -494,9 +530,10 @@ intensity_slider = pn.widgets.RangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
+    width=390,
     start=1,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 intensity_start = pn.widgets.IntInput(
     name='Start intensity',
@@ -541,38 +578,18 @@ redo_button = pn.widgets.Button(
 )
 
 
-# Download selected data
-def export_sliced_data():
-    from io import StringIO
-    sio = StringIO()
-    DATAFRAME.to_csv(sio, index=False)
-    sio.seek(0)
-    return sio
-
-
-download_selection = pn.widgets.FileDownload(
-    callback=export_sliced_data,
-    filename='sliced_data.csv',
-    button_type='default',
-    height=31,
-    width=250,
-    margin=(5, 20, 15, 20),
-    align='center'
-)
-
-
 # player
 player_title = pn.pane.Markdown(
     "Quick Data Overview",
     align='center',
-    margin=(-5, 0, -20, 0)
+    margin=(20, 0, -20, 0)
 )
 player = pn.widgets.DiscretePlayer(
     interval=1800,
     value=1,
     show_loop_controls=True,
     loop_policy='once',
-    width=430,
+    width=400,
     align='center'
 )
 
@@ -589,21 +606,21 @@ plot1_x_axis = pn.widgets.Select(
     value='m/z, Th',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 20),
+    margin=(0, 20, 20, 20),
 )
 plot1_y_axis = pn.widgets.Select(
     name='Y axis',
     value='Inversed IM, V·s·cm\u207B\u00B2',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 10),
+    margin=(0, 20, 20, 10),
 )
 
 # plot 2
 plot2_title = pn.pane.Markdown(
     '#### Axis for XIC/Spectrum/Mobilogram',
     align='center',
-    margin=(-10, 0, -5, 0),
+    margin=(10, 0, -25, 0),
 )
 plot2_x_axis = pn.widgets.Select(
     name='X axis',
@@ -619,7 +636,6 @@ plot2_x_axis = pn.widgets.Select(
 frame_selection_card = pn.Card(
     player_title,
     player,
-    sliders_divider,
     frame_slider,
     pn.Row(
         frame_start,
@@ -627,12 +643,12 @@ frame_selection_card = pn.Card(
         selectors_divider,
         frame_end,
         rt_end,
-        align='center',
+#         align='center',
     ),
     title='Select rt_values / frame_indices',
     collapsed=False,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -660,7 +676,7 @@ scan_selection_card = pn.Card(
     title='Select mobility_values / scan_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -687,7 +703,6 @@ quad_selection_card = pn.Card(
         quad_end,
         align='center',
     ),
-    # sliders_divider,
     sliders_divider,
     precursor_slider,
     pn.Row(
@@ -699,7 +714,7 @@ quad_selection_card = pn.Card(
     title='Select quad_values / precursor_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -707,7 +722,7 @@ quad_selection_card = pn.Card(
 quad_selection_card.jscallback(
     collapsed="""
         var $container = $("html,body");
-        var $scrollTo = $('.test');
+        var $scrollTo = $('.axis_selection_settings');
 
         $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
         """,
@@ -727,7 +742,7 @@ tof_selection_card = pn.Card(
     title='Select mz_values / tof_indices',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -753,7 +768,7 @@ intensity_selection_card = pn.Card(
     title='Select intensity_values',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -779,7 +794,7 @@ axis_selection_card = pn.Card(
     title='Select axis for plots',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -794,16 +809,43 @@ axis_selection_card.jscallback(
     args={'card': axis_selection_card}
 )
 
+export_data_card = pn.Card(
+    save_hdf_path,
+    pn.Row(
+        save_hdf_button,
+        save_spinner,
+        align="center",
+    ),
+    save_message,
+    save_sliced_data_path,
+    pn.Row(
+        save_sliced_data_button,
+        save_sliced_data_spinner,
+        align="center",
+    ),
+    save_sliced_data_message,
+    title='Export data',
+    collapsed=True,
+    width=430,
+    margin=(10, 10, 10, 15),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+export_data_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': export_data_card}
+)
+
 
 # putting together all settings widget
 settings = pn.Column(
     settings_title,
-    card_divider,
-    pn.Row(
-        save_hdf_button,
-        save_spinner
-    ),
-    save_message,
     card_divider,
     axis_selection_card,
     card_divider,
@@ -817,7 +859,8 @@ settings = pn.Column(
     card_divider,
     intensity_selection_card,
     card_divider,
-
+    export_data_card,
+    card_divider,
     pn.Row(
         pn.Column(
             selection_actions,
@@ -828,12 +871,11 @@ settings = pn.Column(
             align="center"
         ),
         align="center",
+        margin=(0,0,20,0)
     ),
-    card_divider,
-    download_selection,
     width=460,
     align='center',
-    margin=(0, 0, 0, 0),
+    margin=(0, 0, 20, 0),
     css_classes=['settings']
 )
 
@@ -844,20 +886,23 @@ BROWSER = pn.Row(
 
 
 # PLOTTING
+def get_range_func(color, boundsx):
+    def _range(boundsx):
+        return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
+    return _range
+
+
 def visualize_tic():
-    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE)
+    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE, width=None)
     # implement the selection
     bounds_x = hv.streams.BoundsX(
         source=tic,
         boundsx=(rt_start.value, rt_end.value)
     )
-
-    def get_range_func(color):
-        def _range(boundsx):
-            return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
-        return _range
-
-    dmap = hv.DynamicMap(get_range_func('orange'), streams=[bounds_x])
+    dmap = hv.DynamicMap(
+        get_range_func('orange', bounds_x),
+        streams=[bounds_x]
+    )
     fig = tic * dmap
     return fig.opts(responsive=True)
 
@@ -868,16 +913,31 @@ def visualize_scatter():
         plot1_x_axis.value,
         plot1_y_axis.value,
         WHOLE_TITLE,
+        width=None
     )
 
 
 def visualize_1d_plot():
-    return alphatims.plotting.line_plot(
+    line_plot = alphatims.plotting.line_plot(
         DATASET,
         SELECTED_INDICES,
         plot2_x_axis.value,
         WHOLE_TITLE,
+        width=None
     )
+    if plot2_x_axis.value == "RT, min":
+        bounds_x = hv.streams.BoundsX(
+            source=line_plot,
+            boundsx=(rt_start.value, rt_end.value)
+        )
+        dmap = hv.DynamicMap(
+            get_range_func('khaki', bounds_x),
+            streams=[bounds_x]
+        )
+        fig = line_plot * dmap
+        return fig.opts(responsive=True)
+    else:
+        return line_plot
 
 
 def upload_data(*args):
@@ -934,16 +994,32 @@ def upload_data(*args):
 def save_hdf(*args):
     save_message.object = ''
     save_spinner.value = True
-    file_name = os.path.join(DATASET.directory, f"{DATASET.sample_name}.hdf")
-    directory = DATASET.bruker_d_folder_name
+    directory = os.path.dirname(save_hdf_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
-        file_name=file_name,
+        file_name=os.path.basename(save_hdf_path.value),
         compress=False,
     )
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved outside .d folder.'
+    save_message.object = '#### The HDF file is successfully saved.'
+
+
+@pn.depends(
+    save_sliced_data_button.param.clicks,
+    watch=True
+)
+def save_sliced_data(*args):
+    save_sliced_data_message.object = ''
+    save_sliced_data_spinner.value = True
+    directory = os.path.dirname(save_sliced_data_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    DATAFRAME.to_csv(save_sliced_data_path.value, index=False)
+    save_sliced_data_spinner.value = False
+    save_sliced_data_message.object = '#### The CSV file is successfully saved.'
 
 
 @pn.depends(
@@ -1014,11 +1090,14 @@ def init_settings(*args):
         update_tof_widgets_to_stack()
         update_intensity_widgets_to_stack()
 
-        print(STACK["frames"])
-        print(frame_slider.value)
-        print(frame_slider.param.value)
-        print(frame_slider.param.__dict__)
-
+        save_hdf_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}.hdf",
+        )
+        save_sliced_data_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}_data_slice.csv",
+        )
         # first init needed:
         plot2_x_axis.value = 'm/z, Th'
 
@@ -1208,8 +1287,9 @@ def run():
         header,
         main_part,
         BROWSER,
+        sizing_mode='stretch_width',
     )
-    LAYOUT.show()
+    LAYOUT.show(threaded=True, title='AlphaTims')
 
 
 def update_global_selection(updated_option, updated_value):
@@ -1257,11 +1337,6 @@ def update_toggle_fragments():
 
 def update_frame_widgets_to_stack():
     with STACK.lock():
-        print(f"PRE slider val {frame_slider.value}")
-        print(f"PRE start val {frame_start.value}")
-        print(f"PRE end val {frame_end.value}")
-        print(f"PRE start rt val {rt_start.value}")
-        print(f"PRE end rt val {rt_end.value}")
         frame_slider.value = STACK["frames"]
         frame_start.value, frame_end.value = STACK["frames"]
         rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
@@ -1270,14 +1345,6 @@ def update_frame_widgets_to_stack():
             rt_end.value = DATASET.rt_values[index] / 60
         else:
             rt_end.value = DATASET.rt_values[-1] / 60
-        print(f"POST slider val {frame_slider.value}")
-        print(f"POST start val {frame_start.value}")
-        print(f"POST end val {frame_end.value}")
-        print(f"POST start rt val {rt_start.value}")
-        print(f"POST end rt val {rt_end.value}")
-    STACK.update(
-        "frames", frame_slider.value
-    )
 
 
 def update_scan_widgets_to_stack():
