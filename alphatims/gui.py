@@ -99,7 +99,7 @@ hv.extension('bokeh')
 
 # LOCAL VARIABLES
 DATASET = None
-PLOTS = pn.Column(None, None, None)
+PLOTS = pn.Column(None, None, None, sizing_mode='stretch_width',)
 WHOLE_TITLE = str()
 SELECTED_INDICES = np.array([])
 DATAFRAME = pd.DataFrame()
@@ -882,6 +882,7 @@ settings = pn.Column(
 BROWSER = pn.Row(
     None,
     PLOTS,
+    sizing_mode='stretch_width',
 )
 
 
