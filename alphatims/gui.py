@@ -251,9 +251,9 @@ card_divider = pn.pane.HTML(
 
 # SAVE TO HDF
 save_hdf_path = pn.widgets.TextInput(
-    name='Specify a path to save an .hdf file:',
+    name='Specify a path to save all data as a portable .hdf file:',
     placeholder='e.g. D:\Bruker',
-    width=240,
+    # width=240,
     margin=(5, 0, 0, 28)
 )
 save_hdf_button = pn.widgets.Button(
@@ -279,9 +279,9 @@ save_message = pn.pane.Alert(
 
 # SAVE SLICED DATA
 save_sliced_data_path = pn.widgets.TextInput(
-    name='Specify a path to save the sliced data:',
+    name='Specify a path to save the currently selected data as .csv file:',
     placeholder='e.g. D:\Bruker',
-    width=240,
+    # width=240,
     margin=(5, 0, 0, 28)
 )
 save_sliced_data_button = pn.widgets.Button(
@@ -811,23 +811,43 @@ axis_selection_card.jscallback(
     args={'card': axis_selection_card}
 )
 
+export_data_card = pn.Card(
+    save_hdf_path,
+    pn.Row(
+        save_hdf_button,
+        save_spinner,
+        align="center",
+    ),
+    save_message,
+    save_sliced_data_path,
+    pn.Row(
+        save_sliced_data_button,
+        save_sliced_data_spinner,
+        align="center",
+    ),
+    save_sliced_data_message,
+    title='Export data',
+    collapsed=True,
+    width=430,
+    margin=(10, 10, 10, 15),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+export_data_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': export_data_card}
+)
+
 
 # putting together all settings widget
 settings = pn.Column(
     settings_title,
-    card_divider,
-    pn.Row(
-        save_hdf_path,
-        save_hdf_button,
-        save_spinner
-    ),
-    save_message,
-    pn.Row(
-        save_sliced_data_path,
-        save_sliced_data_button,
-        save_sliced_data_spinner
-    ),
-    save_sliced_data_message,
     card_divider,
     axis_selection_card,
     card_divider,
@@ -840,6 +860,8 @@ settings = pn.Column(
     tof_selection_card,
     card_divider,
     intensity_selection_card,
+    card_divider,
+    export_data_card,
     card_divider,
     pn.Row(
         pn.Column(
@@ -970,19 +992,18 @@ def upload_data(*args):
 def save_hdf(*args):
     save_message.object = ''
     save_spinner.value = True
-    directory = save_hdf_path.value
-    file_name = os.path.join(directory, f"{DATASET.sample_name}.hdf")
+    directory = os.path.dirname(save_hdf_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     DATASET.save_as_hdf(
         overwrite=True,
         directory=directory,
-        file_name=file_name,
+        file_name=os.path.basename(save_hdf_path.value),
         compress=False,
     )
     save_spinner.value = False
-    if save_hdf_path.value:
-        save_message.object = '#### The HDF file is successfully saved in the specified folder.'
-    else:
-        save_message.object = '#### The HDF file is successfully saved outside original .d folder.'
+    save_message.object = '#### The HDF file is successfully saved.'
+
 
 @pn.depends(
     save_sliced_data_button.param.clicks,
@@ -991,15 +1012,12 @@ def save_hdf(*args):
 def save_sliced_data(*args):
     save_sliced_data_message.object = ''
     save_sliced_data_spinner.value = True
-    file_name = 'sliced_data.csv'
-    file_path = os.path.join(save_sliced_data_path.value, file_name)
-    DATAFRAME.to_csv(file_path, index=False)
+    directory = os.path.dirname(save_sliced_data_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    DATAFRAME.to_csv(save_sliced_data_path.value, index=False)
     save_sliced_data_spinner.value = False
-    if save_hdf_path.value:
-        save_sliced_data_message.object = '#### The CSV file is successfully saved in the specified folder.'
-    else:
-        save_sliced_data_message.object = '#### The CSV file is successfully saved outside original .d folder.'
-
+    save_sliced_data_message.object = '#### The CSV file is successfully saved.'
 
 
 @pn.depends(
@@ -1070,8 +1088,14 @@ def init_settings(*args):
         update_tof_widgets_to_stack()
         update_intensity_widgets_to_stack()
 
-        save_hdf_path.value = os.path.dirname(DATASET.bruker_d_folder_name)
-        save_sliced_data_path.value = os.path.dirname(DATASET.bruker_d_folder_name)
+        save_hdf_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}.hdf",
+        )
+        save_sliced_data_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}_data_slice.csv",
+        )
 
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
