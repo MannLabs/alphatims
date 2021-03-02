@@ -728,6 +728,7 @@
     <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">recursed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">chunked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Save a dict to an open hdf group.</span>
 
@@ -753,13 +754,17 @@
 <span class="sd">        compression.</span>
 <span class="sd">        If False, arrays are saved as provided.</span>
 <span class="sd">        On average, compression halves file sizes,</span>
-<span class="sd">        at the cost of 2-6 time longer accession times.</span>
+<span class="sd">        at the cost of 2-10 time longer accession times.</span>
 <span class="sd">        Default is False.</span>
 <span class="sd">    recursed : bool</span>
 <span class="sd">        If False, the default progress callback is added while itereating over</span>
 <span class="sd">        the keys of the data_dict.</span>
 <span class="sd">        If True, no callback is added, allowing subdicts to not trigger</span>
 <span class="sd">        callback.</span>
+<span class="sd">        Default is False.</span>
+<span class="sd">    chunked : bool</span>
+<span class="sd">        If True, all arrays are chunked.</span>
+<span class="sd">        If False, arrays are saved as provided.</span>
 <span class="sd">        Default is False.</span>
 
 <span class="sd">    Raises</span>
@@ -789,6 +794,7 @@
                 <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">,</span>
                 <span class="n">recursed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">,</span>
+                <span class="n">chunked</span><span class="o">=</span><span class="n">chunked</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
@@ -809,7 +815,9 @@
                         <span class="n">key</span><span class="p">,</span>
                         <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
                         <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;lzf&quot;</span> <span class="k">if</span> <span class="n">compress</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="c1"># compression=&quot;gzip&quot; if compress else None, # TODO slower to make, faster to load?</span>
                         <span class="n">shuffle</span><span class="o">=</span><span class="n">compress</span><span class="p">,</span>
+                        <span class="n">chunks</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">chunked</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">overwrite</span> <span class="ow">or</span> <span class="p">(</span><span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hdf_group</span><span class="o">.</span><span class="n">attrs</span><span class="p">):</span>

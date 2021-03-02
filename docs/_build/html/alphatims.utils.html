@@ -613,7 +613,7 @@ it is automatically converted to a pd.dataFrame.</p>
 
 <dl class="py function">
 <dt id="alphatims.utils.create_hdf_group_from_dict">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">create_hdf_group_from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hdf_group</span></em>, <em class="sig-param"><span class="n">data_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">compress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">recursed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#create_hdf_group_from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.create_hdf_group_from_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">create_hdf_group_from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hdf_group</span></em>, <em class="sig-param"><span class="n">data_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">compress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">recursed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">chunked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#create_hdf_group_from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.create_hdf_group_from_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a dict to an open hdf group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -638,12 +638,15 @@ Default is False.</p></li>
 compression.
 If False, arrays are saved as provided.
 On average, compression halves file sizes,
-at the cost of 2-6 time longer accession times.
+at the cost of 2-10 time longer accession times.
 Default is False.</p></li>
 <li><p><strong>recursed</strong> (<em>bool</em>) – If False, the default progress callback is added while itereating over
 the keys of the data_dict.
 If True, no callback is added, allowing subdicts to not trigger
 callback.
+Default is False.</p></li>
+<li><p><strong>chunked</strong> (<em>bool</em>) – If True, all arrays are chunked.
+If False, arrays are saved as provided.
 Default is False.</p></li>
 </ul>
 </dd>

@@ -574,6 +574,7 @@ def create_hdf_group_from_dict(
     overwrite: bool = False,
     compress: bool = False,
     recursed: bool = False,
+    chunked: bool = False
 ) -> None:
     """Save a dict to an open hdf group.
 
@@ -599,13 +600,17 @@ def create_hdf_group_from_dict(
         compression.
         If False, arrays are saved as provided.
         On average, compression halves file sizes,
-        at the cost of 2-6 time longer accession times.
+        at the cost of 2-10 time longer accession times.
         Default is False.
     recursed : bool
         If False, the default progress callback is added while itereating over
         the keys of the data_dict.
         If True, no callback is added, allowing subdicts to not trigger
         callback.
+        Default is False.
+    chunked : bool
+        If True, all arrays are chunked.
+        If False, arrays are saved as provided.
         Default is False.
 
     Raises
@@ -635,6 +640,7 @@ def create_hdf_group_from_dict(
                 overwrite=overwrite,
                 recursed=True,
                 compress=compress,
+                chunked=chunked,
             )
         elif isinstance(value, (np.ndarray, pd.core.series.Series)):
             if isinstance(value, (pd.core.series.Series)):
@@ -655,7 +661,9 @@ def create_hdf_group_from_dict(
                         key,
                         data=value,
                         compression="lzf" if compress else None,
+                        # compression="gzip" if compress else None, # TODO slower to make, faster to load?
                         shuffle=compress,
+                        chunks=True if chunked else None,
                     )
         elif isinstance(value, (bool, int, float, str)):
             if overwrite or (key not in hdf_group.attrs):

@@ -163,7 +163,7 @@
     "required": true
   },
   "compress": {
-    "help": "Compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 3-6 longer accession times.",
+    "help": "Compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 2-10 longer accession times.",
     "default": false,
     "is_flag": true,
     "required": false
