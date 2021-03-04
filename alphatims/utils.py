@@ -526,7 +526,7 @@ def pjit(
         return parallel_compiled_func_inner(_func)
 
 
-def progress_callback(iterable, style: int = -1):
+def progress_callback(iterable, style: int = -1, total: int = -1):
     """Add tqdm progress callback to iterable.
 
     Parameters
@@ -541,6 +541,10 @@ def progress_callback(iterable, style: int = -1):
             - PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
             - PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
 
+        Default is -1.
+    total : int
+        The length of the iterable.
+        If -1, this will be read as len(iterable), if __len__ is implemented.
         Default is -1.
 
     Returns
@@ -559,7 +563,10 @@ def progress_callback(iterable, style: int = -1):
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
     elif style == PROGRESS_CALLBACK_STYLE_TEXT:
-        return tqdm.tqdm(iterable)
+        if total != -1:
+            return tqdm.tqdm(iterable, total=total)
+        else:
+            return tqdm.tqdm(iterable)
     elif style == PROGRESS_CALLBACK_STYLE_PLOT:
         # TODO: update?
         return tqdm.gui.tqdm(iterable)
