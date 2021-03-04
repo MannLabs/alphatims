@@ -1,4 +1,4 @@
-#!python
+#!python -m unittest tests.test_bruker
 """This module provides unit tests for alphatims.utils."""
 
 # builtin
@@ -25,16 +25,17 @@ class TestSlicing(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        sample = "20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717"
         file_name = os.path.join(
             BASE_PATH,
             "sandbox_data",
-            "20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.hdf"
+            f"{sample}.hdf"
         )
         if not os.path.exists(file_name):
             file_name = os.path.join(
                 BASE_PATH,
                 "sandbox_data",
-                "20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d"
+                f"{sample}.d"
             )
         if os.path.exists(file_name):
             try:
@@ -43,6 +44,7 @@ class TestSlicing(unittest.TestCase):
                 assert False, "Test data set is invalid..."
         else:
             assert False, "No test data found..."
+            # TODO: fetch from URL?
 
     @classmethod
     def tearDownClass(cls):
@@ -83,25 +85,162 @@ class TestSlicing(unittest.TestCase):
             ),
         ]
         for key, expected_result in test_cases:
-            actual_result = alphatims.bruker.convert_slice_key_to_float_array(
+            result = alphatims.bruker.convert_slice_key_to_float_array(
                 key
             )
             assert np.array_equal(
-                actual_result,
+                result,
                 expected_result
             ), (
-                f"{key} was wrongly converted to {actual_result} "
+                f"{key} was wrongly converted to {result} "
                 f"instead of {expected_result}"
             )
 
     def test_convert_slice_key_to_int_array(self):
-        pass
+        for dimension, (float_low, float_high, max_int) in {
+            "frame_indices": [110., 150., self.data.frame_max_index],
+            "tof_indices": [500., 500.5, self.data.tof_max_index],
+        }.items():
+            int_low, int_high = self.data.convert_to_indices(
+                [float_low, float_high],
+                return_frame_indices=dimension == "frame_indices",
+                return_scan_indices=dimension == "scan_indices",
+                return_tof_indices=dimension == "tof_indices",
+            )
+            for key, expected_result in [
+                (
+                    slice(int_low, int_high),
+                    np.array([[int_low, int_high, 1]])
+                ), (
+                    slice(int_low, int_high, 8),
+                    np.array([[int_low, int_high, 8]])
+                ), (
+                    slice(None, int_high, 8),
+                    np.array([[0, int_high, 8]])
+                ), (
+                    slice(int_low, None, 8),
+                    np.array([[int_low, max_int, 8]])
+                ), (
+                    slice(None, None, 8),
+                    np.array([[0, max_int, 8]])
+                ), (
+                    int_low,
+                    np.array([[int_low, int_low + 1, 1]])
+                ), (
+                    [int_low, int_high],
+                    np.array(
+                        [
+                            [int_low, int_low + 1, 1],
+                            [int_high, int_high + 1, 1]
+                        ]
+                    )
+                ), (
+                    slice(None, float_high, 8),
+                    np.array([[0, int_high, 8]])
+                ), (
+                    slice(float_low, None, 8),
+                    np.array([[int_low, max_int, 8]])
+                ), (
+                    slice(float_low, float_high, 8),
+                    np.array([[int_low, int_high, 8]])
+                ), (
+                    [float_low, float_high],
+                    np.array(
+                        [
+                            [int_low, int_low + 1, 1],
+                            [int_high, int_high + 1, 1]
+                        ]
+                    )
+                ),
+            ]:
+                result = alphatims.bruker.convert_slice_key_to_int_array(
+                    self.data,
+                    key,
+                    dimension
+                )
+                assert np.array_equal(
+                    result,
+                    expected_result
+                ), (
+                    f"Key '{key}' in dimension '{dimension}' was wrongly "
+                    f"converted to {result} instead of "
+                    f"{expected_result}"
+                )
+        dimension, float_low, float_high, max_int = [
+            "scan_indices", 1., 1.2, self.data.scan_max_index
+        ]
+        # NOTE: order high and low is reversed
+        int_high, int_low = self.data.convert_to_indices(
+            [float_low, float_high],
+            return_frame_indices=dimension == "frame_indices",
+            return_scan_indices=dimension == "scan_indices",
+            return_tof_indices=dimension == "tof_indices",
+        )
+        for key, expected_result in [
+            (
+                slice(int_low, int_high),
+                np.array([[int_low, int_high, 1]])
+            ), (
+                slice(int_low, int_high, 8),
+                np.array([[int_low, int_high, 8]])
+            ), (
+                slice(None, int_high, 8),
+                np.array([[0, int_high, 8]])
+            ), (
+                slice(int_low, None, 8),
+                np.array([[int_low, max_int, 8]])
+            ), (
+                slice(None, None, 8),
+                np.array([[0, max_int, 8]])
+            ), (
+                int_low,
+                np.array([[int_low, int_low + 1, 1]])
+            ), (
+                [int_low, int_high],
+                np.array(
+                    [
+                        [int_low, int_low + 1, 1],
+                        [int_high, int_high + 1, 1]
+                    ]
+                )
+            ), (
+                slice(None, float_high, 8),
+                np.array([[0, int_low, 8]])
+            ), (
+                slice(float_low, None, 8),
+                np.array([[int_high, max_int, 8]])
+            ), (
+                slice(float_low, float_high, 8),
+                np.array([[int_low, int_high, 8]])
+            ), (
+                [float_high, float_low],
+                np.array(
+                    [
+                        [int_low - 1, int_low, 1],
+                        [int_high - 1, int_high, 1]
+                    ]
+                )
+            ),
+        ]:
+            result = alphatims.bruker.convert_slice_key_to_int_array(
+                self.data,
+                key,
+                dimension
+            )
+            assert np.array_equal(
+                result,
+                expected_result
+            ), (
+                f"Key '{key}' in dimension '{dimension}' was wrongly "
+                f"converted to {result} instead of "
+                f"{expected_result}"
+            )
 
-    def test_parse_keys(self):
-        pass
-
-    def test_filter_indices(self):
-        pass
+    # def test_parse_keys(self):
+    #     pass
+    #
+    # def test_filter_indices(self):
+    #     pass
 
 
 if __name__ == "__main__":

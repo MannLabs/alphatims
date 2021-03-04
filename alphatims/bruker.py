@@ -1802,16 +1802,25 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
     PrecursorFloatError
         When trying to convert a quad float to precursor index.
     """
+    result = np.empty((0, 3), dtype=np.int64)
+    inverse_of_scans = False
     try:
         iter(key)
     except TypeError:
         if key is None:
             key = slice(None)
         if isinstance(key, slice):
+            if dimension == "scan_indices":
+                if isinstance(key.start, (np.inexact, float)):
+                    if isinstance(key.stop, (np.inexact, float)):
+                        inverse_of_scans = True
             start = key.start
             if not isinstance(start, (np.integer, int)):
                 if start is None:
-                    start = -np.inf
+                    if dimension == "scan_indices":
+                        start = np.inf
+                    else:
+                        start = -np.inf
                 if not isinstance(start, (np.inexact, float)):
                     raise ValueError
                 start = data.convert_to_indices(
@@ -1821,7 +1830,10 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
             stop = key.stop
             if not isinstance(stop, (np.integer, int)):
                 if stop is None:
-                    stop = np.inf
+                    if dimension == "scan_indices":
+                        stop = -np.inf
+                    else:
+                        stop = np.inf
                 if not isinstance(stop, (np.inexact, float)):
                     raise ValueError
                 stop = data.convert_to_indices(
@@ -1833,16 +1845,15 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
                 if step is not None:
                     raise ValueError
                 step = 1
-            if (dimension == "scan_indices") and (start > stop):
-                start, stop = stop, start
-            return np.array([[start, stop, step]])
+            result = np.array([[start, stop, step]])
         elif isinstance(key, (np.integer, int)):
-            return np.array([[key, key + 1, 1]])
+            result = np.array([[key, key + 1, 1]])
         elif isinstance(key, (np.inexact, float)):
             key = data.convert_to_indices(key, return_type=dimension)
-            if (dimension == "scan_indices"):
-                return np.array([[key - 1, key, 1]])
-            return np.array([[key, key + 1, 1]])
+            if dimension == "scan_indices":
+                result = np.array([[key - 1, key, 1]])
+            else:
+                result = np.array([[key, key + 1, 1]])
         else:
             raise ValueError
     else:
@@ -1851,14 +1862,20 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
         step = 1
         if not isinstance(key.ravel()[0], np.integer):
             key = data.convert_to_indices(key, return_type=dimension)
+            if dimension == "scan_indices":
+                key -= 1
         if len(key.shape) == 1:
-            return np.array([key, key + 1, np.repeat(step, key.size)]).T
+            result = np.array([key, key + 1, np.repeat(step, key.size)]).T
         elif len(key.shape) == 2:
             if key.shape[1] != 3:
                 raise ValueError
-            return key
+            result = key
         else:
             raise ValueError
+    if inverse_of_scans:
+        return result[:, [1, 0, 2]]
+    else:
+        return result
 
 
 @alphatims.utils.njit
