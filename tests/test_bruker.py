@@ -298,6 +298,7 @@ class TestSlicing(unittest.TestCase):
         df = self.data[:100., :1.]
         assert np.min(df.mobility_values) < 1
         assert np.min(df.rt_values) < 100.
+        # TEST
 
 
 if __name__ == "__main__":
