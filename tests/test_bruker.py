@@ -227,18 +227,60 @@ class TestSlicing(unittest.TestCase):
                 key,
                 dimension
             )
-            assert np.array_equal(
-                result,
-                expected_result
-            ), (
+            assert np.array_equal(result, expected_result), (
                 f"Key '{key}' in dimension '{dimension}' was wrongly "
                 f"converted to {result} instead of "
                 f"{expected_result}"
             )
 
-    # def test_parse_keys(self):
-    #     pass
-    #
+    def test_parse_keys(self):
+        key = (1,)
+        result = alphatims.bruker.parse_keys(self.data, key)
+        expected_result = {
+            "frame_indices": np.array(
+                [[1, 2, 1]],
+                dtype=np.int64
+            ),
+            "scan_indices": np.array(
+                [[0, self.data.scan_max_index, 1]],
+                dtype=np.int64
+            ),
+            "tof_indices": np.array(
+                [[0, self.data.tof_max_index, 1]],
+                dtype=np.int64
+            ),
+            "precursor_indices": np.array(
+                [[0, self.data.precursor_max_index, 1]],
+                dtype=np.int64
+            ),
+            "quad_values": np.array(
+                [[-np.inf, np.inf]],
+                dtype=np.float64
+            ),
+            "intensity_values": np.array(
+                [[-np.inf, np.inf]],
+                dtype=np.float64
+            ),
+        }
+        for dimension in [
+            "frame_indices",
+            "scan_indices",
+            "tof_indices",
+            "precursor_indices",
+            "quad_values",
+            "intensity_values",
+        ]:
+            assert np.array_equal(
+                result[dimension],
+                expected_result[dimension]
+            ), (
+                f"Key '{key}' in dimension '{dimension}' was wrongly "
+                f"converted to {result[dimension]} instead of "
+                f"{expected_result[dimension]}"
+            )
+
+
+
     # def test_filter_indices(self):
     #     pass
 

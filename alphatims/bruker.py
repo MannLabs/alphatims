@@ -381,7 +381,7 @@ def read_bruker_binary(
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
-    max_scan_count = frames.NumScans.max()
+    max_scan_count = frames.NumScans.max() + 1
     scan_count = max_scan_count * frames.shape[0]
     scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
     intensities = np.empty(frame_indptr[-1], dtype=np.uint16)
@@ -390,7 +390,7 @@ def read_bruker_binary(
     tims_offset_values = frames.TimsId.values
     logging.info(
         f"Reading {frame_indptr.size - 2:,} frames with "
-        f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
+        f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
     )
     process_frame(
         range(1, len(frames)),
@@ -812,7 +812,7 @@ class TimsTOF(object):
             zip(global_meta_data.Key, global_meta_data.Value)
         )
         self._frame_max_index = self.frames.shape[0]
-        self._scan_max_index = int(self.frames.NumScans.max())
+        self._scan_max_index = int(self.frames.NumScans.max()) + 1
         self._tof_max_index = int(self.meta_data["DigitizerNumSamples"])
         self._rt_values = self.frames.Time.values.astype(np.float64)
         self._mobility_min_value = float(
@@ -1199,7 +1199,7 @@ class TimsTOF(object):
             if values == -np.inf:
                 return 0
             elif values == np.inf:
-                return self.precursor_max_index + 1
+                return self.precursor_max_index
         else:
             raise KeyError(f"return_type '{return_type}' is invalid")
 
@@ -1423,7 +1423,7 @@ class TimsTOF(object):
         self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
         self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
         self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
-        self._precursor_max_index = int(np.max(self.precursor_indices))
+        self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
 
     def index_precursors(self) -> tuple:
         """Retrieve all MS2 spectra acquired with DDA.
@@ -1440,7 +1440,7 @@ class TimsTOF(object):
         """
         precursor_order = np.argsort(self.precursor_indices)
         precursor_offsets = np.empty(
-            self.precursor_max_index + 2,
+            self.precursor_max_index + 1,
             dtype=np.int64
         )
         precursor_offsets[0] = 0
@@ -1455,7 +1455,7 @@ class TimsTOF(object):
             self.quad_indptr[offsets + 1] - self.quad_indptr[offsets]
         )
         spectrum_indptr = np.empty(
-            self.precursor_max_index + 2,
+            self.precursor_max_index + 1,
             dtype=np.int64
         )
         spectrum_indptr[1:] = counts[
@@ -1466,7 +1466,7 @@ class TimsTOF(object):
         spectrum_tof_indices = np.empty(spectrum_indptr[-1], dtype=np.uint32)
         spectrum_intensity_values = np.empty_like(spectrum_tof_indices)
         set_precursor(
-            range(1, self.precursor_max_index + 1),
+            range(1, self.precursor_max_index),
             precursor_order,
             precursor_offsets,
             self.quad_indptr,
@@ -1488,7 +1488,7 @@ class TimsTOF(object):
         )
         spectrum_intensity_values
         trim_spectra(
-            range(1, self.precursor_max_index + 1),
+            range(1, self.precursor_max_index),
             spectrum_tof_indices,
             spectrum_intensity_values,
             spectrum_indptr,
