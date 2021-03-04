@@ -511,26 +511,24 @@ intensity_end = pn.widgets.IntInput(
 
 
 selection_actions = pn.pane.Markdown(
-    'Redo / Undo',
+    'Undo | Redo',
     align='center',
     margin=(-18, 0, 0, 0)
 )
 undo_button = pn.widgets.Button(
     name='\u21b6',
-    # button_type='primary',
     disabled=False,
     height=32,
     width=50,
-    margin=(-3, 20, 0, 20),
+    margin=(-3, 5, 0, 0),
     align="center"
 )
 redo_button = pn.widgets.Button(
     name='↷',
-    # button_type='primary',
     disabled=False,
     height=32,
     width=50,
-    margin=(-3, 20, 0, 0),
+    margin=(-3, 0, 0, 5),
     align="center"
 )
 
@@ -542,7 +540,7 @@ player_title = pn.pane.Markdown(
     margin=(20, 0, -20, 0)
 )
 player = pn.widgets.DiscretePlayer(
-    interval=1800,
+    interval=2200,
     value=1,
     show_loop_controls=True,
     loop_policy='once',
@@ -1123,6 +1121,7 @@ def exit_button_event(*args):
     # precursor_fragment_toggle_button.param.value,
     select_ms1_precursors.param.value,
     select_ms2_fragments.param.value,
+
 )
 def update_plots_and_settings(*args):
     if DATASET:
