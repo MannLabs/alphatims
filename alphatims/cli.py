@@ -263,6 +263,19 @@ def export_hdf(**kwargs):
         )
 
 
+@export.command("mgf", help="Export BRUKER_D_FOLDER as mgf file. (NotImplemented)")
+@cli_option("bruker_d_folder", as_argument=True)
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("disable_log_stream")
+@cli_option("parameter_file")
+@cli_option("export_parameters")
+def export_mgf(**kwargs):
+    with parse_cli_settings("export mgf", **kwargs) as parameters:
+        pass
+        # TODO:
+
 @export.command(
     "selection",
     help="Load a BRUKER_D_FOLDER and select a data slice for export."
@@ -314,7 +327,7 @@ def export_selection(**kwargs):
             precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
         if "fragments" in parameters["ion_type"]:
             quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                data, slice(*parameters["quad_mz_bounds"])
+                slice(*parameters["quad_mz_bounds"])
             )
             precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
                 data,
