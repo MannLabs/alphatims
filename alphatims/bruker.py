@@ -1811,9 +1811,8 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
             key = slice(None)
         if isinstance(key, slice):
             if dimension == "scan_indices":
-                if isinstance(key.start, (np.inexact, float)):
-                    if isinstance(key.stop, (np.inexact, float)):
-                        inverse_of_scans = True
+                if isinstance(key.start, (np.inexact, float)) or isinstance(key.stop, (np.inexact, float)):
+                    key = slice(key.stop, key.start, key.step)
             start = key.start
             if not isinstance(start, (np.integer, int)):
                 if start is None:

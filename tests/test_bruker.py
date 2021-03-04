@@ -205,10 +205,10 @@ class TestSlicing(unittest.TestCase):
                 )
             ), (
                 slice(None, float_high, 8),
-                np.array([[0, int_low, 8]])
+                np.array([[int_low, max_int, 8]])
             ), (
                 slice(float_low, None, 8),
-                np.array([[int_high, max_int, 8]])
+                np.array([[0, int_high, 8]])
             ), (
                 slice(float_low, float_high, 8),
                 np.array([[int_low, int_high, 8]])
@@ -234,6 +234,7 @@ class TestSlicing(unittest.TestCase):
             )
 
     def test_parse_keys(self):
+        # TODO: expand testing?
         key = (1,)
         result = alphatims.bruker.parse_keys(self.data, key)
         expected_result = {
@@ -279,10 +280,24 @@ class TestSlicing(unittest.TestCase):
                 f"{expected_result[dimension]}"
             )
 
-
-
-    # def test_filter_indices(self):
-    #     pass
+    def test_data_slicing(self):
+        df = self.data[1, :700, 0, 500.1:600.5, [100, 200]]
+        min_values = df.min()
+        assert min_values.frame_indices >= 1
+        assert min_values.mz_values >= 500.1
+        max_values = df.max()
+        assert max_values.frame_indices < 2
+        assert max_values.scan_indices < 700
+        assert max_values.mz_values < 600.5
+        assert len(
+            set(np.unique(df.intensity_values)) - set([100, 200])
+        ) == 0
+        df = self.data[:100., 1.:]
+        assert np.min(df.mobility_values) >= 1
+        assert np.min(df.rt_values) < 100.
+        df = self.data[:100., :1.]
+        assert np.min(df.mobility_values) < 1
+        assert np.min(df.rt_values) < 100.
 
 
 if __name__ == "__main__":
