@@ -253,7 +253,6 @@ card_divider = pn.pane.HTML(
 save_hdf_path = pn.widgets.TextInput(
     name='Specify a path to save all data as a portable .hdf file:',
     placeholder='e.g. D:\Bruker',
-    # width=240,
     margin=(5, 0, 0, 28)
 )
 save_hdf_button = pn.widgets.Button(
@@ -281,7 +280,6 @@ save_message = pn.pane.Alert(
 save_sliced_data_path = pn.widgets.TextInput(
     name='Specify a path to save the currently selected data as .csv file:',
     placeholder='e.g. D:\Bruker',
-    # width=240,
     margin=(5, 0, 0, 28)
 )
 save_sliced_data_button = pn.widgets.Button(
@@ -309,23 +307,18 @@ save_sliced_data_message = pn.pane.Alert(
 frame_slider = pn.widgets.IntRangeSlider(
     show_value=False,
     bar_color='#045082',
-    start=1,
     step=1,
     margin=(10, 20, 10, 20)
 )
 frame_start = pn.widgets.IntInput(
     name='Start frame',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 14)
 )
 rt_start = pn.widgets.FloatInput(
     name='Start RT (min)',
-    value=0.00,
     step=0.50,
-    start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -333,16 +326,13 @@ rt_start = pn.widgets.FloatInput(
 )
 frame_end = pn.widgets.IntInput(
     name='End frame',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 rt_end = pn.widgets.FloatInput(
     name='End RT (min)',
     step=0.50,
-    start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -352,27 +342,21 @@ rt_end = pn.widgets.FloatInput(
 
 # scans/IM selection
 scan_slider = pn.widgets.IntRangeSlider(
-    # name='Scans',
     show_value=False,
     bar_color='#045082',
     width=390,
-    start=1,
     step=1,
     margin=(20, 0, 10, 28)
 )
 scan_start = pn.widgets.IntInput(
     name='Start scan',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 im_start = pn.widgets.FloatInput(
     name='Start IM',
-    # value=0.00,
     step=0.10,
-    # start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -381,14 +365,12 @@ im_start = pn.widgets.FloatInput(
 scan_end = pn.widgets.IntInput(
     name='End scan',
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 im_end = pn.widgets.FloatInput(
     name='End IM',
     step=0.10,
-    # start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -398,27 +380,21 @@ im_end = pn.widgets.FloatInput(
 
 # tof and m/z selection
 tof_slider = pn.widgets.IntRangeSlider(
-    # name='TOF',
     show_value=False,
     bar_color='#045082',
     width=390,
-    start=1,
     step=1,
     margin=(20, 0, 10, 28)
 )
 tof_start = pn.widgets.IntInput(
     name='Start TOF',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 mz_start = pn.widgets.FloatInput(
     name='Start m/z',
-    value=0.00,
     step=0.10,
-    start=0.00,
     width=80,
     format='0.00',
     margin=(0, 0, 0, 20),
@@ -426,16 +402,13 @@ mz_start = pn.widgets.FloatInput(
 )
 tof_end = pn.widgets.IntInput(
     name='End TOF',
-    value=2,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 mz_end = pn.widgets.FloatInput(
     name='End m/z',
     step=0.10,
-    start=0.00,
     width=85,
     format='0.00',
     margin=(0, 0, 0, 20),
@@ -460,22 +433,17 @@ select_ms2_fragments = pn.widgets.Checkbox(
 
 # quad selection
 quad_slider = pn.widgets.RangeSlider(
-    # name='Quad',
     show_value=False,
     bar_color='#045082',
     align="center",
-    start=0,
-    value=(0, 0),
     step=1,
     margin=(5, 20),
     disabled=True
 )
 quad_start = pn.widgets.FloatInput(
     name='Start QUAD',
-    value=0.00,
     step=0.50,
     align="center",
-    start=0.00,
     width=80,
     format='0.00',
     margin=(0, 0, 0, 0),
@@ -483,10 +451,8 @@ quad_start = pn.widgets.FloatInput(
 )
 quad_end = pn.widgets.FloatInput(
     name='End QUAD',
-    value=0.00,
     step=0.50,
     align="center",
-    start=0.00,
     width=80,
     format='0.00',
     margin=(0, 0, 0, 0),
@@ -496,31 +462,25 @@ quad_end = pn.widgets.FloatInput(
 
 #  precursor selection
 precursor_slider = pn.widgets.IntRangeSlider(
-    # name='TOF',
     show_value=False,
     bar_color='#045082',
     align="center",
-    start=1,
     step=1,
     margin=(5, 20),
     disabled=True
 )
 precursor_start = pn.widgets.IntInput(
     name='Start precursor',
-    value=1,
     step=1,
     align="center",
-    start=1,
     width=80,
     margin=(0, 0, 0, 0),
     disabled=True
 )
 precursor_end = pn.widgets.IntInput(
     name='End precursor',
-    value=2,
     step=1,
     align="center",
-    start=1,
     width=80,
     margin=(0, 0, 0, 0),
     disabled=True
@@ -533,23 +493,18 @@ intensity_slider = pn.widgets.RangeSlider(
     show_value=False,
     bar_color='#045082',
     width=390,
-    start=1,
     step=1,
     margin=(20, 0, 10, 28)
 )
 intensity_start = pn.widgets.IntInput(
     name='Start intensity',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 intensity_end = pn.widgets.IntInput(
     name='End intensity',
-    value=2,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
@@ -1028,9 +983,10 @@ def init_settings(*args):
         global STACK
         global GLOBAL_INIT_LOCK
         GLOBAL_INIT_LOCK = True
+
         STACK = alphatims.utils.Global_Stack(
             {
-                "intensities": (0, DATASET.intensity_max_value),
+                "intensities": (0, int(DATASET.intensity_max_value)),
                 "frames": (1, 2),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
@@ -1045,6 +1001,13 @@ def init_settings(*args):
                 ),
             }
         )
+
+        update_frame_widgets_to_stack()
+        update_scan_widgets_to_stack()
+        update_quad_widgets_to_stack()
+        update_precursor_widgets_to_stack()
+        update_tof_widgets_to_stack()
+        update_intensity_widgets_to_stack()
 
         frames_msmstype = DATASET.frames.query('MsMsType == 0')
         step = len(frames_msmstype) // 10
@@ -1081,13 +1044,6 @@ def init_settings(*args):
         intensity_start.start, intensity_start.end = STACK["intensities"]
         intensity_end.start, intensity_end.end = STACK["intensities"]
 
-        update_frame_widgets_to_stack()
-        update_scan_widgets_to_stack()
-        update_quad_widgets_to_stack()
-        update_precursor_widgets_to_stack()
-        update_tof_widgets_to_stack()
-        update_intensity_widgets_to_stack()
-
         save_hdf_path.value = os.path.join(
             DATASET.directory,
             f"{DATASET.sample_name}.hdf",
@@ -1097,12 +1053,15 @@ def init_settings(*args):
             f"{DATASET.sample_name}_data_slice.csv",
         )
 
+        scan_start.value = 0
+
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
         # first init needed:
         plot2_x_axis.value = 'm/z, Th'
 
         upload_spinner.value = False
+
         return settings
     else:
         return None
@@ -1382,6 +1341,9 @@ def update_tof_widgets_to_stack():
 
 
 def update_intensity_widgets_to_stack():
+    print('\n\n')
+    print(intensity_slider.value)
+    print('\n\n')
     intensity_slider.value = STACK["intensities"]
     intensity_start.value, intensity_end.value = STACK["intensities"]
 
