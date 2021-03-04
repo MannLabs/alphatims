@@ -109,6 +109,7 @@ def heatmap(
     z_axis_label: str = "Intensity",
     width: int = 1000,
     height: int = 300,
+    rescale_to_minutes: bool = True,
 ):
     """Create a scatterplot / heatmap for a dataframe.
 
@@ -147,6 +148,10 @@ def heatmap(
     height : int
         The height of this plot.
         Default is 300.
+    rescale_to_minutes : bool
+        If True, the rt_values of the dataframe will be divided by 60.
+        WARNING: this updates the dataframe directly and is persistent!
+        Default is True.
 
     Returns
     -------
@@ -169,7 +174,8 @@ def heatmap(
     #         (f'{z_axis_label}', f'@{z_dimension}'),
     #     ]
     # )
-    df["rt_values"] /= 60
+    if rescale_to_minutes:
+        df["rt_values"] /= 60
     scatter = df.hvplot.scatter(
         x=x_dimension,
         y=y_dimension,
@@ -190,12 +196,14 @@ def heatmap(
         datashade=True,
         dynspread=True,
         cmap=colorcet.fire,
-        nonselection_color='green',
-        selection_color='blue',
-        color="white",
+        # nonselection_color='green',
+        # selection_color='blue',
+        # color="white",
         width=width,
         height=height,
     )
+    # df["rt_values"] *= 60
+    scatter.opts(bgcolor="black")
     return scatter
 
 

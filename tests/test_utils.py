@@ -1,4 +1,4 @@
-#!python
+#!python -m unittest tests.test_utils
 """This module provides unit tests for alphatims.utils."""
 
 # builtin
