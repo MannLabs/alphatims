@@ -1249,7 +1249,7 @@ def update_selected_indices_and_dataframe():
             precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
         if select_ms2_fragments.value:
             quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                DATASET, slice(*quad_slider.value)
+                slice(*quad_slider.value)
             )
             precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
                 DATASET, slice(*precursor_slider.value), "precursor_indices"
@@ -1260,7 +1260,7 @@ def update_selected_indices_and_dataframe():
             DATASET, slice(*tof_slider.value), "tof_indices"
         )
         intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-            DATASET, slice(*intensity_slider.value)
+            slice(*intensity_slider.value)
         )
         SELECTED_INDICES = alphatims.bruker.filter_indices(
             frame_slices=frame_values,

@@ -807,6 +807,7 @@ class TimsTOF(object):
             self.frames,
             bruker_d_folder_name,
         )
+        logging.info(f"Indexing {bruker_d_folder_name}...")
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -1713,11 +1714,10 @@ def parse_keys(data: TimsTOF, keys) -> dict:
             )
             dimension_slices[
                 "quad_values"
-            ] = convert_slice_key_to_float_array(data, keys[i])
+            ] = convert_slice_key_to_float_array(keys[i])
     dimension_slices[
         "intensity_values"
     ] = convert_slice_key_to_float_array(
-        data,
         keys[-1] if (len(keys) > len(dimensions)) else slice(None)
     )
     if "quad_values" not in dimension_slices:
@@ -1728,15 +1728,13 @@ def parse_keys(data: TimsTOF, keys) -> dict:
     return dimension_slices
 
 
-def convert_slice_key_to_float_array(data: TimsTOF, key):
-    """Convert a key of a data object to a slice float array.
+def convert_slice_key_to_float_array(key):
+    """Convert a key to a slice float array.
 
     NOTE: This function should only be used for QUAD or DETECTOR dimensions.
 
     Parameters
     ----------
-    data : alphatims.bruker.TimsTOF
-        The TimsTOF objext for which to get slices.
     key : slice, int, float, None, iterable
         The key that needs to be converted.
 
@@ -1771,7 +1769,7 @@ def convert_slice_key_to_float_array(data: TimsTOF, key):
             key = np.array(key, dtype=np.float)
         key = key.astype(np.float)
         if len(key.shape) == 1:
-            return np.array([[key, key]]).T
+            return np.array([key, key]).T
         elif len(key.shape) == 2:
             if key.shape[1] != 2:
                 raise ValueError
