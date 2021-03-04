@@ -253,26 +253,26 @@ card_divider = pn.pane.HTML(
 save_hdf_path = pn.widgets.TextInput(
     name='Specify a path to save all data as a portable .hdf file:',
     placeholder='e.g. D:\Bruker',
-    margin=(5, 0, 0, 28)
+    margin=(15, 10, 0, 10)
 )
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
     button_type='default',
     height=31,
     width=100,
-    margin=(23, 10, 0, 15)
+    margin=(10, 10, 0, 0)
 )
 save_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(23, 15, 0, 15),
+    margin=(11, 0, 0, 15),
     width=30,
     height=30
 )
 save_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 15, 20, 30),
+    margin=(-10, 10, 20, 20),
     width=300
 )
 
@@ -280,26 +280,26 @@ save_message = pn.pane.Alert(
 save_sliced_data_path = pn.widgets.TextInput(
     name='Specify a path to save the currently selected data as .csv file:',
     placeholder='e.g. D:\Bruker',
-    margin=(5, 0, 0, 28)
+    margin=(15, 10, 0, 10)
 )
 save_sliced_data_button = pn.widgets.Button(
     name='Save as CSV',
     button_type='default',
     height=31,
     width=100,
-    margin=(23, 10, 0, 15)
+    margin=(10, 10, 0, 0)
 )
 save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(23, 15, 0, 15),
+    margin=(11, 0, 0, 15),
     width=30,
     height=30
 )
 save_sliced_data_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 15, 30, 30),
+    margin=(-10, 10, 0, 20),
     width=300
 )
 
