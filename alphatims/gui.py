@@ -488,7 +488,7 @@ precursor_end = pn.widgets.IntInput(
 
 
 # Intensity selection
-intensity_slider = pn.widgets.RangeSlider(
+intensity_slider = pn.widgets.IntRangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
@@ -1053,8 +1053,6 @@ def init_settings(*args):
             f"{DATASET.sample_name}_data_slice.csv",
         )
 
-        scan_start.value = 0
-
         GLOBAL_INIT_LOCK = False
         STACK.is_locked = False
         # first init needed:
@@ -1341,9 +1339,6 @@ def update_tof_widgets_to_stack():
 
 
 def update_intensity_widgets_to_stack():
-    print('\n\n')
-    print(intensity_slider.value)
-    print('\n\n')
     intensity_slider.value = STACK["intensities"]
     intensity_start.value, intensity_end.value = STACK["intensities"]
 
