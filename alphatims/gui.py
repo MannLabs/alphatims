@@ -1401,6 +1401,7 @@ def update_intensity_widgets_to_stack():
 def check_frames_stack(*args):
     if STACK.is_locked:
         return
+    current_low, current_max = STACK["frames"]
     updated_option, updated_value = STACK.update(
         "frames", frame_slider.value
     )
@@ -1416,11 +1417,22 @@ def check_frames_stack(*args):
         updated_option, updated_value = STACK.update(
             "frames", (int(start_), int(end_))
         )
-    update_frame_widgets_to_stack()
-    update_global_selection(updated_option, updated_value)
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "frames", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "frames", (updated_value[1], updated_value[1] + 1)
+            )
+        update_frame_widgets_to_stack()
+        update_global_selection(updated_option, updated_value)
 
 
 def check_scans_stack():
+    current_low, current_max = STACK["scans"]
     updated_option, updated_value = STACK.update(
         "scans", scan_slider.value
     )
@@ -1436,10 +1448,21 @@ def check_scans_stack():
         updated_option, updated_value = STACK.update(
             "scans", (int(start_), int(end_))
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "scans", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "scans", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_quads_stack():
+    current_low, current_max = STACK["quads"]
     updated_option, updated_value = STACK.update(
         "quads", quad_slider.value
     )
@@ -1447,10 +1470,21 @@ def check_quads_stack():
         updated_option, updated_value = STACK.update(
             "quads", (quad_start.value, quad_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "quads", (updated_value[0], updated_value[0])
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "quads", (updated_value[1], updated_value[1])
+            )
     return updated_option, updated_value
 
 
 def check_precursors_stack():
+    current_low, current_max = STACK["precursors"]
     updated_option, updated_value = STACK.update(
         "precursors", precursor_slider.value
     )
@@ -1458,10 +1492,21 @@ def check_precursors_stack():
         updated_option, updated_value = STACK.update(
             "precursors", (precursor_start.value, precursor_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "precursors", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "precursors", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_tofs_stack():
+    current_low, current_max = STACK["tofs"]
     updated_option, updated_value = STACK.update(
         "tofs", tof_slider.value
     )
@@ -1477,10 +1522,21 @@ def check_tofs_stack():
         updated_option, updated_value = STACK.update(
             "tofs", (int(start_), int(end_))
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "tofs", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "tofs", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_intensities_stack():
+    current_low, current_max = STACK["intensities"]
     updated_option, updated_value = STACK.update(
         "intensities", intensity_slider.value
     )
@@ -1488,4 +1544,14 @@ def check_intensities_stack():
         updated_option, updated_value = STACK.update(
             "intensities", (intensity_start.value, intensity_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                updated_option, updated_value = STACK.update(
+                    "intensities", (updated_value[0], updated_value[0])
+                )
+        elif updated_value[0] >= updated_value[1]:
+            updated_option, updated_value = STACK.update(
+                "intensities", (updated_value[1], updated_value[1])
+            )
     return updated_option, updated_value
