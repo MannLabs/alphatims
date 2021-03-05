@@ -891,20 +891,32 @@ def visualize_tic():
 
 
 def visualize_scatter():
+    axis_dict = {
+        "m/z, Th": "mz",
+        "RT, min": "rt",
+        "Inversed IM, V·s·cm\u207B\u00B2": "mobility",
+        "Intensity": "intensity",
+    }
     return alphatims.plotting.heatmap(
         DATAFRAME,
-        plot1_x_axis.value,
-        plot1_y_axis.value,
+        axis_dict[plot1_x_axis.value],
+        axis_dict[plot1_y_axis.value],
         WHOLE_TITLE,
         width=None
     )
 
 
 def visualize_1d_plot():
+    axis_dict = {
+        "m/z, Th": "mz",
+        "RT, min": "rt",
+        "Inversed IM, V·s·cm\u207B\u00B2": "mobility",
+        "Intensity": "intensity",
+    }
     line_plot = alphatims.plotting.line_plot(
         DATASET,
         SELECTED_INDICES,
-        plot2_x_axis.value,
+        axis_dict[plot2_x_axis.value],
         WHOLE_TITLE,
         width=None
     )

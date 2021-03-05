@@ -291,7 +291,7 @@ Full details are available in the [perfomance notebook](nbs/performance.ipynb).
 
 ### RAM
 
-On average, RAM requires twice the size of a raw Bruker .d folder.
+On average, RAM usage is twice the size of a raw Bruker .d folder.
 
 ---
 ## Troubleshooting

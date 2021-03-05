@@ -376,9 +376,9 @@ def export_selection(**kwargs):
             df.to_csv(f"{output_file_name_base}.csv", index=False)
         if ("html" in parameters['format']) or ("png" in parameters['format']):
             labels = {
-                "tof_mz": "m/z, Th",
-                "rt": "RT, min",
-                "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
+                "tof_mz": "mz",
+                "rt": "rt",
+                "mobility": "mobility",
                 "intensity": "intensity",
             }
             x_axis = labels[parameters["x_axis"]]

@@ -15,7 +15,7 @@ def line_plot(
     selected_indices,
     x_axis_label: str,
     title: str = "",
-    y_axis_label: str = "Intensity",
+    y_axis_label: str = "intensity",
     remove_zeros: bool = False,
     width: int = 1000,
     height: int = 300,
@@ -34,16 +34,16 @@ def line_plot(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - rt
+            - mobility
+            - mz
     title : str
         The title of this plot.
         Will be prepended with "Spectrum", "Mobilogram" or "XIC".
         Default is "".
     y_axis_label : str
         Should not be set for a 1D line plot.
-        Default is "Intensity".
+        Default is "intensity".
     remove_zeros : bool
         If True, zeros are removed.
         Note that a line plot connects consecutive points,
@@ -63,6 +63,14 @@ def line_plot(
     : hv.Curve
         A curve plot that represents an XIC, mobilogram or spectrum.
     """
+    axis_dict = {
+        "mz": "m/z, Th",
+        "rt": "RT, min",
+        "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
+        "intensity": "Intensity",
+    }
+    x_axis_label = axis_dict[x_axis_label]
+    y_axis_label = axis_dict[y_axis_label]
     labels = {
         'm/z, Th': "mz_values",
         'RT, min': "rt_values",
@@ -106,7 +114,7 @@ def heatmap(
     x_axis_label: str,
     y_axis_label: str,
     title: str = "",
-    z_axis_label: str = "Intensity",
+    z_axis_label: str = "intensity",
     width: int = 1000,
     height: int = 300,
     rescale_to_minutes: bool = True,
@@ -125,23 +133,23 @@ def heatmap(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - mz
+            - rt
+            - mobility
     y_axis_label : str
         A label that is used for projection
         (i.e. intensities are summed) on the y-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - mz
+            - rt
+            - mobility
     title : str
         The title of this plot.
         Will be prepended with "Heatmap".
         Default is "".
     z_axis_label : str
         Should not be set for a 2D scatterplot / heatmap.
-        Default is "Intensity".
+        Default is "intensity".
     width : int
         The width of this plot.
         Default is 1000.
@@ -158,6 +166,15 @@ def heatmap(
     hv.Scatter
         A scatter plot projected on the 2 dimensions.
     """
+    axis_dict = {
+        "mz": "m/z, Th",
+        "rt": "RT, min",
+        "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
+        "intensity": "Intensity",
+    }
+    x_axis_label = axis_dict[x_axis_label]
+    y_axis_label = axis_dict[y_axis_label]
+    z_axis_label = axis_dict[z_axis_label]
     labels = {
         'm/z, Th': "mz_values",
         'RT, min': "rt_values",
