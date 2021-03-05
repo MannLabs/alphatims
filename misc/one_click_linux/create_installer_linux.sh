@@ -7,7 +7,6 @@ conda activate alphatimsinstaller
 # call conda install git -y
 # call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]' --use-feature=2020-resolver
 # brew install freetype
-pip install '../../.[gui]'
-pip install pyinstaller
+pip install '../../.[plotting, develop]'
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate

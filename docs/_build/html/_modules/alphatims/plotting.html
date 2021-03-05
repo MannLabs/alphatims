@@ -169,7 +169,7 @@
     <span class="n">selected_indices</span><span class="p">,</span>
     <span class="n">x_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
     <span class="n">remove_zeros</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
@@ -188,16 +188,16 @@
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
+<span class="sd">            - mz</span>
 <span class="sd">    title : str</span>
 <span class="sd">        The title of this plot.</span>
 <span class="sd">        Will be prepended with &quot;Spectrum&quot;, &quot;Mobilogram&quot; or &quot;XIC&quot;.</span>
 <span class="sd">        Default is &quot;&quot;.</span>
 <span class="sd">    y_axis_label : str</span>
 <span class="sd">        Should not be set for a 1D line plot.</span>
-<span class="sd">        Default is &quot;Intensity&quot;.</span>
+<span class="sd">        Default is &quot;intensity&quot;.</span>
 <span class="sd">    remove_zeros : bool</span>
 <span class="sd">        If True, zeros are removed.</span>
 <span class="sd">        Note that a line plot connects consecutive points,</span>
@@ -217,6 +217,14 @@
 <span class="sd">    : hv.Curve</span>
 <span class="sd">        A curve plot that represents an XIC, mobilogram or spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axis_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/z, Th&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rt&quot;</span><span class="p">:</span> <span class="s2">&quot;RT, min&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobility&quot;</span><span class="p">:</span> <span class="s2">&quot;Inversed IM, V·s·cm</span><span class="se">\u207B\u00B2</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;intensity&quot;</span><span class="p">:</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">x_axis_label</span><span class="p">]</span>
+    <span class="n">y_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">y_axis_label</span><span class="p">]</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;m/z, Th&#39;</span><span class="p">:</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">,</span>
         <span class="s1">&#39;RT, min&#39;</span><span class="p">:</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">,</span>
@@ -260,9 +268,10 @@
     <span class="n">x_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">z_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="n">z_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">rescale_to_minutes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a scatterplot / heatmap for a dataframe.</span>
 
@@ -278,35 +287,48 @@
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - mz</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
 <span class="sd">    y_axis_label : str</span>
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the y-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - mz</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
 <span class="sd">    title : str</span>
 <span class="sd">        The title of this plot.</span>
 <span class="sd">        Will be prepended with &quot;Heatmap&quot;.</span>
 <span class="sd">        Default is &quot;&quot;.</span>
 <span class="sd">    z_axis_label : str</span>
 <span class="sd">        Should not be set for a 2D scatterplot / heatmap.</span>
-<span class="sd">        Default is &quot;Intensity&quot;.</span>
+<span class="sd">        Default is &quot;intensity&quot;.</span>
 <span class="sd">    width : int</span>
 <span class="sd">        The width of this plot.</span>
 <span class="sd">        Default is 1000.</span>
 <span class="sd">    height : int</span>
 <span class="sd">        The height of this plot.</span>
 <span class="sd">        Default is 300.</span>
+<span class="sd">    rescale_to_minutes : bool</span>
+<span class="sd">        If True, the rt_values of the dataframe will be divided by 60.</span>
+<span class="sd">        WARNING: this updates the dataframe directly and is persistent!</span>
+<span class="sd">        Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    hv.Scatter</span>
 <span class="sd">        A scatter plot projected on the 2 dimensions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axis_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/z, Th&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rt&quot;</span><span class="p">:</span> <span class="s2">&quot;RT, min&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobility&quot;</span><span class="p">:</span> <span class="s2">&quot;Inversed IM, V·s·cm</span><span class="se">\u207B\u00B2</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;intensity&quot;</span><span class="p">:</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">x_axis_label</span><span class="p">]</span>
+    <span class="n">y_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">y_axis_label</span><span class="p">]</span>
+    <span class="n">z_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">z_axis_label</span><span class="p">]</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;m/z, Th&#39;</span><span class="p">:</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">,</span>
         <span class="s1">&#39;RT, min&#39;</span><span class="p">:</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">,</span>
@@ -323,7 +345,8 @@
     <span class="c1">#         (f&#39;{z_axis_label}&#39;, f&#39;@{z_dimension}&#39;),</span>
     <span class="c1">#     ]</span>
     <span class="c1"># )</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;rt_values&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">60</span>
+    <span class="k">if</span> <span class="n">rescale_to_minutes</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;rt_values&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">60</span>
     <span class="n">scatter</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">hvplot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
         <span class="n">x</span><span class="o">=</span><span class="n">x_dimension</span><span class="p">,</span>
         <span class="n">y</span><span class="o">=</span><span class="n">y_dimension</span><span class="p">,</span>
@@ -350,6 +373,7 @@
         <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
         <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="c1"># df[&quot;rt_values&quot;] *= 60</span>
     <span class="n">scatter</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">scatter</span></div>
 
