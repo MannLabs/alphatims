@@ -313,6 +313,21 @@ def export_selection(**kwargs):
         import alphatims.plotting
         import holoviews as hv
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        if parameters["rt_bounds"][0] < 0:
+            parameters["rt_bounds"] = (
+                int(-parameters["rt_bounds"][0]),
+                int(-parameters["rt_bounds"][1]),
+            )
+        if parameters["mobility_bounds"][0] < 0:
+            parameters["mobility_bounds"] = (
+                int(-parameters["mobility_bounds"][0]),
+                int(-parameters["mobility_bounds"][1]),
+            )
+        if parameters["tof_mz_bounds"][0] < 0:
+            parameters["tof_mz_bounds"] = (
+                int(-parameters["tof_mz_bounds"][0]),
+                int(-parameters["tof_mz_bounds"][1]),
+            )
         frame_values = alphatims.bruker.convert_slice_key_to_int_array(
             data, slice(*parameters["rt_bounds"]), "frame_indices"
         )
