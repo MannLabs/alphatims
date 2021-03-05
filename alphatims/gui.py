@@ -926,6 +926,8 @@ def visualize_1d_plot():
 def upload_data(*args):
     sys.path.append('../')
     global DATASET
+    global DATAFRAME
+    global SELECTED_INDICES
     global WHOLE_TITLE
     if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
         ext = os.path.splitext(upload_file.value)[-1]
@@ -945,6 +947,9 @@ def upload_data(*args):
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
                 upload_spinner.value = True
+                DATASET = None
+                DATAFRAME = None
+                SELECTED_INDICES = None
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
@@ -1308,8 +1313,8 @@ def update_widgets(updated_option):
     with STACK.lock():
         if updated_option == "show_fragments":
             update_toggle_fragments()
-        # if updated_option == "frames":
-        #     update_frame_widgets_to_stack()
+        if updated_option == "frames":
+            update_frame_widgets_to_stack()
         if updated_option == "scans":
             update_scan_widgets_to_stack()
         if updated_option == "quads":
@@ -1415,10 +1420,12 @@ def check_frames_stack(*args):
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "frames", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "frames", (updated_value[1], updated_value[1] + 1)
             )
@@ -1446,10 +1453,12 @@ def check_scans_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "scans", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "scans", (updated_value[1], updated_value[1] + 1)
             )
@@ -1468,10 +1477,12 @@ def check_quads_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "quads", (updated_value[0], updated_value[0])
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "quads", (updated_value[1], updated_value[1])
             )
@@ -1490,10 +1501,12 @@ def check_precursors_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "precursors", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "precursors", (updated_value[1], updated_value[1] + 1)
             )
@@ -1520,10 +1533,12 @@ def check_tofs_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "tofs", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "tofs", (updated_value[1], updated_value[1] + 1)
             )
@@ -1542,10 +1557,12 @@ def check_intensities_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "intensities", (updated_value[0], updated_value[0])
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "intensities", (updated_value[1], updated_value[1])
             )
