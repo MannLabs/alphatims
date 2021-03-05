@@ -795,6 +795,26 @@ export_data_card.jscallback(
     args={'card': export_data_card}
 )
 
+strike_title = pn.pane.Markdown(
+    'Strike count (limit / current estimate)',
+    align='center',
+    margin=(-18, 0, 0, 0)
+)
+strike_threshold = pn.widgets.IntInput(
+    # name="Strike count upper limit",
+    step=1,
+    width=100,
+    value=10000000,
+    margin=(0, 0, 0, 14)
+)
+strike_estimate = pn.widgets.IntInput(
+    # name='Strike count estimate',
+    step=1,
+    width=100,
+    value=0,
+    margin=(0, 0, 0, 14),
+    disabled=True
+)
 
 # putting together all settings widget
 settings = pn.Column(
@@ -823,9 +843,18 @@ settings = pn.Column(
             ),
             align="center"
         ),
+        pn.Column(
+            strike_title,
+            pn.Row(
+                strike_threshold,
+                strike_estimate,
+            ),
+            align="center"
+        ),
         align="center",
-        margin=(0,0,20,0)
+        margin=(0, 0, 20, 0)
     ),
+    pn.Spacer(sizing_mode='stretch_height'),
     width=460,
     align='center',
     margin=(0, 0, 20, 0),
@@ -897,6 +926,8 @@ def visualize_1d_plot():
 def upload_data(*args):
     sys.path.append('../')
     global DATASET
+    global DATAFRAME
+    global SELECTED_INDICES
     global WHOLE_TITLE
     if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
         ext = os.path.splitext(upload_file.value)[-1]
@@ -916,6 +947,9 @@ def upload_data(*args):
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
                 upload_spinner.value = True
+                DATASET = None
+                DATAFRAME = None
+                SELECTED_INDICES = None
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
@@ -1184,54 +1218,66 @@ def undo(*args):
     return update_global_selection(updated_option, updated_value)
 
 
+def estimate_count():
+    estimated_count = len(DATASET)
+    estimated_count *= np.diff(frame_slider.value) / DATASET.frame_max_index
+    estimated_count *= np.diff(scan_slider.value) / DATASET.scan_max_index
+    estimated_count *= np.diff(tof_slider.value) / DATASET.tof_max_index
+    strike_estimate.value = int(estimated_count)
+    return estimated_count
+
 # Control functions
 def update_selected_indices_and_dataframe():
     global SELECTED_INDICES
     global DATAFRAME
     if DATASET:
-        frame_values = alphatims.bruker.convert_slice_key_to_int_array(
-            DATASET, slice(*frame_slider.value), "frame_indices"
-        )
-        scan_values = alphatims.bruker.convert_slice_key_to_int_array(
-            DATASET, slice(*scan_slider.value), "scan_indices"
-        )
-        if select_ms1_precursors.value:
-            quad_values = np.array([[-1, 0]])
-            precursor_values = np.array([[0, 1, 1]])
+        estimated_count = estimate_count()
+        if estimated_count > strike_threshold.value:
+            SELECTED_INDICES = np.empty((0,), dtype=np.int64)
         else:
-            quad_values = np.empty(shape=(0, 2), dtype=np.float64)
-            precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
-        if select_ms2_fragments.value:
-            quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                slice(*quad_slider.value)
+            frame_values = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*frame_slider.value), "frame_indices"
             )
-            precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
-                DATASET, slice(*precursor_slider.value), "precursor_indices"
+            scan_values = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*scan_slider.value), "scan_indices"
             )
-            quad_values = np.vstack([quad_values, quad_values_])
-            precursor_values = np.vstack([precursor_values, precursor_values_])
-        tof_values = alphatims.bruker.convert_slice_key_to_int_array(
-            DATASET, slice(*tof_slider.value), "tof_indices"
-        )
-        intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-            slice(*intensity_slider.value)
-        )
-        SELECTED_INDICES = alphatims.bruker.filter_indices(
-            frame_slices=frame_values,
-            scan_slices=scan_values,
-            precursor_slices=precursor_values,
-            tof_slices=tof_values,
-            quad_slices=quad_values,
-            intensity_slices=intensity_values,
-            frame_max_index=DATASET.frame_max_index,
-            scan_max_index=DATASET.scan_max_index,
-            push_indptr=DATASET.push_indptr,
-            precursor_indices=DATASET.precursor_indices,
-            quad_mz_values=DATASET.quad_mz_values,
-            quad_indptr=DATASET.quad_indptr,
-            tof_indices=DATASET.tof_indices,
-            intensities=DATASET.intensity_values
-        )
+            if select_ms1_precursors.value:
+                quad_values = np.array([[-1, 0]])
+                precursor_values = np.array([[0, 1, 1]])
+            else:
+                quad_values = np.empty(shape=(0, 2), dtype=np.float64)
+                precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
+            if select_ms2_fragments.value:
+                quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
+                    slice(*quad_slider.value)
+                )
+                precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
+                    DATASET, slice(*precursor_slider.value), "precursor_indices"
+                )
+                quad_values = np.vstack([quad_values, quad_values_])
+                precursor_values = np.vstack([precursor_values, precursor_values_])
+            tof_values = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*tof_slider.value), "tof_indices"
+            )
+            intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
+                slice(*intensity_slider.value)
+            )
+            SELECTED_INDICES = alphatims.bruker.filter_indices(
+                frame_slices=frame_values,
+                scan_slices=scan_values,
+                precursor_slices=precursor_values,
+                tof_slices=tof_values,
+                quad_slices=quad_values,
+                intensity_slices=intensity_values,
+                frame_max_index=DATASET.frame_max_index,
+                scan_max_index=DATASET.scan_max_index,
+                push_indptr=DATASET.push_indptr,
+                precursor_indices=DATASET.precursor_indices,
+                quad_mz_values=DATASET.quad_mz_values,
+                quad_indptr=DATASET.quad_indptr,
+                tof_indices=DATASET.tof_indices,
+                intensities=DATASET.intensity_values
+            )
         DATAFRAME = DATASET.as_dataframe(SELECTED_INDICES)
 
 
@@ -1267,8 +1313,8 @@ def update_widgets(updated_option):
     with STACK.lock():
         if updated_option == "show_fragments":
             update_toggle_fragments()
-        # if updated_option == "frames":
-        #     update_frame_widgets_to_stack()
+        if updated_option == "frames":
+            update_frame_widgets_to_stack()
         if updated_option == "scans":
             update_scan_widgets_to_stack()
         if updated_option == "quads":
@@ -1374,10 +1420,12 @@ def check_frames_stack(*args):
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "frames", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "frames", (updated_value[1], updated_value[1] + 1)
             )
@@ -1405,10 +1453,12 @@ def check_scans_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "scans", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "scans", (updated_value[1], updated_value[1] + 1)
             )
@@ -1427,10 +1477,12 @@ def check_quads_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "quads", (updated_value[0], updated_value[0])
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "quads", (updated_value[1], updated_value[1])
             )
@@ -1449,10 +1501,12 @@ def check_precursors_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "precursors", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "precursors", (updated_value[1], updated_value[1] + 1)
             )
@@ -1479,10 +1533,12 @@ def check_tofs_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "tofs", (updated_value[0], updated_value[0] + 1)
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "tofs", (updated_value[1], updated_value[1] + 1)
             )
@@ -1501,10 +1557,12 @@ def check_intensities_stack():
     if updated_value is not None:
         if current_low != updated_value[0]:
             if updated_value[0] >= updated_value[1]:
+                STACK.undo()
                 updated_option, updated_value = STACK.update(
                     "intensities", (updated_value[0], updated_value[0])
                 )
         elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
             updated_option, updated_value = STACK.update(
                 "intensities", (updated_value[1], updated_value[1])
             )
