@@ -795,15 +795,20 @@ export_data_card.jscallback(
     args={'card': export_data_card}
 )
 
+strike_title = pn.pane.Markdown(
+    'Strike count (limit / current estimate)',
+    align='center',
+    margin=(-18, 0, 0, 0)
+)
 strike_threshold = pn.widgets.IntInput(
-    name='Maximum strike count (to avoid massive dataset)',
+    # name="Strike count upper limit",
     step=1,
     width=100,
     value=10000000,
     margin=(0, 0, 0, 14)
 )
 strike_estimate = pn.widgets.IntInput(
-    name='Estimated strike count',
+    # name='Strike count estimate',
     step=1,
     width=100,
     value=0,
@@ -839,12 +844,15 @@ settings = pn.Column(
             align="center"
         ),
         pn.Column(
-            strike_estimate,
-            strike_threshold,
-            # align="left"
+            strike_title,
+            pn.Row(
+                strike_threshold,
+                strike_estimate,
+            ),
+            align="center"
         ),
         align="center",
-        margin=(0,0,20,0)
+        margin=(0, 0, 20, 0)
     ),
     pn.Spacer(sizing_mode='stretch_height'),
     width=460,
