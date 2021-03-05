@@ -6,3 +6,4 @@ matplotlib==3.3.4
 plotly==4.12.0
 seaborn==0.11.0
 panel==0.10.3
+selenium==3.141.0

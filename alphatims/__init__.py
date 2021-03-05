@@ -36,8 +36,7 @@ __urls__ = {
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
-    "gui": "requirements/requirements_gui.txt",
-    "cli": "requirements/requirements_cli.txt",
-    "nbs": "requirements/requirements_nbs.txt",
+    "plotting": "requirements/requirements_plotting.txt",
+    "devel": "requirements/requirements_devel.txt",
 }
 __strict_requirements__ = True

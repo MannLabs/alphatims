@@ -342,7 +342,7 @@ def export_selection(**kwargs):
             data, slice(*parameters["tof_mz_bounds"]), "tof_indices"
         )
         intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-            data, slice(*parameters["intensity_bounds"])
+            slice(*parameters["intensity_bounds"])
         )
         logging.info("Filtering datapoints.")
         strike_indices = alphatims.bruker.filter_indices(

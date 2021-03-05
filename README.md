@@ -23,6 +23,9 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
     * [**CLI**](#cli)
     * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
   * [**Performance**](#performance)
+    * [**Speed**](#speed)
+    * [**RAM**](#ram)
+  * [**Troubleshooting**](#troubleshooting)
   * [**How it works**](#how-it-works)
     * [**Bruker raw data**](#bruker-raw-data)
     * [**TimsTOF objects in Python**](#timstof-objects-in-python)
@@ -76,6 +79,11 @@ In an existing Python 3.8 environment AlphaTims can be installed with the comman
 pip install git+https://github.com/MannLabs/alphatims.git
 ```
 
+If the plotting or development module are also required, use:
+```bash
+pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[plotting,devel]'
+```
+
 This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command:
 
 ```bash
@@ -98,7 +106,7 @@ These commands can also be run directly in a Jupyter notebook by prepending them
 
 ### Full
 
-It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements/requirements.txt) (extra options include [cli](requirements/requirements_cli.txt), [gui](requirements/requirements_gui.txt) and [nbs](requirements/requirements_nbs.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
+It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements/requirements.txt) (extra options include [develop](requirements/requirements_develop.txt), and [plotting](requirements/requirements_plotting.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
 
 ```bash
 # # It is not advised to install alphatims in the home directory.
@@ -116,7 +124,7 @@ git clone https://github.com/MannLabs/alphatims.git
 # # a standalone version often requires additional packages for
 # # cli, gui and nbs usage. If not desired, they can be skipped.
 # # Note that no `cd alphatims` is required for the following
-pip install -e './alphatims[cli,gui,nbs]'
+pip install -e './alphatims[plotting,develop]'
 conda deactivate
 ```
 
@@ -152,15 +160,7 @@ When using Jupyter notebooks and multiple conda environments, it is recommended 
 
 ### Installation issues
 
-Common issues include:
-
-* **Always make sure you have activated the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
-* **Wrong Python version.** AlphaTims is only compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
-* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
-* **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
+See the general [troubleshooting](#troubleshooting) section.
 
 ---
 ## Test data
@@ -258,6 +258,10 @@ A brief [tutorial jupyter notebook](nbs/tutorial.ipynb) on how to use the API is
 ---
 ## Performance
 
+Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
+
+### Speed
+
 Typical performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
 
 | type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)          |
@@ -284,6 +288,24 @@ All of these analyses were timed with `timeit` and are the average of at least 7
 * **Startup Disk:** Macintosh HD
 
 Full details are available in the [perfomance notebook](nbs/performance.ipynb).
+
+### RAM
+
+On average, RAM requires twice the size of a raw Bruker .d folder.
+
+---
+## Troubleshooting
+
+Common issues include:
+
+* **Always make sure you have activated the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
+* **Wrong Python version.** AlphaTims is only compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
+* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,develop]'`.
+* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
+* **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
+* Exporting PNG images with the CLI or Python package might not work out-of-the-box. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exportes as html and opened in a browser, from where there is a save as png button available.
 
 ---
 ## How it works

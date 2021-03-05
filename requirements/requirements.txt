@@ -5,3 +5,4 @@ pandas==1.1.4
 tqdm==4.57.0
 pyzstd==0.14.1
 psutil==5.8.0
+click==7.1.2
