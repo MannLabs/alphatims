@@ -107,12 +107,23 @@ STACK = alphatims.utils.Global_Stack({})
 
 
 # PATHS
-biochem_logo_path = os.path.join(alphatims.utils.IMG_PATH, "mpi_logo.png")
+biochem_logo_path = os.path.join(
+    alphatims.utils.IMG_PATH,
+    "mpi_logo.png"
+)
 mpi_logo_path = os.path.join(
     alphatims.utils.IMG_PATH,
     "max-planck-gesellschaft.jpg"
 )
-github_logo_path = os.path.join(alphatims.utils.IMG_PATH, "github.png")
+github_logo_path = os.path.join(
+    alphatims.utils.IMG_PATH,
+    "github.png"
+)
+
+alphatims_tutorial_path = os.path.join(
+    alphatims.utils.DOC_PATH,
+    "alphatims_tutorial.pdf"
+)
 
 
 # HEADER
@@ -199,11 +210,22 @@ exit_button = pn.widgets.Button(
     width=100,
     margin=(34, 20, 0, 0)
 )
+alphatims_tutorial = pn.widgets.FileDownload(
+    file=alphatims_tutorial_path,
+    label='AlphaTims tutorial',
+    button_type='default',
+    auto=True,
+    height=31,
+    width=200,
+    margin=(34, 20, 0, 20)
+)
+
 
 main_part = pn.Column(
     project_description,
     divider_descr,
     pn.Row(
+        alphatims_tutorial,
         upload_file,
         upload_button,
         upload_spinner,
