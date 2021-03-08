@@ -107,7 +107,7 @@ def parse_cli_settings(command_name: str, **kwargs):
         logging.exception("Something went wrong, execution incomplete!")
     else:
         logging.info(
-            f"Analysis done in {time.time() - start_time:.2f} seconds"
+            f"Analysis done in {time.time() - start_time:.2f} seconds."
         )
     finally:
         alphatims.utils.set_logger(log_file_name=None)
