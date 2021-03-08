@@ -1592,7 +1592,7 @@ class TimsTOF(object):
                 infile.write("END IONS\n")
         logging.info(
             f"Succesfully wrote {self.precursor_max_index - 1} "
-            "spectra to {full_file_name}."
+            f"spectra to {full_file_name}."
         )
         return full_file_name
 

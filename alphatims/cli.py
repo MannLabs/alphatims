@@ -66,8 +66,6 @@ def parse_cli_settings(command_name: str, **kwargs):
         kwargs["threads"] = alphatims.utils.set_threads(
             kwargs["threads"]
         )
-        if "disable_overwrite" in kwargs:
-            kwargs["overwrite"] = not kwargs.pop("disable_overwrite")
         if "log_file" not in kwargs:
             kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
                 "log_file"
@@ -259,7 +257,7 @@ def export_hdf(**kwargs):
         else:
             directory = parameters["output_folder"]
         data.save_as_hdf(
-            overwrite=parameters["overwrite"],
+            overwrite=not parameters["disable_overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.hdf",
             compress=parameters["compress"],
@@ -284,7 +282,7 @@ def export_mgf(**kwargs):
         else:
             directory = parameters["output_folder"]
         data.save_as_mgf(
-            overwrite=parameters["overwrite"],
+            overwrite=not parameters["disable_overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.mgf",
         )
