@@ -199,9 +199,10 @@ upload_spinner = pn.indicators.LoadingSpinner(
     height=40
 )
 upload_error = pn.pane.Alert(
-    width=400,
+    width=800,
     alert_type="danger",
-    margin=(-15, 0, 10, 200),
+    align='center',
+    margin=(-15, 0, -5, 0),
 )
 exit_button = pn.widgets.Button(
     name='Quit',
@@ -233,10 +234,15 @@ main_part = pn.Column(
         align='center',
         sizing_mode='stretch_width',
     ),
-    upload_error,
+    pn.Row(
+        upload_error,
+        align='center',
+        width=870,
+        margin=(-15, 0, 0, 0)
+    ),
     background='#eaeaea',
     sizing_mode='stretch_width',
-    height=330,
+    height=352,
     margin=(5, 0, 10, 0)
 )
 
@@ -994,7 +1000,7 @@ def upload_data(*args):
                 print(e)
                 upload_error.object = "#### This file is corrupted and can't be uploaded."
     else:
-        upload_error.object = '#### Please, specify a path to .d Bruker folder or .hdf file.'
+        upload_error.object = '#### Please, specify a correct path to .d Bruker folder or .hdf file.'
 
 
 @pn.depends(
