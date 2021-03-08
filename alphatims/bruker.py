@@ -1518,6 +1518,7 @@ class TimsTOF(object):
         directory: str,
         file_name: str,
         overwrite: bool = False,
+        # centroid: bool = False # TODO
     ):
         """Save profile spectra from this TimsTOF object as an mgf file.
 
@@ -1537,7 +1538,6 @@ class TimsTOF(object):
         str
             The full file name of the mgf file.
         """
-        # TODO: include centroiding option?
         full_file_name = os.path.join(
             directory,
             file_name

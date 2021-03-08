@@ -163,7 +163,7 @@
     "required": true
   },
   "disable_overwrite": {
-    "help": "Overwrite existing files.",
+    "help": "Disable overwriting of existing files.",
     "default": false,
     "is_flag": true,
     "required": false
