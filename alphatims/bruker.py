@@ -824,7 +824,7 @@ class TimsTOF(object):
         )
         self._frame_max_index = self.frames.shape[0]
         self._scan_max_index = int(self.frames.NumScans.max()) + 1
-        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"])
+        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
         self._rt_values = self.frames.Time.values.astype(np.float64)
         self._mobility_min_value = float(
             self.meta_data["OneOverK0AcqRangeLower"]
