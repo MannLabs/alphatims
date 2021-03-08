@@ -1526,7 +1526,7 @@ class TimsTOF(object):
         directory : str
             The directory where to save the mgf file.
         file_name : str
-            The file name of the  HDF file.
+            The file name of the  mgf file.
         overwrite : bool
             If True, an existing file is truncated.
             If False, nothing happens if a file already exists.
@@ -1535,7 +1535,7 @@ class TimsTOF(object):
         Returns
         -------
         str
-            The full file name of the mgf file
+            The full file name of the mgf file.
         """
         # TODO: include centroiding option?
         full_file_name = os.path.join(
