@@ -66,6 +66,8 @@ def parse_cli_settings(command_name: str, **kwargs):
         kwargs["threads"] = alphatims.utils.set_threads(
             kwargs["threads"]
         )
+        if "disable_overwrite" in kwargs:
+            kwargs["overwrite"] = not kwargs.pop("disable_overwrite")
         if "log_file" not in kwargs:
             kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
                 "log_file"
@@ -240,6 +242,7 @@ def detect(**kwargs):
 
 @export.command("hdf", help="Export BRUKER_D_FOLDER as hdf file.")
 @cli_option("bruker_d_folder", as_argument=True)
+@cli_option("disable_overwrite")
 @cli_option("compress")
 @cli_option("output_folder")
 @cli_option("log_file")
@@ -256,15 +259,16 @@ def export_hdf(**kwargs):
         else:
             directory = parameters["output_folder"]
         data.save_as_hdf(
-            overwrite=True,
+            overwrite=parameters["overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.hdf",
             compress=parameters["compress"],
         )
 
 
-@export.command("mgf", help="Export BRUKER_D_FOLDER as mgf file. (NotImplemented)")
+@export.command("mgf", help="Export BRUKER_D_FOLDER as (profile) mgf file.")
 @cli_option("bruker_d_folder", as_argument=True)
+@cli_option("disable_overwrite")
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -273,8 +277,18 @@ def export_hdf(**kwargs):
 @cli_option("export_parameters")
 def export_mgf(**kwargs):
     with parse_cli_settings("export mgf", **kwargs) as parameters:
-        pass
-        # TODO:
+        import alphatims.bruker
+        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        if "output_folder" not in parameters:
+            directory = data.directory
+        else:
+            directory = parameters["output_folder"]
+        data.save_as_mgf(
+            overwrite=parameters["overwrite"],
+            directory=directory,
+            file_name=f"{data.sample_name}.mgf",
+        )
+
 
 @export.command(
     "selection",
@@ -422,7 +436,6 @@ def export_selection(**kwargs):
                     f"Exporting results to {output_file_name_base}.png"
                 )
                 hv.save(plot, f"{output_file_name_base}.png", fmt="png")
-                # TODO check requirements?
 
 
 @detect.command("ions", help="Detect ions (NotImplemented yet).")

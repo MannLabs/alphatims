@@ -145,7 +145,7 @@ def read_bruker_sql(
     add_zeroth_frame: bool = True,
     drop_polarity: bool = True,
 ) -> tuple:
-    """Read metadata and (fragment) frames from a Bruker .d folder.
+    """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
 
     Parameters
     ----------
@@ -210,13 +210,17 @@ def read_bruker_sql(
                 inplace=True
             )
         elif 8 in frames.MsMsType.values:
-            acquisition_mode = "PASEF"
+            acquisition_mode = "ddaPASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * from PasefFrameMsMsInfo",
                 sql_database_connection
             )
         else:
-            raise ValueError("Scan mode is not PASEF or diaPASEF")
+            raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
+        precursors = pd.read_sql_query(
+            "SELECT * from Precursors",
+            sql_database_connection
+        )
         if add_zeroth_frame:
             frames = pd.concat(
                 [
@@ -243,6 +247,7 @@ def read_bruker_sql(
             global_meta_data,
             frames,
             fragment_frames,
+            precursors
         )
 
 
@@ -448,7 +453,7 @@ class TimsTOF(object):
             Equally, this dimension allows to slice precursor indices.
             Precursor index 0 defaults to all precusors (i.e. quad mz values
             equal to -1). In DDA, precursor indices larger than 0 point
-            to PASEF MSMS spectra.
+            to ddaPASEF MSMS spectra.
             In DIA, precursor indices larger than 0 point to windows,
             i.e. all scans in a frame with equal quadrupole and collision
             settings that is repeated once per full cycle.
@@ -697,6 +702,11 @@ class TimsTOF(object):
         return self._fragment_frames
 
     @property
+    def precursors(self):
+        """: pd.DataFrame : The precursor table."""
+        return self._precursors
+
+    @property
     def tof_indices(self):
         """: np.ndarray : np.uint32[:] : The tof indices."""
         return self._tof_indices
@@ -798,6 +808,7 @@ class TimsTOF(object):
             global_meta_data,
             self._frames,
             self._fragment_frames,
+            self._precursors,
         ) = read_bruker_sql(bruker_d_folder_name)
         (
             self._push_indptr,
@@ -1502,6 +1513,89 @@ class TimsTOF(object):
             trimmed_spectrum_intensity_values
         )
 
+    def save_as_mgf(
+        self,
+        directory: str,
+        file_name: str,
+        overwrite: bool = False,
+    ):
+        """Save profile spectra from this TimsTOF object as an mgf file.
+
+        Parameters
+        ----------
+        directory : str
+            The directory where to save the mgf file.
+        file_name : str
+            The file name of the  HDF file.
+        overwrite : bool
+            If True, an existing file is truncated.
+            If False, nothing happens if a file already exists.
+            Default is False.
+
+        Returns
+        -------
+        str
+            The full file name of the mgf file
+        """
+        # TODO: include centroiding option?
+        full_file_name = os.path.join(
+            directory,
+            file_name
+        )
+        if self.acquisition_mode != "ddaPASEF":
+            logging.info(
+                f"File {self.bruker_d_folder_name} is not "
+                "a ddaPASEF file, nothing to do."
+            )
+            return full_file_name
+        if os.path.exists(full_file_name):
+            if not overwrite:
+                logging.info(
+                    f"File {full_file_name} already exists, nothing to do."
+                )
+                return full_file_name
+        logging.info(f"Indexing spectra of {self.bruker_d_folder_name}...")
+        (
+            spectrum_indptr,
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+        ) = self.index_precursors()
+        pepmasses = self.precursors.MonoisotopicMz.values
+        charges = self.precursors.Charge.values
+        rtinseconds = self.rt_values[self.precursors.Parent.values]
+        intensities = self.precursors.Intensity.values
+        mobilities = self.mobility_values[
+            self.precursors.ScanNumber.values.astype(np.int64)
+        ]
+        with open(full_file_name, "w") as infile:
+            logging.info(f"Exporting profile spectra to {full_file_name}...")
+            for index in alphatims.utils.progress_callback(
+                range(1, self.precursor_max_index)
+            ):
+                start = spectrum_indptr[index]
+                end = spectrum_indptr[index + 1]
+                title = (
+                    f"index: {index}, "
+                    f"intensity: {intensities[index - 1]:.1f}, "
+                    f"mobility: {mobilities[index - 1]:.3f}"
+                )
+                infile.write("BEGIN IONS\n")
+                infile.write(f'TITLE="{title}"\n')
+                infile.write(f"PEPMASS={pepmasses[index - 1]:.6f}\n")
+                infile.write(f"CHARGE={charges[index - 1]}\n")
+                infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
+                for mz, intensity in zip(
+                    self.mz_values[spectrum_tof_indices[start: end]],
+                    spectrum_intensity_values[start: end],
+                ):
+                    infile.write(f"{mz:.6f} {intensity}\n")
+                infile.write("END IONS\n")
+        logging.info(
+            f"Succesfully wrote {self.precursor_max_index - 1} "
+            "spectra to {full_file_name}."
+        )
+        return full_file_name
+
 
 class PrecursorFloatError(TypeError):
     """Used to indicate that a precursor value is not an int but a float."""
@@ -2092,7 +2186,7 @@ def filter_indices(
     return np.array(result)
 
 
-# TODO: Overhead of using multiple threads is slower
+# Overhead of using more than 1 threads is actually slower
 @alphatims.utils.pjit(thread_count=1)
 def add_intensity_to_bin(
     query_index: int,
