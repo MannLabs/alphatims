@@ -1476,7 +1476,7 @@ class TimsTOF(object):
             precursor_offsets[1:] - precursor_offsets[1]
         ]
         spectrum_indptr[0] = 0
-        new_spectrum_indptr = np.empty_like(spectrum_indptr)
+        new_spectrum_indptr = np.zeros_like(spectrum_indptr)
         spectrum_tof_indices = np.empty(spectrum_indptr[-1], dtype=np.uint32)
         spectrum_intensity_values = np.empty_like(spectrum_tof_indices)
         set_precursor(
