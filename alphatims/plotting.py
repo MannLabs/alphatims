@@ -192,6 +192,7 @@ def heatmap(
         #     df[x_dimension].max()
         # ),
         title=f'Heatmap - {title}',
+        aggregator='sum',
         # tools=[hover],
         datashade=True,
         dynspread=True,
