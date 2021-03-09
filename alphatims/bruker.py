@@ -169,8 +169,10 @@ def read_bruker_sql(
     Returns
     -------
     : tuple
-        (str, dict, pd.DataFrame, pd.DataFrame).
-        The acquisition_mode, global_meta_data, frames and fragment_frames.
+        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame).
+        The acquisition_mode, global_meta_data, frames, fragment_frames
+        and precursors.
+        For diaPASEF, precursors is None.
 
     Raises
     ------
@@ -209,18 +211,19 @@ def read_bruker_sql(
                 columns={"WindowGroup": "Precursor"},
                 inplace=True
             )
+            precursors = None
         elif 8 in frames.MsMsType.values:
             acquisition_mode = "ddaPASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * from PasefFrameMsMsInfo",
                 sql_database_connection
             )
+            precursors = pd.read_sql_query(
+                "SELECT * from Precursors",
+                sql_database_connection
+            )
         else:
             raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
-        precursors = pd.read_sql_query(
-            "SELECT * from Precursors",
-            sql_database_connection
-        )
         if add_zeroth_frame:
             frames = pd.concat(
                 [

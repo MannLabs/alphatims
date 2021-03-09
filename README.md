@@ -251,7 +251,7 @@ Options:
 
 ### Python and jupyter notebooks
 
-AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTIMS repository and open `docs/_build/html/index.html` in a local browser.)
+AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTims repository and open `docs/_build/html/index.html` in a local browser.)
 
 A brief [tutorial jupyter notebook](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs). When running locally it provides interactive plot, which are not rendered on GitHub. Instead, they are available as individual html pages in the [nbs folder](nbs).
 
@@ -302,7 +302,7 @@ Common issues include:
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,develop]'`.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,develop]'`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
 * Exporting PNG images with the CLI or Python package might not work out-of-the-box. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exportes as html and opened in a browser, from where there is a save as png button available.
