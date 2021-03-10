@@ -1439,12 +1439,23 @@ class TimsTOF(object):
         self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
         self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
 
-    def index_precursors(self) -> tuple:
+    def index_precursors(
+        self,
+        centroid_algorithm: str = "",
+    ) -> tuple:
         """Retrieve all MS2 spectra acquired with DDA.
 
-        IMPORTANT NOTE: WThis function is intended for DDA samples.
+        IMPORTANT NOTE: This function is intended for DDA samples.
         While it in theory works for DIA sample too, this probably has little
         value.
+
+        Parameters
+        ----------
+        centroid_algorithm : str
+            The centroiding algorithm to use.
+            Options are: ""
+            If this is an empty string, no centroiding is performed.
+            Default is ""
 
         Returns
         -------
@@ -1510,6 +1521,9 @@ class TimsTOF(object):
             trimmed_spectrum_intensity_values,
             new_spectrum_indptr,
         )
+        if centroid_algorithm != "":
+            pass
+            # TODO: implement centroiding algorithm
         return (
             new_spectrum_indptr,
             trimmed_spectrum_tof_indices,
