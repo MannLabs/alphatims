@@ -310,7 +310,8 @@ save_spinner = pn.indicators.LoadingSpinner(
 )
 save_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 10, 20, 20),
+    margin=(-15, 5, -10, 15),
+    # height=35,
     width=300
 )
 
@@ -325,7 +326,7 @@ save_sliced_data_button = pn.widgets.Button(
     button_type='default',
     height=31,
     width=100,
-    margin=(10, 10, 0, 0)
+    margin=(10, 10, 0, 35)
 )
 save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     value=False,
@@ -337,7 +338,7 @@ save_sliced_data_spinner = pn.indicators.LoadingSpinner(
 )
 save_sliced_data_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 10, 0, 20),
+    margin=(-10, 5, 10, 15),
     width=300
 )
 
@@ -985,10 +986,19 @@ def upload_data(*args):
         ext = os.path.splitext(upload_file.value)[-1]
         if ext == '.d':
             save_hdf_button.disabled = False
+            save_hdf_path.disabled = False
+            save_hdf_compress.disabled = False
+            save_hdf_overwrite.disabled = False
             save_message.object = ''
+            save_sliced_data_message.object = ''
         elif ext == '.hdf':
             save_hdf_button.disabled = True
+            save_hdf_path.disabled = True
+            save_hdf_compress.disabled = True
+            save_hdf_overwrite.disabled = True
             save_message.object = ''
+            save_sliced_data_message.object = ''
+
         upload_error.object = None
         if DATASET and os.path.basename(
             DATASET.bruker_d_folder_name
@@ -1044,8 +1054,10 @@ def save_hdf(*args):
             file_name=os.path.basename(save_hdf_path.value),
             compress=save_hdf_compress.value,
         )
+        save_message.alert_type = 'success'
         save_message.object = '#### The HDF file is successfully saved.'
     except ValueError:
+        save_message.alert_type = 'danger'
         save_message.object = '#### The file is already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
 
