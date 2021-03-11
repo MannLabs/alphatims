@@ -904,7 +904,12 @@ def get_range_func(color, boundsx):
 
 
 def visualize_tic():
-    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE, width=None)
+    tic = alphatims.plotting.tic_plot(
+        DATASET,
+        WHOLE_TITLE,
+        width=None,
+        height=310
+    )
     # implement the selection
     bounds_x = hv.streams.BoundsX(
         source=tic,
@@ -924,7 +929,8 @@ def visualize_scatter():
         plot1_x_axis.value,
         plot1_y_axis.value,
         WHOLE_TITLE,
-        width=None
+        width=None,
+        height=310
     )
 
 
@@ -934,7 +940,8 @@ def visualize_1d_plot():
         SELECTED_INDICES,
         plot2_x_axis.value,
         WHOLE_TITLE,
-        width=None
+        width=None,
+        height=310
     )
     if plot2_x_axis.value == "RT, min":
         bounds_x = hv.streams.BoundsX(
