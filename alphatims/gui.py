@@ -326,7 +326,7 @@ save_sliced_data_button = pn.widgets.Button(
     button_type='default',
     height=31,
     width=100,
-    margin=(10, 10, 0, 35)
+    margin=(10, 10, 0, 36)
 )
 save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     value=False,
@@ -338,7 +338,7 @@ save_sliced_data_spinner = pn.indicators.LoadingSpinner(
 )
 save_sliced_data_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 5, 10, 15),
+    margin=(-10, 5, 5, 15),
     width=300
 )
 
@@ -998,7 +998,6 @@ def upload_data(*args):
             save_hdf_overwrite.disabled = True
             save_message.object = ''
             save_sliced_data_message.object = ''
-
         upload_error.object = None
         if DATASET and os.path.basename(
             DATASET.bruker_d_folder_name
