@@ -281,6 +281,18 @@ save_hdf_path = pn.widgets.TextInput(
     placeholder='e.g. D:\Bruker',
     margin=(15, 10, 0, 10)
 )
+save_hdf_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=True,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_hdf_compress = pn.widgets.Checkbox(
+    name='compress',
+    value=False,
+    width=80,
+    margin=(0, 10, 0, 0)
+)
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
     button_type='default',
@@ -793,6 +805,11 @@ axis_selection_card.jscallback(
 export_data_card = pn.Card(
     save_hdf_path,
     pn.Row(
+        pn.Column(
+            save_hdf_overwrite,
+            save_hdf_compress,
+            margin=(0, 50, 0, -100)
+        ),
         save_hdf_button,
         save_spinner,
         align="center",
@@ -1020,14 +1037,17 @@ def save_hdf(*args):
     directory = os.path.dirname(save_hdf_path.value)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    DATASET.save_as_hdf(
-        overwrite=True,
-        directory=directory,
-        file_name=os.path.basename(save_hdf_path.value),
-        compress=False,
-    )
+    try:
+        DATASET.save_as_hdf(
+            overwrite=save_hdf_overwrite.value,
+            directory=directory,
+            file_name=os.path.basename(save_hdf_path.value),
+            compress=save_hdf_compress.value,
+        )
+        save_message.object = '#### The HDF file is successfully saved.'
+    except ValueError:
+        save_message.object = '#### The file is already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved.'
 
 
 @pn.depends(
