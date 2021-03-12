@@ -1069,7 +1069,7 @@ def save_hdf(*args):
         save_message.object = '#### The HDF file is successfully saved.'
     except ValueError:
         save_message.alert_type = 'danger'
-        save_message.object = '#### The file is already exists. Specify another name or allow to overwrite the file.'
+        save_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
 
 

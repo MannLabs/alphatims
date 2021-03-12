@@ -598,6 +598,8 @@ def create_hdf_group_from_dict(
             - np.array -> array
             - pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
             - bool, int, float and str -> attrs.
+            - None values are skipped and not stored explicitly.
+
     overwrite : bool
         If True, existing subgroups, arrays and attrs are fully
         truncated/overwritten.
