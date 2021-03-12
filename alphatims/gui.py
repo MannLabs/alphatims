@@ -166,7 +166,7 @@ header = pn.Row(
 
 # MAIN PART
 project_description = pn.pane.Markdown(
-    """### AlphaTims is an open-source Python package for fast accessing of unprocessed Bruker TIMS-TOF data. It provides a very efficient indexed data structure that allows to access the five-dimensional trapped ion mobility spectrometry - time of flight data in the standard numerical Python (NumPy) manner. AlphaTims is a key enabling tool to deal with the large and high-dimensional TIMS-TOF data.""",
+    """### AlphaTims provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF from Bruker's timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
     width=690
