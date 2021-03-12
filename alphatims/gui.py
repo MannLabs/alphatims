@@ -926,16 +926,16 @@ def visualize_tic():
         DATASET,
         WHOLE_TITLE,
         width=None,
-        height=310
+        height=320
     )
     # implement the selection
     bounds_x = hv.streams.BoundsX(
         source=tic,
-        boundsx=(rt_start.value, rt_end.value)
+        boundsx=(rt_start.value, rt_end.value),
     )
     dmap = hv.DynamicMap(
         get_range_func('orange', bounds_x),
-        streams=[bounds_x]
+        streams=[bounds_x],
     )
     fig = tic * dmap
     return fig.opts(responsive=True)
@@ -954,7 +954,7 @@ def visualize_scatter():
         axis_dict[plot1_y_axis.value],
         WHOLE_TITLE,
         width=None,
-        height=310
+        height=320
     )
 
 
@@ -971,7 +971,7 @@ def visualize_1d_plot():
         axis_dict[plot2_x_axis.value],
         WHOLE_TITLE,
         width=None,
-        height=310
+        height=320
     )
     if plot2_x_axis.value == "RT, min":
         bounds_x = hv.streams.BoundsX(
