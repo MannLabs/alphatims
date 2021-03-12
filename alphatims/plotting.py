@@ -82,10 +82,11 @@ def line_plot(
         "width": width,
         "height": height,
         "align": 'center',
-        "tools": ['hover'],
+        "tools": ['hover', 'zoom_in', 'zoom_out'],
         "line_width": 1,
         "yformatter": '%.1e',
         "align": 'center',
+        "hooks": [_disable_logo],
     }
     if x_dimension == "mz_values":
         x_ticks = timstof_data.mz_values
@@ -223,7 +224,8 @@ def heatmap(
     # df["rt_values"] *= 60
     scatter.opts(
         bgcolor="black",
-        tools=['zoom_in', 'zoom_out']
+        tools=['zoom_in', 'zoom_out'],
+        hooks=[_disable_logo],
     )
     return scatter
 
@@ -268,7 +270,7 @@ def tic_plot(
         line_width=1,
         yformatter='%.1e',
         shared_axes=True,
-        tools=[hover]
+        tools=[hover, 'zoom_in', 'zoom_out'],
     )
     data = timstof_data.frames.query('MsMsType == 0')[[
         'Time', 'SummedIntensities']
@@ -281,7 +283,12 @@ def tic_plot(
     ).opts(
         tic_opts,
         opts.Curve(
-            title="TIC - " + title
-        )
+            title="TIC - " + title,
+            hooks=[_disable_logo],
+        ),
     )
     return tic
+
+
+def _disable_logo(plot, element):
+    plot.state.toolbar.logo = None
