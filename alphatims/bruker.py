@@ -787,6 +787,7 @@ class TimsTOF(object):
             self._version = "none"
         if self.version != alphatims.__version__:
             logging.info(
+                "WARNING: "
                 f"AlphaTims version {self.version} was used to initialize "
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."

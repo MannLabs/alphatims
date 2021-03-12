@@ -1,0 +1,10 @@
+Tests passing?
+Docs updated?
+Tutorial updated?
+README updated?
+No TODOs left?
+Versions updated (__init__.py and alphatims_innoinstaller.iss)?
+Merged into master branch?
+ReadTheDocs up-to-date?
+PyPi up-to-date?
+Releases for all Windows, MacOS and Linux?

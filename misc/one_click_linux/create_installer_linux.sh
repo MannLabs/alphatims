@@ -10,3 +10,4 @@ conda activate alphatimsinstaller
 pip install '../../.[plotting, develop]'
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
+mv dist/alphatims dist/AlphaTims

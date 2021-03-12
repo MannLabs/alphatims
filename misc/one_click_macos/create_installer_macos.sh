@@ -9,8 +9,8 @@ conda activate alphatimsinstaller
 # brew install freetype
 pip install '../../.[plotting, develop]'
 pyinstaller ../pyinstaller/alphatims.spec -y
-mv dist/alphatims dist/alphatims.app
-tar -czf dist/alphatims.app.zip dist/alphatims.app
+conda deactivate
+mv dist/alphatims dist/AlphaTims.app
+tar -czf dist/AlphaTims.app.zip dist/AlphaTims.app
 # chmod +x dist/alphatims.app
 # TODO No console is opened and program not blocked untill close, meaning loose threads!
-conda deactivate
