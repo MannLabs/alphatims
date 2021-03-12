@@ -166,7 +166,7 @@ header = pn.Row(
 
 # MAIN PART
 project_description = pn.pane.Markdown(
-    """### AlphaTIMS is an open-source Python package for fast accessing Bruker TimsTOF data. It provides a very efficient indexed data structure that allows to access four-dimensional TIMS-time of flight data in the standard numerical python (NumPy) manner. AlphaTIMS is a key enabling tool to deal with the large and high dimensional TIMS data.""",
+    """### AlphaTims is an open-source Python package for fast accessing of unprocessed Bruker TIMS-TOF data. It provides a very efficient indexed data structure that allows to access the five-dimensional trapped ion mobility spectrometry - time of flight data in the standard numerical Python (NumPy) manner. AlphaTims is a key enabling tool to deal with the large and high-dimensional TIMS-TOF data.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
     width=690
@@ -199,9 +199,10 @@ upload_spinner = pn.indicators.LoadingSpinner(
     height=40
 )
 upload_error = pn.pane.Alert(
-    width=400,
+    width=800,
     alert_type="danger",
-    margin=(-15, 0, 10, 200),
+    align='center',
+    margin=(-15, 0, -5, 0),
 )
 exit_button = pn.widgets.Button(
     name='Quit',
@@ -233,10 +234,15 @@ main_part = pn.Column(
         align='center',
         sizing_mode='stretch_width',
     ),
-    upload_error,
+    pn.Row(
+        upload_error,
+        align='center',
+        width=870,
+        margin=(-15, 0, 0, 0)
+    ),
     background='#eaeaea',
     sizing_mode='stretch_width',
-    height=330,
+    height=352,
     margin=(5, 0, 10, 0)
 )
 
@@ -275,6 +281,18 @@ save_hdf_path = pn.widgets.TextInput(
     placeholder='e.g. D:\Bruker',
     margin=(15, 10, 0, 10)
 )
+save_hdf_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=True,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_hdf_compress = pn.widgets.Checkbox(
+    name='compress',
+    value=False,
+    width=80,
+    margin=(0, 10, 0, 0)
+)
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
     button_type='default',
@@ -292,7 +310,8 @@ save_spinner = pn.indicators.LoadingSpinner(
 )
 save_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 10, 20, 20),
+    margin=(-15, 5, -10, 15),
+    # height=35,
     width=300
 )
 
@@ -307,7 +326,7 @@ save_sliced_data_button = pn.widgets.Button(
     button_type='default',
     height=31,
     width=100,
-    margin=(10, 10, 0, 0)
+    margin=(10, 10, 0, 36)
 )
 save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     value=False,
@@ -319,7 +338,7 @@ save_sliced_data_spinner = pn.indicators.LoadingSpinner(
 )
 save_sliced_data_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 10, 0, 20),
+    margin=(-10, 5, 5, 15),
     width=300
 )
 
@@ -787,6 +806,11 @@ axis_selection_card.jscallback(
 export_data_card = pn.Card(
     save_hdf_path,
     pn.Row(
+        pn.Column(
+            save_hdf_overwrite,
+            save_hdf_compress,
+            margin=(0, 50, 0, -100)
+        ),
         save_hdf_button,
         save_spinner,
         align="center",
@@ -898,7 +922,12 @@ def get_range_func(color, boundsx):
 
 
 def visualize_tic():
-    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE, width=None)
+    tic = alphatims.plotting.tic_plot(
+        DATASET,
+        WHOLE_TITLE,
+        width=None,
+        height=310
+    )
     # implement the selection
     bounds_x = hv.streams.BoundsX(
         source=tic,
@@ -924,7 +953,8 @@ def visualize_scatter():
         axis_dict[plot1_x_axis.value],
         axis_dict[plot1_y_axis.value],
         WHOLE_TITLE,
-        width=None
+        width=None,
+        height=310
     )
 
 
@@ -940,7 +970,8 @@ def visualize_1d_plot():
         SELECTED_INDICES,
         axis_dict[plot2_x_axis.value],
         WHOLE_TITLE,
-        width=None
+        width=None,
+        height=310
     )
     if plot2_x_axis.value == "RT, min":
         bounds_x = hv.streams.BoundsX(
@@ -967,10 +998,18 @@ def upload_data(*args):
         ext = os.path.splitext(upload_file.value)[-1]
         if ext == '.d':
             save_hdf_button.disabled = False
+            save_hdf_path.disabled = False
+            save_hdf_compress.disabled = False
+            save_hdf_overwrite.disabled = False
             save_message.object = ''
+            save_sliced_data_message.object = ''
         elif ext == '.hdf':
             save_hdf_button.disabled = True
+            save_hdf_path.disabled = True
+            save_hdf_compress.disabled = True
+            save_hdf_overwrite.disabled = True
             save_message.object = ''
+            save_sliced_data_message.object = ''
         upload_error.object = None
         if DATASET and os.path.basename(
             DATASET.bruker_d_folder_name
@@ -1006,7 +1045,7 @@ def upload_data(*args):
                 print(e)
                 upload_error.object = "#### This file is corrupted and can't be uploaded."
     else:
-        upload_error.object = '#### Please, specify a path to .d Bruker folder or .hdf file.'
+        upload_error.object = '#### Please, specify a correct path to .d Bruker folder or .hdf file.'
 
 
 @pn.depends(
@@ -1019,14 +1058,19 @@ def save_hdf(*args):
     directory = os.path.dirname(save_hdf_path.value)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    DATASET.save_as_hdf(
-        overwrite=True,
-        directory=directory,
-        file_name=os.path.basename(save_hdf_path.value),
-        compress=False,
-    )
+    try:
+        DATASET.save_as_hdf(
+            overwrite=save_hdf_overwrite.value,
+            directory=directory,
+            file_name=os.path.basename(save_hdf_path.value),
+            compress=save_hdf_compress.value,
+        )
+        save_message.alert_type = 'success'
+        save_message.object = '#### The HDF file is successfully saved.'
+    except ValueError:
+        save_message.alert_type = 'danger'
+        save_message.object = '#### The file is already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved.'
 
 
 @pn.depends(

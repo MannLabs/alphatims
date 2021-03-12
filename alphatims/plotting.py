@@ -209,6 +209,7 @@ def heatmap(
         #     df[x_dimension].max()
         # ),
         title=f'Heatmap - {title}',
+        aggregator='sum',
         # tools=[hover],
         datashade=True,
         dynspread=True,
@@ -220,7 +221,10 @@ def heatmap(
         height=height,
     )
     # df["rt_values"] *= 60
-    scatter.opts(bgcolor="black")
+    scatter.opts(
+        bgcolor="black",
+        tools=['zoom_in', 'zoom_out']
+    )
     return scatter
 
 
