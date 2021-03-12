@@ -283,7 +283,7 @@ save_hdf_path = pn.widgets.TextInput(
 )
 save_hdf_overwrite = pn.widgets.Checkbox(
     name='overwrite',
-    value=True,
+    value=False,
     width=80,
     margin=(10, 10, 0, 0)
 )
@@ -294,7 +294,7 @@ save_hdf_compress = pn.widgets.Checkbox(
     margin=(10, 10, 0, 0)
 )
 save_hdf_button = pn.widgets.Button(
-    name='Save to HDF',
+    name='Save as HDF',
     button_type='default',
     height=31,
     width=100,
@@ -323,7 +323,7 @@ save_sliced_data_path = pn.widgets.TextInput(
 )
 save_sliced_data_overwrite = pn.widgets.Checkbox(
     name='overwrite',
-    value=True,
+    value=False,
     width=80,
     margin=(10, 10, 0, 0)
 )
@@ -343,6 +343,39 @@ save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     height=30
 )
 save_sliced_data_message = pn.pane.Alert(
+    alert_type='success',
+    margin=(-15, 5, -10, 15),
+    width=300
+)
+
+# SAVE MGF
+save_mgf_path = pn.widgets.TextInput(
+    name='Specify a path to save all MS2 data as .mgf file:',
+    placeholder='e.g. D:\Bruker',
+    margin=(15, 10, 0, 10)
+)
+save_mgf_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_mgf_button = pn.widgets.Button(
+    name='Save as MGF',
+    button_type='default',
+    height=31,
+    width=100,
+    margin=(10, 10, 0, 0)
+)
+save_mgf_spinner = pn.indicators.LoadingSpinner(
+    value=False,
+    bgcolor='light',
+    color='secondary',
+    margin=(11, 0, 0, 15),
+    width=30,
+    height=30
+)
+save_mgf_message = pn.pane.Alert(
     alert_type='success',
     margin=(-15, 5, -10, 15),
     width=300
@@ -837,6 +870,20 @@ export_data_card = pn.Card(
         align="center",
     ),
     save_sliced_data_message,
+    save_mgf_path,
+    pn.Row(
+        # TODO: weird spacing?
+        pn.Column(
+            save_mgf_overwrite,
+            None,
+            # align="center",
+            margin=(0, 50, 0, -100),
+        ),
+        save_mgf_button,
+        save_mgf_spinner,
+        align="center",
+    ),
+    save_mgf_message,
     title='Export data',
     collapsed=True,
     width=430,
@@ -1105,6 +1152,32 @@ def save_sliced_data(*args):
 
 
 @pn.depends(
+    save_mgf_button.param.clicks,
+    watch=True
+)
+def save_mgf(*args):
+    save_mgf_message.object = ''
+    save_mgf_spinner.value = True
+    directory = os.path.dirname(save_mgf_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    if save_mgf_overwrite.value or not os.path.exists(
+        save_mgf_path.value
+    ):
+        DATASET.save_as_mgf(
+            overwrite=save_mgf_overwrite.value,
+            directory=directory,
+            file_name=os.path.basename(save_mgf_path.value),
+        )
+        save_mgf_message.alert_type = 'success'
+        save_mgf_message.object = '#### The MGF file is successfully saved.'
+    else:
+        save_mgf_message.alert_type = 'danger'
+        save_mgf_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
+    save_mgf_spinner.value = False
+
+
+@pn.depends(
     upload_button.param.clicks,
     watch=True
 )
@@ -1180,13 +1253,24 @@ def init_settings(*args):
             DATASET.directory,
             f"{DATASET.sample_name}_data_slice.csv",
         )
+        save_mgf_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}.mgf",
+        )
+        if not DATASET.acquisition_mode == "ddaPASEF":
+            save_mgf_path.disabled = True
+            save_mgf_overwrite.disabled = True
+            save_mgf_button.disabled = True
+            save_mgf_spinner.disabled = True
+            save_mgf_message.disabled = True
+
         # first init needed:
         plot2_x_axis.value = 'RT, min'
         plot2_x_axis.value = 'm/z, Th'
 
-        upload_spinner.value = False
-
         BROWSER[0] = settings
+
+        upload_spinner.value = False
     else:
         BROWSER[0] = None
 

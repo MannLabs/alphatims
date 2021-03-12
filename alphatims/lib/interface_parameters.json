@@ -1,7 +1,7 @@
 {
   "log_file": {
     "short_name": "l",
-    "help": "Save all log data to a file (blank means 'log_[date].txt' with date format yymmddhhmmss in 'log' folder of Ionicity directory).",
+    "help": "Save all log data to a file (blank means 'log_[date].txt' with date format yymmddhhmmss in 'log' folder of AlphaTims directory).",
     "default": "",
     "type": {
       "name": "path",
