@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import panel as pn
 import sys
+import warnings
+import logging
 # holoviz libraries
 import colorcet
 import hvplot.pandas
@@ -16,6 +18,8 @@ import alphatims.bruker
 import alphatims.utils
 import alphatims.plotting
 
+
+warnings.filterwarnings('ignore')
 
 # EXTENSIONS
 css = '''
@@ -990,6 +994,7 @@ def visualize_tic():
         height=320
     )
     # implement the selection
+    # tic.opts(responsive=True)
     bounds_x = hv.streams.BoundsX(
         source=tic,
         boundsx=(rt_start.value, rt_end.value),
@@ -1002,7 +1007,7 @@ def visualize_tic():
     # TODO: remove "box select (x-axis)" tool as this is not responsive?
     # TODO: plot height does not allows space for hover tool at bottom
     # TODO: both problems can be merged to fix eachother?
-    return fig.opts(responsive=True)
+    return fig#.opts(responsive=True)
 
 
 def visualize_scatter():
@@ -1047,7 +1052,7 @@ def visualize_1d_plot():
             streams=[bounds_x]
         )
         fig = line_plot * dmap
-        return fig.opts(responsive=True)
+        return fig#.opts(responsive=True)
     else:
         return line_plot
 
@@ -1094,7 +1099,7 @@ def upload_data(*args):
                     ]
                 )
             except ValueError as e:
-                print(e)
+                logging.exception(e)
                 upload_error.object = "#### This file is corrupted and can't be uploaded."
     else:
         upload_error.object = '#### Please, specify a correct path to .d Bruker folder or .hdf file.'
@@ -1274,11 +1279,6 @@ def init_settings(*args):
     else:
         BROWSER[0] = None
 
-    # import time
-    # print("SLEEPING")
-    # time.sleep(5)
-    # print("DONE SLEEPING")
-
 
 @pn.depends(
     player.param.value,
@@ -1293,7 +1293,6 @@ def update_frame_with_player(*args):
     watch=True
 )
 def exit_button_event(*args):
-    import logging
     import sys
     logging.info("Quitting server...")
     exit_button.name = "Server closed"
@@ -1466,20 +1465,41 @@ def run():
         BROWSER,
         sizing_mode='stretch_width',
     )
-    LAYOUT.show(threaded=True, title='AlphaTims')
+    server = LAYOUT.show(title='AlphaTims', threaded=True)
+    import time
+    root = logging.getLogger()
+    for i in root.handlers:
+        if isinstance(i, logging.FileHandler):
+            file_handler = i.baseFilename
+    while True:
+        time.sleep(.1)
+        with open(file_handler, "r") as log_file:
+            opened = 0
+            closed = 0
+            for line in log_file:
+                if "WebSocket connection opened" in line:
+                    opened += 1
+                if "WebSocket connection closed" in line:
+                    closed += 1
+        # print(f"Open connections: {opened}, closed connections: {closed}")
+        if (opened > 0) and (closed == opened):
+            server.stop()
+            break
+
+
 
 
 def update_global_selection(updated_option, updated_value):
     if updated_value is not None:
         if updated_value != "plot_axis":
-            print(
+            logging.info(
                 f"Updating selection of '{updated_option}' "
                 f"with {updated_value}"
             )
             update_widgets(updated_option)
             update_selected_indices_and_dataframe()
         if DATASET:
-            print("Updating plots")
+            logging.info("Updating plots")
             PLOTS[0] = visualize_tic()
             PLOTS[1] = visualize_scatter()
             PLOTS[2] = visualize_1d_plot()
