@@ -502,8 +502,8 @@ class TimsTOF(object):
             conversion need to be sorted in ascending order!
         - np.ndarray:
             Multiple slicing is supported by providing either a
-            np.int64[:, :, :] array, where each row is assumed to be a
-            (start, stop, step) tuple or np.float64[:, :] where each row
+            np.int64[:, 3] array, where each row is assumed to be a
+            (start, stop, step) tuple or np.float64[:, 2] where each row
             is assumed to be a (start, stop) tuple.
 
             **IMPORTANT NOTE:** These arrays need to be sorted,
@@ -621,7 +621,7 @@ class TimsTOF(object):
 
     @property
     def quad_mz_values(self):
-        """: np.ndarray : np.float64[:, :] : The (low, high) quad mz values."""
+        """: np.ndarray : np.float64[:, 2] : The (low, high) quad mz values."""
         return self._quad_mz_values
 
     @property
@@ -1253,6 +1253,95 @@ class TimsTOF(object):
         else:
             return raw_indices
 
+    def estimate_strike_count(
+        self,
+        frame_slices: np.ndarray,
+        scan_slices: np.ndarray,
+        precursor_slices: np.ndarray,
+        tof_slices: np.ndarray,
+        quad_slices: np.ndarray,
+    ) -> int:
+        """Estimate the number of strike counts, given a set of slices.
+
+        Parameters
+        ----------
+        frame_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+        scan_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+        precursor_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0)
+            = True).
+        tof_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
+        quad_slices : np.float64[:, 2]
+            Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+
+        Returns
+        -------
+        int
+            The estimated number of strike counts given these slices.
+        """
+        frame_count = 0
+        for frame_start, frame_end, frame_stop in frame_slices:
+            frame_count += len(range(frame_start, frame_end, frame_stop))
+        scan_count = 0
+        for scan_start, scan_end, scan_stop in scan_slices:
+            scan_count += len(range(scan_start, scan_end, scan_stop))
+        tof_count = 0
+        for tof_start, tof_end, tof_stop in tof_slices:
+            tof_count += len(range(tof_start, tof_end, tof_stop))
+        precursor_count = 0
+        precursor_index_included = False
+        for precursor_start, precursor_end, precursor_stop in precursor_slices:
+            precursor_count += len(
+                range(precursor_start, precursor_end, precursor_stop)
+            )
+            if 0 in range(precursor_start, precursor_end, precursor_stop):
+                precursor_index_included = True
+        quad_count = 0
+        precursor_quad_included = False
+        for quad_start, quad_end in quad_slices:
+            if quad_start < 0:
+                precursor_quad_included = True
+            if quad_start < self.quad_mz_min_value:
+                quad_start = self.quad_mz_min_value
+            if quad_end > self.quad_mz_max_value:
+                quad_end = self.quad_mz_max_value
+            if quad_start < quad_end:
+                quad_count += quad_end - quad_start
+        estimated_count = len(self)
+        estimated_count *= frame_count / self.frame_max_index
+        estimated_count *= scan_count / self.scan_max_index
+        estimated_count *= tof_count / self.tof_max_index
+        fragment_multiplier = 0.5 * min(
+            precursor_count / (self.precursor_max_index),
+            quad_count / (
+                self.quad_mz_max_value - self.quad_mz_min_value
+            )
+        )
+        if fragment_multiplier < 0:
+            fragment_multiplier = 0
+        if precursor_index_included and precursor_quad_included:
+            fragment_multiplier += 0.5
+        estimated_count *= fragment_multiplier
+        return int(estimated_count)
+
     def bin_intensities(self, indices: np.ndarray, axis: tuple):
         """Sum and project the intensities of the indices along 1 or 2 axis.
 
@@ -1267,7 +1356,7 @@ class TimsTOF(object):
 
         Returns
         -------
-        np.float64[:], np.float64[:, :]
+        np.float64[:], np.float64[:, 2]
             An array or heatmap that express the summed intensity along
             the selected axis.
         """
@@ -1437,7 +1526,12 @@ class TimsTOF(object):
         self._raw_quad_indptr = np.array(quad_indptr)
         self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
         self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
-        self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
+        self._quad_min_mz_value = np.min(
+            self.quad_mz_values[
+                self.quad_mz_values[:, 0] >= 0,
+                0
+            ]
+        )
         self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
 
     def index_precursors(
@@ -1768,12 +1862,12 @@ def parse_keys(data: TimsTOF, keys) -> dict:
     -------
     : dict
         The resulting dict always has the following items:
-            - "frame_indices": np.int64[:, :, :]
-            - "scan_indices": np.int64[:, :, :]
-            - "tof_indices": np.int64[:, :, :]
-            - "precursor_indices": np.int64[:, :, :]
-            - "quad_values": np.float64[:, :]
-            - "intensity_values": np.float64[:, :]
+            - "frame_indices": np.int64[:, 3]
+            - "scan_indices": np.int64[:, 3]
+            - "tof_indices": np.int64[:, 3]
+            - "precursor_indices": np.int64[:, 3]
+            - "quad_values": np.float64[:, 2]
+            - "intensity_values": np.float64[:, 2]
     """
     dimensions = [
         "frame_indices",
@@ -1852,7 +1946,7 @@ def convert_slice_key_to_float_array(key):
 
     Returns
     -------
-    : np.float64[:, :]
+    : np.float64[:, 2]
         Each row represent a a (start, stop) slice.
 
     Raises
@@ -1904,7 +1998,7 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
 
     Returns
     -------
-    : np.int64[:, :, :]
+    : np.int64[:, 3]
         Each row represent a a (start, stop, step) slice.
 
     Raises
@@ -2006,7 +2100,7 @@ def valid_quad_mz_values(
         The lower mz value of the current quad selection.
     high_mz_value : float
         The upper mz value of the current quad selection.
-    quad_slices : np.float64[:, :]
+    quad_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
@@ -2040,7 +2134,7 @@ def valid_precursor_index(
     ----------
     precursor_index : int
         The precursor index to validate.
-    precursor_slices : np.int64[:, :, :]
+    precursor_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
@@ -2086,27 +2180,27 @@ def filter_indices(
 
     Parameters
     ----------
-    frame_slices : np.int64[:, :, :]
+    frame_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
-    scan_slices : np.int64[:, :, :]
+    scan_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
-    precursor_slices : np.int64[:, :, :]
+    precursor_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
-    tof_slices : np.int64[:, :, :]
+    tof_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
-    quad_slices : np.float64[:, :]
+    quad_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
-    intensity_slices : np.float64[:, :]
+    intensity_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(intensity_slices.ravel()) >= 0) = True).
@@ -2118,7 +2212,7 @@ def filter_indices(
         The self.push_indptr array of a TimsTOF object.
     precursor_indices : np.int64[:]
         The self.precursor_indices array of a TimsTOF object.
-    quad_mz_values : np.float64[:, :]
+    quad_mz_values : np.float64[:, 2]
         The self.quad_mz_values array of a TimsTOF object.
     quad_indptr : np.int64[:]
         The self.quad_indptr array of a TimsTOF object.

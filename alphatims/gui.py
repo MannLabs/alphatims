@@ -910,14 +910,14 @@ strike_title = pn.pane.Markdown(
 strike_threshold = pn.widgets.IntInput(
     # name="Strike count upper limit",
     step=1,
-    width=100,
+    width=110,
     value=10000000,
     margin=(0, 0, 0, 14)
 )
 strike_estimate = pn.widgets.IntInput(
     # name='Strike count estimate',
     step=1,
-    width=100,
+    width=110,
     value=0,
     margin=(0, 0, 0, 14),
     disabled=True
@@ -1191,7 +1191,7 @@ def init_settings(*args):
                 "frames": (1, 2),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
-                "quads": (0, DATASET.quad_mz_max_value),
+                "quads": (DATASET.quad_mz_min_value, DATASET.quad_mz_max_value),
                 "precursors": (1, DATASET.precursor_max_index),
                 "show_fragments": select_ms2_fragments.value,
                 "show_precursors": select_ms1_precursors.value,
@@ -1396,55 +1396,53 @@ def undo(*args):
     return update_global_selection(updated_option, updated_value)
 
 
-def estimate_count():
-    estimated_count = len(DATASET)
-    estimated_count *= np.diff(frame_slider.value) / DATASET.frame_max_index
-    estimated_count *= np.diff(scan_slider.value) / DATASET.scan_max_index
-    estimated_count *= np.diff(tof_slider.value) / DATASET.tof_max_index
-    strike_estimate.value = int(estimated_count)
-    return estimated_count
-
 # Control functions
 def update_selected_indices_and_dataframe():
     global SELECTED_INDICES
     global DATAFRAME
     if DATASET:
-        estimated_count = estimate_count()
-        if estimated_count > strike_threshold.value:
+        frame_indices = alphatims.bruker.convert_slice_key_to_int_array(
+            DATASET, slice(*frame_slider.value), "frame_indices"
+        )
+        scan_indices = alphatims.bruker.convert_slice_key_to_int_array(
+            DATASET, slice(*scan_slider.value), "scan_indices"
+        )
+        if select_ms1_precursors.value:
+            quad_values = np.array([[-1, 0]])
+            precursor_indices = np.array([[0, 1, 1]])
+        else:
+            quad_values = np.empty(shape=(0, 2), dtype=np.float64)
+            precursor_indices = np.empty(shape=(0, 3), dtype=np.int64)
+        if select_ms2_fragments.value:
+            quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
+                slice(*quad_slider.value)
+            )
+            precursor_indices_ = alphatims.bruker.convert_slice_key_to_int_array(
+                DATASET, slice(*precursor_slider.value), "precursor_indices"
+            )
+            quad_values = np.vstack([quad_values, quad_values_])
+            precursor_indices = np.vstack([precursor_indices, precursor_indices_])
+        tof_indices = alphatims.bruker.convert_slice_key_to_int_array(
+            DATASET, slice(*tof_slider.value), "tof_indices"
+        )
+        intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
+            slice(*intensity_slider.value)
+        )
+        strike_estimate.value = DATASET.estimate_strike_count(
+            frame_slices=frame_indices,
+            scan_slices=scan_indices,
+            precursor_slices=precursor_indices,
+            tof_slices=tof_indices,
+            quad_slices=quad_values,
+        )
+        if strike_estimate.value > strike_threshold.value:
             SELECTED_INDICES = np.empty((0,), dtype=np.int64)
         else:
-            frame_values = alphatims.bruker.convert_slice_key_to_int_array(
-                DATASET, slice(*frame_slider.value), "frame_indices"
-            )
-            scan_values = alphatims.bruker.convert_slice_key_to_int_array(
-                DATASET, slice(*scan_slider.value), "scan_indices"
-            )
-            if select_ms1_precursors.value:
-                quad_values = np.array([[-1, 0]])
-                precursor_values = np.array([[0, 1, 1]])
-            else:
-                quad_values = np.empty(shape=(0, 2), dtype=np.float64)
-                precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
-            if select_ms2_fragments.value:
-                quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                    slice(*quad_slider.value)
-                )
-                precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
-                    DATASET, slice(*precursor_slider.value), "precursor_indices"
-                )
-                quad_values = np.vstack([quad_values, quad_values_])
-                precursor_values = np.vstack([precursor_values, precursor_values_])
-            tof_values = alphatims.bruker.convert_slice_key_to_int_array(
-                DATASET, slice(*tof_slider.value), "tof_indices"
-            )
-            intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-                slice(*intensity_slider.value)
-            )
             SELECTED_INDICES = alphatims.bruker.filter_indices(
-                frame_slices=frame_values,
-                scan_slices=scan_values,
-                precursor_slices=precursor_values,
-                tof_slices=tof_values,
+                frame_slices=frame_indices,
+                scan_slices=scan_indices,
+                precursor_slices=precursor_indices,
+                tof_slices=tof_indices,
                 quad_slices=quad_values,
                 intensity_slices=intensity_values,
                 frame_max_index=DATASET.frame_max_index,
