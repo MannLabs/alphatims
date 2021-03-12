@@ -291,7 +291,7 @@ save_hdf_compress = pn.widgets.Checkbox(
     name='compress',
     value=False,
     width=80,
-    margin=(0, 10, 0, 0)
+    margin=(10, 10, 0, 0)
 )
 save_hdf_button = pn.widgets.Button(
     name='Save to HDF',
@@ -308,7 +308,7 @@ save_spinner = pn.indicators.LoadingSpinner(
     width=30,
     height=30
 )
-save_message = pn.pane.Alert(
+save_hdf_message = pn.pane.Alert(
     alert_type='success',
     margin=(-15, 5, -10, 15),
     # height=35,
@@ -321,12 +321,18 @@ save_sliced_data_path = pn.widgets.TextInput(
     placeholder='e.g. D:\Bruker',
     margin=(15, 10, 0, 10)
 )
+save_sliced_data_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=True,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
 save_sliced_data_button = pn.widgets.Button(
     name='Save as CSV',
     button_type='default',
     height=31,
     width=100,
-    margin=(10, 10, 0, 36)
+    margin=(10, 10, 0, 0)
 )
 save_sliced_data_spinner = pn.indicators.LoadingSpinner(
     value=False,
@@ -338,7 +344,7 @@ save_sliced_data_spinner = pn.indicators.LoadingSpinner(
 )
 save_sliced_data_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 5, 5, 15),
+    margin=(-15, 5, -10, 15),
     width=300
 )
 
@@ -809,15 +815,23 @@ export_data_card = pn.Card(
         pn.Column(
             save_hdf_overwrite,
             save_hdf_compress,
-            margin=(0, 50, 0, -100)
+            margin=(0, 50, 0, -100),
+            # align="center"
         ),
         save_hdf_button,
         save_spinner,
         align="center",
     ),
-    save_message,
+    save_hdf_message,
     save_sliced_data_path,
     pn.Row(
+        # TODO: weird spacing?
+        pn.Column(
+            save_sliced_data_overwrite,
+            None,
+            # align="center",
+            margin=(0, 50, 0, -100),
+        ),
         save_sliced_data_button,
         save_sliced_data_spinner,
         align="center",
@@ -938,6 +952,9 @@ def visualize_tic():
         streams=[bounds_x],
     )
     fig = tic * dmap
+    # TODO: remove "box select (x-axis)" tool as this is not responsive?
+    # TODO: plot height does not allows space for hover tool at bottom
+    # TODO: both problems can be merged to fix eachother?
     return fig.opts(responsive=True)
 
 
@@ -996,20 +1013,8 @@ def upload_data(*args):
     global WHOLE_TITLE
     if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
         ext = os.path.splitext(upload_file.value)[-1]
-        if ext == '.d':
-            save_hdf_button.disabled = False
-            save_hdf_path.disabled = False
-            save_hdf_compress.disabled = False
-            save_hdf_overwrite.disabled = False
-            save_message.object = ''
-            save_sliced_data_message.object = ''
-        elif ext == '.hdf':
-            save_hdf_button.disabled = True
-            save_hdf_path.disabled = True
-            save_hdf_compress.disabled = True
-            save_hdf_overwrite.disabled = True
-            save_message.object = ''
-            save_sliced_data_message.object = ''
+        save_hdf_message.object = ''
+        save_sliced_data_message.object = ''
         upload_error.object = None
         if DATASET and os.path.basename(
             DATASET.bruker_d_folder_name
@@ -1053,23 +1058,27 @@ def upload_data(*args):
     watch=True
 )
 def save_hdf(*args):
-    save_message.object = ''
+    save_hdf_message.object = ''
     save_spinner.value = True
     directory = os.path.dirname(save_hdf_path.value)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    try:
-        DATASET.save_as_hdf(
-            overwrite=save_hdf_overwrite.value,
-            directory=directory,
-            file_name=os.path.basename(save_hdf_path.value),
-            compress=save_hdf_compress.value,
-        )
-        save_message.alert_type = 'success'
-        save_message.object = '#### The HDF file is successfully saved.'
-    except ValueError:
-        save_message.alert_type = 'danger'
-        save_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
+    if save_hdf_overwrite.value or not os.path.exists(save_hdf_path.value):
+        try:
+            DATASET.save_as_hdf(
+                overwrite=save_hdf_overwrite.value,
+                directory=directory,
+                file_name=os.path.basename(save_hdf_path.value),
+                compress=save_hdf_compress.value,
+            )
+            save_hdf_message.alert_type = 'success'
+            save_hdf_message.object = '#### The HDF file is successfully saved.'
+        except ValueError:
+            save_hdf_message.alert_type = 'danger'
+            save_hdf_message.object = '#### Could not save the file for unknown reasons.'
+    else:
+        save_hdf_message.alert_type = 'danger'
+        save_hdf_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
 
 
@@ -1083,9 +1092,16 @@ def save_sliced_data(*args):
     directory = os.path.dirname(save_sliced_data_path.value)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    DATAFRAME.to_csv(save_sliced_data_path.value, index=False)
+    if save_sliced_data_overwrite.value or not os.path.exists(
+        save_sliced_data_path.value
+    ):
+        DATAFRAME.to_csv(save_sliced_data_path.value, index=False)
+        save_sliced_data_message.alert_type = 'success'
+        save_sliced_data_message.object = '#### The CSV file is successfully saved.'
+    else:
+        save_sliced_data_message.alert_type = 'danger'
+        save_sliced_data_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
     save_sliced_data_spinner.value = False
-    save_sliced_data_message.object = '#### The CSV file is successfully saved.'
 
 
 @pn.depends(
