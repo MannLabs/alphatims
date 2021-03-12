@@ -299,7 +299,7 @@
     <span class="n">add_zeroth_frame</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">drop_polarity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Read metadata and (fragment) frames from a Bruker .d folder.</span>
+    <span class="sd">&quot;&quot;&quot;Read metadata, (fragment) frames and precursors from a Bruker .d folder.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -323,8 +323,10 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    : tuple</span>
-<span class="sd">        (str, dict, pd.DataFrame, pd.DataFrame).</span>
-<span class="sd">        The acquisition_mode, global_meta_data, frames and fragment_frames.</span>
+<span class="sd">        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame).</span>
+<span class="sd">        The acquisition_mode, global_meta_data, frames, fragment_frames</span>
+<span class="sd">        and precursors.</span>
+<span class="sd">        For diaPASEF, precursors is None.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -363,14 +365,19 @@
                 <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;WindowGroup&quot;</span><span class="p">:</span> <span class="s2">&quot;Precursor&quot;</span><span class="p">},</span>
                 <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>
+            <span class="n">precursors</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="mi">8</span> <span class="ow">in</span> <span class="n">frames</span><span class="o">.</span><span class="n">MsMsType</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-            <span class="n">acquisition_mode</span> <span class="o">=</span> <span class="s2">&quot;PASEF&quot;</span>
+            <span class="n">acquisition_mode</span> <span class="o">=</span> <span class="s2">&quot;ddaPASEF&quot;</span>
             <span class="n">fragment_frames</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
                 <span class="s2">&quot;SELECT * from PasefFrameMsMsInfo&quot;</span><span class="p">,</span>
                 <span class="n">sql_database_connection</span>
             <span class="p">)</span>
+            <span class="n">precursors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span>
+                <span class="s2">&quot;SELECT * from Precursors&quot;</span><span class="p">,</span>
+                <span class="n">sql_database_connection</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Scan mode is not PASEF or diaPASEF&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Scan mode is not ddaPASEF or diaPASEF&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">add_zeroth_frame</span><span class="p">:</span>
             <span class="n">frames</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
                 <span class="p">[</span>
@@ -397,6 +404,7 @@
             <span class="n">global_meta_data</span><span class="p">,</span>
             <span class="n">frames</span><span class="p">,</span>
             <span class="n">fragment_frames</span><span class="p">,</span>
+            <span class="n">precursors</span>
         <span class="p">)</span></div>
 
 
@@ -535,7 +543,7 @@
     <span class="n">frame_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">frame_indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">frame_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">frames</span><span class="o">.</span><span class="n">NumPeaks</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-    <span class="n">max_scan_count</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">NumScans</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">max_scan_count</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">NumScans</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">scan_count</span> <span class="o">=</span> <span class="n">max_scan_count</span> <span class="o">*</span> <span class="n">frames</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">scan_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">scan_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
     <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">frame_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
@@ -544,7 +552,7 @@
     <span class="n">tims_offset_values</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">TimsId</span><span class="o">.</span><span class="n">values</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Reading </span><span class="si">{</span><span class="n">frame_indptr</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">2</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> frames with &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">frame_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> TOF arrivals for </span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">frame_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detector strikes for </span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
     <span class="n">process_frame</span><span class="p">(</span>
         <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)),</span>
@@ -602,7 +610,7 @@
 <span class="sd">            Equally, this dimension allows to slice precursor indices.</span>
 <span class="sd">            Precursor index 0 defaults to all precusors (i.e. quad mz values</span>
 <span class="sd">            equal to -1). In DDA, precursor indices larger than 0 point</span>
-<span class="sd">            to PASEF MSMS spectra.</span>
+<span class="sd">            to ddaPASEF MSMS spectra.</span>
 <span class="sd">            In DIA, precursor indices larger than 0 point to windows,</span>
 <span class="sd">            i.e. all scans in a frame with equal quadrupole and collision</span>
 <span class="sd">            settings that is repeated once per full cycle.</span>
@@ -648,8 +656,8 @@
 <span class="sd">            conversion need to be sorted in ascending order!</span>
 <span class="sd">        - np.ndarray:</span>
 <span class="sd">            Multiple slicing is supported by providing either a</span>
-<span class="sd">            np.int64[:, :, :] array, where each row is assumed to be a</span>
-<span class="sd">            (start, stop, step) tuple or np.float64[:, :] where each row</span>
+<span class="sd">            np.int64[:, 3] array, where each row is assumed to be a</span>
+<span class="sd">            (start, stop, step) tuple or np.float64[:, 2] where each row</span>
 <span class="sd">            is assumed to be a (start, stop) tuple.</span>
 
 <span class="sd">            **IMPORTANT NOTE:** These arrays need to be sorted,</span>
@@ -767,7 +775,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">quad_mz_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;: np.ndarray : np.float64[:, :] : The (low, high) quad mz values.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;: np.ndarray : np.float64[:, 2] : The (low, high) quad mz values.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_quad_mz_values</span>
 
     <span class="nd">@property</span>
@@ -851,6 +859,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fragment_frames</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">precursors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;: pd.DataFrame : The precursor table.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precursors</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tof_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;: np.ndarray : np.uint32[:] : The tof indices.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tof_indices</span>
@@ -928,6 +941,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">!=</span> <span class="n">alphatims</span><span class="o">.</span><span class="n">__version__</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;WARNING: &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;AlphaTims version </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2"> was used to initialize &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">, while the current version of &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;AlphaTims is </span><span class="si">{</span><span class="n">alphatims</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -952,6 +966,7 @@
             <span class="n">global_meta_data</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_frames</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fragment_frames</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_precursors</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">read_bruker_sql</span><span class="p">(</span><span class="n">bruker_d_folder_name</span><span class="p">)</span>
         <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_push_indptr</span><span class="p">,</span>
@@ -961,12 +976,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="p">,</span>
             <span class="n">bruker_d_folder_name</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Indexing </span><span class="si">{</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_meta_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="nb">zip</span><span class="p">(</span><span class="n">global_meta_data</span><span class="o">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">global_meta_data</span><span class="o">.</span><span class="n">Value</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_frame_max_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_scan_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">NumScans</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tof_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s2">&quot;DigitizerNumSamples&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scan_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">NumScans</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tof_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s2">&quot;DigitizerNumSamples&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rt_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mobility_min_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">meta_data</span><span class="p">[</span><span class="s2">&quot;OneOverK0AcqRangeLower&quot;</span><span class="p">]</span>
@@ -1352,7 +1368,7 @@
             <span class="k">if</span> <span class="n">values</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mi">0</span>
             <span class="k">elif</span> <span class="n">values</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;return_type &#39;</span><span class="si">{</span><span class="n">return_type</span><span class="si">}</span><span class="s2">&#39; is invalid&quot;</span><span class="p">)</span></div>
 
@@ -1391,6 +1407,95 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">raw_indices</span>
 
+<div class="viewcode-block" id="TimsTOF.estimate_strike_count"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.estimate_strike_count">[docs]</a>    <span class="k">def</span> <span class="nf">estimate_strike_count</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">frame_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">scan_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">precursor_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">tof_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">quad_slices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Estimate the number of strike counts, given a set of slices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        frame_slices : np.int64[:, 3]</span>
+<span class="sd">            Each row of the array is assumed to be a (start, stop, step) tuple.</span>
+<span class="sd">            This array is assumed to be sorted,</span>
+<span class="sd">            disjunct and strictly increasing</span>
+<span class="sd">            (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) &gt;= 0) = True).</span>
+<span class="sd">        scan_slices : np.int64[:, 3]</span>
+<span class="sd">            Each row of the array is assumed to be a (start, stop, step) tuple.</span>
+<span class="sd">            This array is assumed to be sorted,</span>
+<span class="sd">            disjunct and strictly increasing</span>
+<span class="sd">            (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) &gt;= 0) = True).</span>
+<span class="sd">        precursor_slices : np.int64[:, 3]</span>
+<span class="sd">            Each row of the array is assumed to be a (start, stop, step) tuple.</span>
+<span class="sd">            This array is assumed to be sorted,</span>
+<span class="sd">            disjunct and strictly increasing</span>
+<span class="sd">            (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0)</span>
+<span class="sd">            = True).</span>
+<span class="sd">        tof_slices : np.int64[:, 3]</span>
+<span class="sd">            Each row of the array is assumed to be a (start, stop, step) tuple.</span>
+<span class="sd">            This array is assumed to be sorted,</span>
+<span class="sd">            disjunct and strictly increasing</span>
+<span class="sd">            (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) &gt;= 0) = True).</span>
+<span class="sd">        quad_slices : np.float64[:, 2]</span>
+<span class="sd">            Each row of the array is assumed to be (lower_mz, upper_mz) tuple.</span>
+<span class="sd">            This array is assumed to be sorted,</span>
+<span class="sd">            disjunct and strictly increasing</span>
+<span class="sd">            (i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The estimated number of strike counts given these slices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">frame_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">frame_start</span><span class="p">,</span> <span class="n">frame_end</span><span class="p">,</span> <span class="n">frame_stop</span> <span class="ow">in</span> <span class="n">frame_slices</span><span class="p">:</span>
+            <span class="n">frame_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">frame_start</span><span class="p">,</span> <span class="n">frame_end</span><span class="p">,</span> <span class="n">frame_stop</span><span class="p">))</span>
+        <span class="n">scan_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">scan_start</span><span class="p">,</span> <span class="n">scan_end</span><span class="p">,</span> <span class="n">scan_stop</span> <span class="ow">in</span> <span class="n">scan_slices</span><span class="p">:</span>
+            <span class="n">scan_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">scan_start</span><span class="p">,</span> <span class="n">scan_end</span><span class="p">,</span> <span class="n">scan_stop</span><span class="p">))</span>
+        <span class="n">tof_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">tof_start</span><span class="p">,</span> <span class="n">tof_end</span><span class="p">,</span> <span class="n">tof_stop</span> <span class="ow">in</span> <span class="n">tof_slices</span><span class="p">:</span>
+            <span class="n">tof_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">tof_start</span><span class="p">,</span> <span class="n">tof_end</span><span class="p">,</span> <span class="n">tof_stop</span><span class="p">))</span>
+        <span class="n">precursor_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">precursor_index_included</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">precursor_start</span><span class="p">,</span> <span class="n">precursor_end</span><span class="p">,</span> <span class="n">precursor_stop</span> <span class="ow">in</span> <span class="n">precursor_slices</span><span class="p">:</span>
+            <span class="n">precursor_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="n">precursor_start</span><span class="p">,</span> <span class="n">precursor_end</span><span class="p">,</span> <span class="n">precursor_stop</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">precursor_start</span><span class="p">,</span> <span class="n">precursor_end</span><span class="p">,</span> <span class="n">precursor_stop</span><span class="p">):</span>
+                <span class="n">precursor_index_included</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">quad_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">precursor_quad_included</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">quad_start</span><span class="p">,</span> <span class="n">quad_end</span> <span class="ow">in</span> <span class="n">quad_slices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">quad_start</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">precursor_quad_included</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">quad_start</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_min_value</span><span class="p">:</span>
+                <span class="n">quad_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_min_value</span>
+            <span class="k">if</span> <span class="n">quad_end</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_max_value</span><span class="p">:</span>
+                <span class="n">quad_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_max_value</span>
+            <span class="k">if</span> <span class="n">quad_start</span> <span class="o">&lt;</span> <span class="n">quad_end</span><span class="p">:</span>
+                <span class="n">quad_count</span> <span class="o">+=</span> <span class="n">quad_end</span> <span class="o">-</span> <span class="n">quad_start</span>
+        <span class="n">estimated_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">estimated_count</span> <span class="o">*=</span> <span class="n">frame_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame_max_index</span>
+        <span class="n">estimated_count</span> <span class="o">*=</span> <span class="n">scan_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan_max_index</span>
+        <span class="n">estimated_count</span> <span class="o">*=</span> <span class="n">tof_count</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tof_max_index</span>
+        <span class="n">fragment_multiplier</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span>
+            <span class="n">precursor_count</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span><span class="p">),</span>
+            <span class="n">quad_count</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_max_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_min_value</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">fragment_multiplier</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fragment_multiplier</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">precursor_index_included</span> <span class="ow">and</span> <span class="n">precursor_quad_included</span><span class="p">:</span>
+            <span class="n">fragment_multiplier</span> <span class="o">+=</span> <span class="mf">0.5</span>
+        <span class="n">estimated_count</span> <span class="o">*=</span> <span class="n">fragment_multiplier</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">estimated_count</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="TimsTOF.bin_intensities"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.bin_intensities">[docs]</a>    <span class="k">def</span> <span class="nf">bin_intensities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sum and project the intensities of the indices along 1 or 2 axis.</span>
 
@@ -1405,7 +1510,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        np.float64[:], np.float64[:, :]</span>
+<span class="sd">        np.float64[:], np.float64[:, 2]</span>
 <span class="sd">            An array or heatmap that express the summed intensity along</span>
 <span class="sd">            the selected axis.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1575,15 +1680,31 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_quad_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quad_indptr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quad_indptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">push_indptr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_quad_indptr</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_quad_max_mz_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_quad_min_mz_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_precursor_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_quad_min_mz_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">quad_mz_values</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="mi">0</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precursor_max_index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
 
-<div class="viewcode-block" id="TimsTOF.index_precursors"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.index_precursors">[docs]</a>    <span class="k">def</span> <span class="nf">index_precursors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<div class="viewcode-block" id="TimsTOF.index_precursors"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.index_precursors">[docs]</a>    <span class="k">def</span> <span class="nf">index_precursors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">centroid_algorithm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Retrieve all MS2 spectra acquired with DDA.</span>
 
-<span class="sd">        IMPORTANT NOTE: WThis function is intended for DDA samples.</span>
+<span class="sd">        IMPORTANT NOTE: This function is intended for DDA samples.</span>
 <span class="sd">        While it in theory works for DIA sample too, this probably has little</span>
 <span class="sd">        value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        centroid_algorithm : str</span>
+<span class="sd">            The centroiding algorithm to use.</span>
+<span class="sd">            Options are: &quot;&quot;</span>
+<span class="sd">            If this is an empty string, no centroiding is performed.</span>
+<span class="sd">            Default is &quot;&quot;</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1593,7 +1714,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">precursor_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_indices</span><span class="p">)</span>
         <span class="n">precursor_offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span>
         <span class="p">)</span>
         <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1608,18 +1729,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">[</span><span class="n">offsets</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">[</span><span class="n">offsets</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="n">spectrum_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span>
         <span class="p">)</span>
         <span class="n">spectrum_indptr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span>
             <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">precursor_offsets</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="p">]</span>
         <span class="n">spectrum_indptr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">new_spectrum_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">spectrum_indptr</span><span class="p">)</span>
+        <span class="n">new_spectrum_indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">spectrum_indptr</span><span class="p">)</span>
         <span class="n">spectrum_tof_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">spectrum_indptr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
         <span class="n">spectrum_intensity_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">spectrum_tof_indices</span><span class="p">)</span>
         <span class="n">set_precursor</span><span class="p">(</span>
-            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span><span class="p">),</span>
             <span class="n">precursor_order</span><span class="p">,</span>
             <span class="n">precursor_offsets</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">quad_indptr</span><span class="p">,</span>
@@ -1641,7 +1762,7 @@
         <span class="p">)</span>
         <span class="n">spectrum_intensity_values</span>
         <span class="n">trim_spectra</span><span class="p">(</span>
-            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span><span class="p">),</span>
             <span class="n">spectrum_tof_indices</span><span class="p">,</span>
             <span class="n">spectrum_intensity_values</span><span class="p">,</span>
             <span class="n">spectrum_indptr</span><span class="p">,</span>
@@ -1649,11 +1770,97 @@
             <span class="n">trimmed_spectrum_intensity_values</span><span class="p">,</span>
             <span class="n">new_spectrum_indptr</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">centroid_algorithm</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+            <span class="c1"># TODO: implement centroiding algorithm</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">new_spectrum_indptr</span><span class="p">,</span>
             <span class="n">trimmed_spectrum_tof_indices</span><span class="p">,</span>
             <span class="n">trimmed_spectrum_intensity_values</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TimsTOF.save_as_mgf"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.TimsTOF.save_as_mgf">[docs]</a>    <span class="k">def</span> <span class="nf">save_as_mgf</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="c1"># centroid: bool = False # TODO</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save profile spectra from this TimsTOF object as an mgf file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        directory : str</span>
+<span class="sd">            The directory where to save the mgf file.</span>
+<span class="sd">        file_name : str</span>
+<span class="sd">            The file name of the  mgf file.</span>
+<span class="sd">        overwrite : bool</span>
+<span class="sd">            If True, an existing file is truncated.</span>
+<span class="sd">            If False, nothing happens if a file already exists.</span>
+<span class="sd">            Default is False.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            The full file name of the mgf file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">full_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">directory</span><span class="p">,</span>
+            <span class="n">file_name</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisition_mode</span> <span class="o">!=</span> <span class="s2">&quot;ddaPASEF&quot;</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2"> is not &quot;</span>
+                <span class="s2">&quot;a ddaPASEF file, nothing to do.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">full_file_name</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2"> already exists, nothing to do.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">return</span> <span class="n">full_file_name</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Indexing spectra of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bruker_d_folder_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">spectrum_indptr</span><span class="p">,</span>
+            <span class="n">spectrum_tof_indices</span><span class="p">,</span>
+            <span class="n">spectrum_intensity_values</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_precursors</span><span class="p">()</span>
+        <span class="n">pepmasses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursors</span><span class="o">.</span><span class="n">MonoisotopicMz</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursors</span><span class="o">.</span><span class="n">Charge</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">rtinseconds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rt_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">precursors</span><span class="o">.</span><span class="n">Parent</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+        <span class="n">intensities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursors</span><span class="o">.</span><span class="n">Intensity</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">mobilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mobility_values</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precursors</span><span class="o">.</span><span class="n">ScanNumber</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">full_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exporting profile spectra to </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">progress_callback</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">spectrum_indptr</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">spectrum_indptr</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;index: </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;intensity: </span><span class="si">{</span><span class="n">intensities</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;mobility: </span><span class="si">{</span><span class="n">mobilities</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;BEGIN IONS</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TITLE=&quot;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&quot;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PEPMASS=</span><span class="si">{</span><span class="n">pepmasses</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CHARGE=</span><span class="si">{</span><span class="n">charges</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RTINSECONDS=</span><span class="si">{</span><span class="n">rtinseconds</span><span class="p">[</span><span class="n">index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">mz</span><span class="p">,</span> <span class="n">intensity</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mz_values</span><span class="p">[</span><span class="n">spectrum_tof_indices</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]],</span>
+                    <span class="n">spectrum_intensity_values</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">],</span>
+                <span class="p">):</span>
+                    <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mz</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">intensity</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;END IONS</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Succesfully wrote </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">precursor_max_index</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;spectra to </span><span class="si">{</span><span class="n">full_file_name</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">full_file_name</span></div></div>
 
 
 <div class="viewcode-block" id="PrecursorFloatError"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.PrecursorFloatError">[docs]</a><span class="k">class</span> <span class="nc">PrecursorFloatError</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
@@ -1809,12 +2016,12 @@
 <span class="sd">    -------</span>
 <span class="sd">    : dict</span>
 <span class="sd">        The resulting dict always has the following items:</span>
-<span class="sd">            - &quot;frame_indices&quot;: np.int64[:, :, :]</span>
-<span class="sd">            - &quot;scan_indices&quot;: np.int64[:, :, :]</span>
-<span class="sd">            - &quot;tof_indices&quot;: np.int64[:, :, :]</span>
-<span class="sd">            - &quot;precursor_indices&quot;: np.int64[:, :, :]</span>
-<span class="sd">            - &quot;quad_values&quot;: np.float64[:, :]</span>
-<span class="sd">            - &quot;intensity_values&quot;: np.float64[:, :]</span>
+<span class="sd">            - &quot;frame_indices&quot;: np.int64[:, 3]</span>
+<span class="sd">            - &quot;scan_indices&quot;: np.int64[:, 3]</span>
+<span class="sd">            - &quot;tof_indices&quot;: np.int64[:, 3]</span>
+<span class="sd">            - &quot;precursor_indices&quot;: np.int64[:, 3]</span>
+<span class="sd">            - &quot;quad_values&quot;: np.float64[:, 2]</span>
+<span class="sd">            - &quot;intensity_values&quot;: np.float64[:, 2]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;frame_indices&quot;</span><span class="p">,</span>
@@ -1867,11 +2074,10 @@
             <span class="p">)</span>
             <span class="n">dimension_slices</span><span class="p">[</span>
                 <span class="s2">&quot;quad_values&quot;</span>
-            <span class="p">]</span> <span class="o">=</span> <span class="n">convert_slice_key_to_float_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">convert_slice_key_to_float_array</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">dimension_slices</span><span class="p">[</span>
         <span class="s2">&quot;intensity_values&quot;</span>
     <span class="p">]</span> <span class="o">=</span> <span class="n">convert_slice_key_to_float_array</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">,</span>
         <span class="n">keys</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dimensions</span><span class="p">))</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;quad_values&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dimension_slices</span><span class="p">:</span>
@@ -1882,21 +2088,19 @@
     <span class="k">return</span> <span class="n">dimension_slices</span></div>
 
 
-<div class="viewcode-block" id="convert_slice_key_to_float_array"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.convert_slice_key_to_float_array">[docs]</a><span class="k">def</span> <span class="nf">convert_slice_key_to_float_array</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">TimsTOF</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert a key of a data object to a slice float array.</span>
+<div class="viewcode-block" id="convert_slice_key_to_float_array"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.convert_slice_key_to_float_array">[docs]</a><span class="k">def</span> <span class="nf">convert_slice_key_to_float_array</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a key to a slice float array.</span>
 
 <span class="sd">    NOTE: This function should only be used for QUAD or DETECTOR dimensions.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : alphatims.bruker.TimsTOF</span>
-<span class="sd">        The TimsTOF objext for which to get slices.</span>
 <span class="sd">    key : slice, int, float, None, iterable</span>
 <span class="sd">        The key that needs to be converted.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    : np.float64[:, :]</span>
+<span class="sd">    : np.float64[:, 2]</span>
 <span class="sd">        Each row represent a a (start, stop) slice.</span>
 
 <span class="sd">    Raises</span>
@@ -1925,7 +2129,7 @@
             <span class="n">key</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span>
@@ -1948,7 +2152,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    : np.int64[:, :, :]</span>
+<span class="sd">    : np.int64[:, 3]</span>
 <span class="sd">        Each row represent a a (start, stop, step) slice.</span>
 
 <span class="sd">    Raises</span>
@@ -1958,16 +2162,24 @@
 <span class="sd">    PrecursorFloatError</span>
 <span class="sd">        When trying to convert a quad float to precursor index.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">inverse_of_scans</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">iter</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">key</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">stop</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span>
+                        <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">convert_to_indices</span><span class="p">(</span>
@@ -1977,7 +2189,10 @@
             <span class="n">stop</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span>
+                        <span class="n">stop</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span>
                 <span class="n">stop</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">convert_to_indices</span><span class="p">(</span>
@@ -1989,16 +2204,15 @@
                 <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span>
                 <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">start</span> <span class="o">&gt;</span> <span class="n">stop</span><span class="p">):</span>
-                <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span><span class="p">,</span> <span class="n">start</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">]])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inexact</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">convert_to_indices</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="n">dimension</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span>
     <span class="k">else</span><span class="p">:</span>
@@ -2007,14 +2221,20 @@
         <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">convert_to_indices</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="n">dimension</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="s2">&quot;scan_indices&quot;</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">-=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">size</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">size</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span>
-            <span class="k">return</span> <span class="n">key</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">key</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+    <span class="k">if</span> <span class="n">inverse_of_scans</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="valid_quad_mz_values"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.valid_quad_mz_values">[docs]</a><span class="nd">@alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">njit</span>
@@ -2034,7 +2254,7 @@
 <span class="sd">        The lower mz value of the current quad selection.</span>
 <span class="sd">    high_mz_value : float</span>
 <span class="sd">        The upper mz value of the current quad selection.</span>
-<span class="sd">    quad_slices : np.float64[:, :]</span>
+<span class="sd">    quad_slices : np.float64[:, 2]</span>
 <span class="sd">        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</span>
@@ -2068,7 +2288,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    precursor_index : int</span>
 <span class="sd">        The precursor index to validate.</span>
-<span class="sd">    precursor_slices : np.int64[:, :, :]</span>
+<span class="sd">    precursor_slices : np.int64[:, 3]</span>
 <span class="sd">        Each row of the array is assumed to be a (start, stop, step) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0) = True).</span>
@@ -2114,27 +2334,27 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    frame_slices : np.int64[:, :, :]</span>
+<span class="sd">    frame_slices : np.int64[:, 3]</span>
 <span class="sd">        Each row of the array is assumed to be a (start, stop, step) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) &gt;= 0) = True).</span>
-<span class="sd">    scan_slices : np.int64[:, :, :]</span>
+<span class="sd">    scan_slices : np.int64[:, 3]</span>
 <span class="sd">        Each row of the array is assumed to be a (start, stop, step) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) &gt;= 0) = True).</span>
-<span class="sd">    precursor_slices : np.int64[:, :, :]</span>
+<span class="sd">    precursor_slices : np.int64[:, 3]</span>
 <span class="sd">        Each row of the array is assumed to be a (start, stop, step) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0) = True).</span>
-<span class="sd">    tof_slices : np.int64[:, :, :]</span>
+<span class="sd">    tof_slices : np.int64[:, 3]</span>
 <span class="sd">        Each row of the array is assumed to be a (start, stop, step) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) &gt;= 0) = True).</span>
-<span class="sd">    quad_slices : np.float64[:, :]</span>
+<span class="sd">    quad_slices : np.float64[:, 2]</span>
 <span class="sd">        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</span>
-<span class="sd">    intensity_slices : np.float64[:, :]</span>
+<span class="sd">    intensity_slices : np.float64[:, 2]</span>
 <span class="sd">        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.</span>
 <span class="sd">        This array is assumed to be sorted, disjunct and strictly increasing</span>
 <span class="sd">        (i.e. np.all(np.diff(intensity_slices.ravel()) &gt;= 0) = True).</span>
@@ -2146,7 +2366,7 @@
 <span class="sd">        The self.push_indptr array of a TimsTOF object.</span>
 <span class="sd">    precursor_indices : np.int64[:]</span>
 <span class="sd">        The self.precursor_indices array of a TimsTOF object.</span>
-<span class="sd">    quad_mz_values : np.float64[:, :]</span>
+<span class="sd">    quad_mz_values : np.float64[:, 2]</span>
 <span class="sd">        The self.quad_mz_values array of a TimsTOF object.</span>
 <span class="sd">    quad_indptr : np.int64[:]</span>
 <span class="sd">        The self.quad_indptr array of a TimsTOF object.</span>
@@ -2232,7 +2452,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
 
-<span class="c1"># TODO: Overhead of using multiple threads is slower</span>
+<span class="c1"># Overhead of using more than 1 threads is actually slower</span>
 <div class="viewcode-block" id="add_intensity_to_bin"><a class="viewcode-back" href="../../alphatims.bruker.html#alphatims.bruker.add_intensity_to_bin">[docs]</a><span class="nd">@alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">pjit</span><span class="p">(</span><span class="n">thread_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">add_intensity_to_bin</span><span class="p">(</span>
     <span class="n">query_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>

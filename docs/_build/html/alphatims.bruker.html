@@ -225,7 +225,7 @@ for Bruker data accession and storage.</p>
 <td><p>Read all data from an “analysis.tdf_bin” of a Bruker .d folder.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_bruker_sql</span></code>(bruker_d_folder_name[, …])</p></td>
-<td><p>Read metadata and (fragment) frames from a Bruker .d folder.</p></td>
+<td><p>Read metadata, (fragment) frames and precursors from a Bruker .d folder.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_precursor</span></code>(precursor_index, offset_order, …)</p></td>
 <td><p>Sum the intensities of all pushes belonging to a single precursor.</p></td>
@@ -243,14 +243,14 @@ for Bruker data accession and storage.</p>
 </table>
 <dl class="py exception">
 <dt id="alphatims.bruker.PrecursorFloatError">
-<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">PrecursorFloatError</span></code><a class="reference internal" href="_modules/alphatims/bruker.html#PrecursorFloatError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.PrecursorFloatError" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">PrecursorFloatError</code><a class="reference internal" href="_modules/alphatims/bruker.html#PrecursorFloatError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.PrecursorFloatError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code></p>
 <p>Used to indicate that a precursor value is not an int but a float.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt id="alphatims.bruker.TimsTOF">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">TimsTOF</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bruker_d_folder_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mz_estimation_from_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobility_estimation_from_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_as_dataframe</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">TimsTOF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mz_estimation_from_frame</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">mobility_estimation_from_frame</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">slice_as_dataframe</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class that stores Bruker TimsTOF data in memory for fast access.</p>
 <p>Data can be read directly from a Bruker .d folder.
@@ -289,7 +289,7 @@ are detected instead of fragments.
 Equally, this dimension allows to slice precursor indices.
 Precursor index 0 defaults to all precusors (i.e. quad mz values
 equal to -1). In DDA, precursor indices larger than 0 point
-to PASEF MSMS spectra.
+to ddaPASEF MSMS spectra.
 In DIA, precursor indices larger than 0 point to windows,
 i.e. all scans in a frame with equal quadrupole and collision
 settings that is repeated once per full cycle.
@@ -348,8 +348,8 @@ conversion need to be sorted in ascending order!</p>
 </li>
 <li><dl>
 <dt>np.ndarray:</dt><dd><p>Multiple slicing is supported by providing either a
-np.int64[:, :, :] array, where each row is assumed to be a
-(start, stop, step) tuple or np.float64[:, :] where each row
+np.int64[:, 3] array, where each row is assumed to be a
+(start, stop, step) tuple or np.float64[:, 2] where each row
 is assumed to be a (start, stop) tuple.</p>
 <p><strong>IMPORTANT NOTE:</strong> These arrays need to be sorted,
 disjunct and strictly increasing
@@ -451,11 +451,17 @@ setting the last slice element to “raw”.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_to_indices</span></code>(values, *[, …])</p></td>
 <td><p>Convert selected values to a pd.DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index_precursors</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_strike_count</span></code>(frame_slices, …)</p></td>
+<td><p>Estimate the number of strike counts, given a set of slices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index_precursors</span></code>([centroid_algorithm])</p></td>
 <td><p>Retrieve all MS2 spectra acquired with DDA.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_hdf</span></code>(directory, file_name[, …])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_hdf</span></code>(directory, file_name[, …])</p></td>
 <td><p>Save the TimsTOF object as an hdf file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_as_mgf</span></code>(directory, file_name[, overwrite])</p></td>
+<td><p>Save profile spectra from this TimsTOF object as an mgf file.</p></td>
 </tr>
 </tbody>
 </table>
@@ -520,50 +526,53 @@ setting the last slice element to “raw”.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">precursor_max_index</span></code></p></td>
 <td><p>The maximum precursor index.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">push_indptr</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">precursors</span></code></p></td>
+<td><p>The precursor table.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">push_indptr</span></code></p></td>
 <td><p>np.int64[:] : The tof indptr.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_indptr</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_indptr</span></code></p></td>
 <td><p>np.int64[:] : The quad indptr (tof_indices).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_max_value</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_max_value</span></code></p></td>
 <td><p>The maximum quad mz value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_min_value</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_min_value</span></code></p></td>
 <td><p>The minimum quad mz value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_values</span></code></p></td>
-<td><p>np.float64[:, :] : The (low, high) quad mz values.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">quad_mz_values</span></code></p></td>
+<td><p>np.float64[:, 2] : The (low, high) quad mz values.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_quad_indptr</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_quad_indptr</span></code></p></td>
 <td><p>np.int64[:] : The raw quad indptr (push indices).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_max_value</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_max_value</span></code></p></td>
 <td><p>The maximum rt value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_values</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rt_values</span></code></p></td>
 <td><p>np.float64[:] : The rt values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_name</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_name</span></code></p></td>
 <td><p>The sample name of this TimsTOF object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_max_index</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scan_max_index</span></code></p></td>
 <td><p>The maximum scan index.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_indices</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_indices</span></code></p></td>
 <td><p>np.uint32[:] : The tof indices.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_max_index</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tof_max_index</span></code></p></td>
 <td><p>The maximum tof index.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">version</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">version</span></code></p></td>
 <td><p>AlphaTims version used to create this TimsTOF object.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.__init__">
-<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bruker_d_folder_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mz_estimation_from_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobility_estimation_from_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_as_dataframe</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mz_estimation_from_frame</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">mobility_estimation_from_frame</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">slice_as_dataframe</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a Bruker TimsTOF object that contains all data in-memory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -596,7 +605,7 @@ Default is True.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.acquisition_mode">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">acquisition_mode</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.acquisition_mode" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">acquisition_mode</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.acquisition_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>The acquisition mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -607,7 +616,7 @@ Default is True.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.as_dataframe">
-<code class="sig-name descname"><span class="pre">as_dataframe</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rt_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobility_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_mz_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mz_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_indices_sorted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.as_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.as_dataframe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">as_dataframe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.as_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.as_dataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert raw indices to a pd.DataFrame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -652,7 +661,7 @@ Default is True.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.bin_intensities">
-<code class="sig-name descname"><span class="pre">bin_intensities</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.bin_intensities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.bin_intensities" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">bin_intensities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">axis</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.bin_intensities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.bin_intensities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum and project the intensities of the indices along 1 or 2 axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -668,14 +677,14 @@ the selected axis.</p></li>
 the selected axis.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>], np.float64[:, :]</p>
+<dd class="field-odd"><p>], np.float64[:, 2]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.convert_from_indices">
-<code class="sig-name descname"><span class="pre">convert_from_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_raw_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_frame_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_scan_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_quad_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_precursor_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_rt_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_mobility_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_quad_mz_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_mz_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_intensity_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_indices_sorted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_from_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_from_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">convert_from_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raw_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">frame_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">quad_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_raw_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_precursor_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_rt_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mobility_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_quad_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_mz_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_intensity_values</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">raw_indices_sorted</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_from_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_from_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert selected indices to a dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -724,7 +733,7 @@ Default is True.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.convert_to_indices">
-<code class="sig-name descname"><span class="pre">convert_to_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_frame_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_scan_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_to_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_to_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">convert_to_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">return_frame_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_scan_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_tof_indices</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">side</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'left'</span></em>, <em class="sig-param"><span class="n">return_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.convert_to_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.convert_to_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert selected values to a pd.DataFrame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -761,7 +770,7 @@ which corresponds to the requested value.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.directory">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">directory</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.directory" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">directory</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>The directory of this TimsTOF object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -771,8 +780,47 @@ which corresponds to the requested value.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.estimate_strike_count">
+<code class="sig-name descname">estimate_strike_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">scan_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.estimate_strike_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.estimate_strike_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the number of strike counts, given a set of slices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+This array is assumed to be sorted,
+disjunct and strictly increasing
+(i.e. np.all(np.diff(frame_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
+<li><p><strong>scan_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+This array is assumed to be sorted,
+disjunct and strictly increasing
+(i.e. np.all(np.diff(scan_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
+<li><p><strong>precursor_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+This array is assumed to be sorted,
+disjunct and strictly increasing
+(i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0)
+= True).</p></li>
+<li><p><strong>tof_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+This array is assumed to be sorted,
+disjunct and strictly increasing
+(i.e. np.all(np.diff(tof_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
+<li><p><strong>quad_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>2</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+This array is assumed to be sorted,
+disjunct and strictly increasing
+(i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The estimated number of strike counts given these slices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.fragment_frames">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fragment_frames</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.fragment_frames" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">fragment_frames</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.fragment_frames" title="Permalink to this definition">¶</a></dt>
 <dd><p>The fragment frames table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -783,7 +831,7 @@ which corresponds to the requested value.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.frame_max_index">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">frame_max_index</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.frame_max_index" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">frame_max_index</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.frame_max_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum frame index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -794,7 +842,7 @@ which corresponds to the requested value.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.frames">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">frames</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.frames" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">frames</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.frames" title="Permalink to this definition">¶</a></dt>
 <dd><p>The frames table of the analysis.tdf SQL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -805,25 +853,31 @@ which corresponds to the requested value.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.index_precursors">
-<code class="sig-name descname"><span class="pre">index_precursors</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.index_precursors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.index_precursors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">index_precursors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">centroid_algorithm</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.index_precursors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.index_precursors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve all MS2 spectra acquired with DDA.</p>
-<p>IMPORTANT NOTE: WThis function is intended for DDA samples.
+<p>IMPORTANT NOTE: This function is intended for DDA samples.
 While it in theory works for DIA sample too, this probably has little
 value.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The spectrum_indptr array, spectrum_tof_indices array and
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>centroid_algorithm</strong> (<em>str</em>) – The centroiding algorithm to use.
+Options are: “”
+If this is an empty string, no centroiding is performed.
+Default is “”</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The spectrum_indptr array, spectrum_tof_indices array and
 spectrum_intensity_values array.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>tuple (np.int64[:], np.uint32[:], np.uint32[:])</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple (np.int64[:], np.uint32[:], np.uint32[:])</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.intensity_max_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">intensity_max_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_max_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">intensity_max_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_max_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum intensity value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -834,7 +888,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.intensity_min_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">intensity_min_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_min_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">intensity_min_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_min_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum intensity value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -845,7 +899,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.intensity_values">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">intensity_values</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_values" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">intensity_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.intensity_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.uint16[:] : The intensity values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -856,7 +910,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.is_compressed">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_compressed</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.is_compressed" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">is_compressed</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.is_compressed" title="Permalink to this definition">¶</a></dt>
 <dd><p>HDF arraya are compressed or not.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -867,7 +921,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.meta_data">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">meta_data</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.meta_data" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">meta_data</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.meta_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>The metadata for the acquisition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -878,7 +932,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mobility_max_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mobility_max_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_max_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mobility_max_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_max_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum mobility value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -889,7 +943,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mobility_min_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mobility_min_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_min_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mobility_min_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_min_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum mobility value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -900,7 +954,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mobility_values">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mobility_values</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_values" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mobility_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mobility_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.float64[:] : The mobility values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -911,7 +965,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mz_max_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mz_max_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_max_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mz_max_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_max_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum mz value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -922,7 +976,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mz_min_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mz_min_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_min_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mz_min_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_min_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum mz value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -933,7 +987,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.mz_values">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mz_values</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_values" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">mz_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.mz_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.float64[:] : The mz values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -944,7 +998,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.precursor_indices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">precursor_indices</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.precursor_indices" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">precursor_indices</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.precursor_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.int64[:] : The precursor indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -955,7 +1009,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.precursor_max_index">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">precursor_max_index</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.precursor_max_index" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">precursor_max_index</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.precursor_max_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum precursor index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -965,8 +1019,19 @@ spectrum_intensity_values array.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.precursors">
+<em class="property">property </em><code class="sig-name descname">precursors</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.precursors" title="Permalink to this definition">¶</a></dt>
+<dd><p>The precursor table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.push_indptr">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">push_indptr</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.push_indptr" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">push_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.push_indptr" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.int64[:] : The tof indptr.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -977,7 +1042,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.quad_indptr">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">quad_indptr</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_indptr" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">quad_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_indptr" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.int64[:] : The quad indptr (tof_indices).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -988,7 +1053,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.quad_mz_max_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">quad_mz_max_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_max_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">quad_mz_max_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_max_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum quad mz value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -999,7 +1064,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.quad_mz_min_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">quad_mz_min_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_min_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">quad_mz_min_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_min_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The minimum quad mz value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1010,8 +1075,8 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.quad_mz_values">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">quad_mz_values</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>np.float64[:, :] : The (low, high) quad mz values.</p>
+<em class="property">property </em><code class="sig-name descname">quad_mz_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.quad_mz_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>np.float64[:, 2] : The (low, high) quad mz values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -1021,7 +1086,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.raw_quad_indptr">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">raw_quad_indptr</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.raw_quad_indptr" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">raw_quad_indptr</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.raw_quad_indptr" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.int64[:] : The raw quad indptr (push indices).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1032,7 +1097,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.rt_max_value">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">rt_max_value</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.rt_max_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">rt_max_value</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.rt_max_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum rt value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1043,7 +1108,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.rt_values">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">rt_values</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.rt_values" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">rt_values</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.rt_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.float64[:] : The rt values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1054,7 +1119,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.sample_name">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sample_name</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.sample_name" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">sample_name</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.sample_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The sample name of this TimsTOF object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1065,7 +1130,7 @@ spectrum_intensity_values array.</p>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.save_as_hdf">
-<code class="sig-name descname"><span class="pre">save_as_hdf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_as_bytes_io</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.save_as_hdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.save_as_hdf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save_as_hdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">file_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">compress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">return_as_bytes_io</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.save_as_hdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.save_as_hdf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the TimsTOF object as an hdf file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1100,8 +1165,31 @@ Default is False.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt id="alphatims.bruker.TimsTOF.save_as_mgf">
+<code class="sig-name descname">save_as_mgf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">file_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#TimsTOF.save_as_mgf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.TimsTOF.save_as_mgf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save profile spectra from this TimsTOF object as an mgf file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> (<em>str</em>) – The directory where to save the mgf file.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The file name of the  mgf file.</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – If True, an existing file is truncated.
+If False, nothing happens if a file already exists.
+Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The full file name of the mgf file.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.scan_max_index">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">scan_max_index</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.scan_max_index" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">scan_max_index</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.scan_max_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum scan index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1112,7 +1200,7 @@ Default is False.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.tof_indices">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tof_indices</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_indices" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">tof_indices</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>np.uint32[:] : The tof indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1123,7 +1211,7 @@ Default is False.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.tof_max_index">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tof_max_index</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_max_index" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">tof_max_index</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.tof_max_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum tof index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1134,7 +1222,7 @@ Default is False.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.bruker.TimsTOF.version">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">version</span></code><a class="headerlink" href="#alphatims.bruker.TimsTOF.version" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">version</code><a class="headerlink" href="#alphatims.bruker.TimsTOF.version" title="Permalink to this definition">¶</a></dt>
 <dd><p>AlphaTims version used to create this TimsTOF object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1147,7 +1235,7 @@ Default is False.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.add_intensity_to_bin">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">add_intensity_to_bin</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensities</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parsed_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_bins</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/bruker.html#add_intensity_to_bin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.add_intensity_to_bin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">add_intensity_to_bin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">parsed_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensity_bins</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#add_intensity_to_bin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.add_intensity_to_bin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the intensity of a query to the appropriate bin.</p>
 <p>IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
 The first argument is thus expected to be provided as an iterable
@@ -1168,7 +1256,7 @@ containing ints instead of a single int.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.convert_slice_key_to_float_array">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">convert_slice_key_to_float_array</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#convert_slice_key_to_float_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.convert_slice_key_to_float_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">convert_slice_key_to_float_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#convert_slice_key_to_float_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.convert_slice_key_to_float_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a key to a slice float array.</p>
 <p>NOTE: This function should only be used for QUAD or DETECTOR dimensions.</p>
 <dl class="field-list simple">
@@ -1179,7 +1267,7 @@ containing ints instead of a single int.</p></li>
 <dd class="field-even"><p>Each row represent a a (start, stop) slice.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.float64[:, :]</p>
+<dd class="field-odd"><p>np.float64[:, 2]</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ValueError</strong> – When the key is an np.ndarray with more than 2 columns.</p>
@@ -1189,7 +1277,7 @@ containing ints instead of a single int.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.convert_slice_key_to_int_array">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">convert_slice_key_to_int_array</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#alphatims.bruker.TimsTOF" title="alphatims.bruker.TimsTOF"><span class="pre">alphatims.bruker.TimsTOF</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dimension</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#convert_slice_key_to_int_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.convert_slice_key_to_int_array" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">convert_slice_key_to_int_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#alphatims.bruker.TimsTOF" title="alphatims.bruker.TimsTOF">alphatims.bruker.TimsTOF</a></span></em>, <em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">dimension</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#convert_slice_key_to_int_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.convert_slice_key_to_int_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a key of a data dimension to a slice integer array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1203,7 +1291,7 @@ containing ints instead of a single int.</p></li>
 <dd class="field-even"><p>Each row represent a a (start, stop, step) slice.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.int64[:, :, :]</p>
+<dd class="field-odd"><p>np.int64[:, 3]</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
@@ -1216,34 +1304,34 @@ containing ints instead of a single int.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.filter_indices">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">filter_indices</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensity_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_max_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_max_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">push_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_mz_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensities</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#filter_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.filter_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">filter_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">scan_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensity_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">frame_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">scan_max_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">push_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_mz_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#filter_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.filter_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Filter raw indices by slices from all dimensions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>frame_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+<li><p><strong>frame_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
-<li><p><strong>scan_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+<li><p><strong>scan_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
-<li><p><strong>precursor_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+<li><p><strong>precursor_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
-<li><p><strong>tof_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+<li><p><strong>tof_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
-<li><p><strong>quad_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+<li><p><strong>quad_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>2</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</p></li>
-<li><p><strong>intensity_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+<li><p><strong>intensity_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>2</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(intensity_slices.ravel()) &gt;= 0) = True).</p></li>
 <li><p><strong>frame_max_index</strong> (<em>int</em>) – The maximum frame index of a TimsTOF object.</p></li>
 <li><p><strong>scan_max_index</strong> (<em>int</em>) – The maximum scan index of a TimsTOF object.</p></li>
 <li><p><strong>push_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.push_indptr array of a TimsTOF object.</p></li>
 <li><p><strong>precursor_indices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.precursor_indices array of a TimsTOF object.</p></li>
-<li><p><strong>quad_mz_values</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>]</em>) – The self.quad_mz_values array of a TimsTOF object.</p></li>
+<li><p><strong>quad_mz_values</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>2</em><em>]</em>) – The self.quad_mz_values array of a TimsTOF object.</p></li>
 <li><p><strong>quad_indptr</strong> (<em>np.int64</em><em>[</em><em>:</em><em>]</em>) – The self.quad_indptr array of a TimsTOF object.</p></li>
 <li><p><strong>tof_indices</strong> (<em>np.uint32</em><em>[</em><em>:</em><em>]</em>) – The self.tof_indices array of a TimsTOF object.</p></li>
 <li><p><strong>intensities</strong> (<em>np.uint16</em><em>[</em><em>:</em><em>]</em>) – The self.intensity_values array of a TimsTOF object.</p></li>
@@ -1260,7 +1348,7 @@ This array is assumed to be sorted, disjunct and strictly increasing
 
 <dl class="py function">
 <dt id="alphatims.bruker.indptr_lookup">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">indptr_lookup</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum_amplifier</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#indptr_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.indptr_lookup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">indptr_lookup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">targets</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">queries</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">momentum_amplifier</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#indptr_lookup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.indptr_lookup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the indices of queries in targets.</p>
 <p>This function is equivalent to
 “np.searchsorted(targets, queries, “right”) - 1”.
@@ -1288,7 +1376,7 @@ spread out in targets.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.init_bruker_dll">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">init_bruker_dll</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bruker_dll_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#init_bruker_dll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.init_bruker_dll" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">init_bruker_dll</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bruker_dll_file_name</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/bruker.html#init_bruker_dll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.init_bruker_dll" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a bruker.dll in Python.</p>
 <p>Five functions are defined for this dll:</p>
 <blockquote>
@@ -1316,7 +1404,7 @@ Default is alphatims.utils.BRUKER_DLL_FILE_NAME.</p>
 
 <dl class="py function">
 <dt id="alphatims.bruker.open_bruker_d_folder">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">open_bruker_d_folder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bruker_d_folder_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bruker_dll_file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/bruker.html#open_bruker_d_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.open_bruker_d_folder" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">open_bruker_d_folder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">bruker_dll_file_name</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#open_bruker_d_folder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.open_bruker_d_folder" title="Permalink to this definition">¶</a></dt>
 <dd><p>A context manager for a bruker dll connection to a .d folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1339,7 +1427,7 @@ which in itself is dependent on the OS.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.parse_decompressed_bruker_binary">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">parse_decompressed_bruker_binary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decomp_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/bruker.html#parse_decompressed_bruker_binary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.parse_decompressed_bruker_binary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">parse_decompressed_bruker_binary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">decomp_data</span><span class="p">:</span> <span class="n">bytes</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#parse_decompressed_bruker_binary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.parse_decompressed_bruker_binary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse a Bruker binary frame buffer into scans, tofs and intensities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1357,7 +1445,7 @@ array</p>
 
 <dl class="py function">
 <dt id="alphatims.bruker.parse_keys">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">parse_keys</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#alphatims.bruker.TimsTOF" title="alphatims.bruker.TimsTOF"><span class="pre">alphatims.bruker.TimsTOF</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="reference internal" href="_modules/alphatims/bruker.html#parse_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.parse_keys" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">parse_keys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n"><a class="reference internal" href="#alphatims.bruker.TimsTOF" title="alphatims.bruker.TimsTOF">alphatims.bruker.TimsTOF</a></span></em>, <em class="sig-param"><span class="n">keys</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/bruker.html#parse_keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.parse_keys" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert different keys to a key dict with defined types.</p>
 <p>NOTE: Negative slicing is not supported and all indiviudal keys
 are assumed to be sorted, disjunct and strictly increasing</p>
@@ -1374,12 +1462,12 @@ See <cite>alphatims.bruker.convert_slice_key_to_int_array</cite> and
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>The resulting dict always has the following items:</dt><dd><ul class="simple">
-<li><p>”frame_indices”: np.int64[:, :, :]</p></li>
-<li><p>”scan_indices”: np.int64[:, :, :]</p></li>
-<li><p>”tof_indices”: np.int64[:, :, :]</p></li>
-<li><p>”precursor_indices”: np.int64[:, :, :]</p></li>
-<li><p>”quad_values”: np.float64[:, :]</p></li>
-<li><p>”intensity_values”: np.float64[:, :]</p></li>
+<li><p>”frame_indices”: np.int64[:, 3]</p></li>
+<li><p>”scan_indices”: np.int64[:, 3]</p></li>
+<li><p>”tof_indices”: np.int64[:, 3]</p></li>
+<li><p>”precursor_indices”: np.int64[:, 3]</p></li>
+<li><p>”quad_values”: np.float64[:, 2]</p></li>
+<li><p>”intensity_values”: np.float64[:, 2]</p></li>
 </ul>
 </dd>
 </dl>
@@ -1393,7 +1481,7 @@ See <cite>alphatims.bruker.convert_slice_key_to_int_array</cite> and
 
 <dl class="py function">
 <dt id="alphatims.bruker.process_frame">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">process_frame</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdf_bin_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tims_offset_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensities</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_scan_count</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/bruker.html#process_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.process_frame" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">process_frame</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frame_id</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">tdf_bin_file_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">tims_offset_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">scan_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">frame_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">max_scan_count</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#process_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.process_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.</p>
 <p>IMPORTANT NOTE: This function is decorated with alphatims.utils.threadpool.
 The first argument is thus expected to be provided as an iterable
@@ -1435,7 +1523,7 @@ the start of a subsequent frame.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.read_bruker_binary">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">read_bruker_binary</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bruker_d_folder_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/bruker.html#read_bruker_binary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.read_bruker_binary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">read_bruker_binary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frames</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#read_bruker_binary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.read_bruker_binary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all data from an “analysis.tdf_bin” of a Bruker .d folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1456,8 +1544,8 @@ These can be acquired with e.g. alphatims.bruker.read_bruker_sql.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.read_bruker_sql">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">read_bruker_sql</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bruker_d_folder_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_zeroth_frame</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_polarity</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/bruker.html#read_bruker_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.read_bruker_sql" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read metadata and (fragment) frames from a Bruker .d folder.</p>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">read_bruker_sql</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bruker_d_folder_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">add_zeroth_frame</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">drop_polarity</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/bruker.html#read_bruker_sql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.read_bruker_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read metadata, (fragment) frames and precursors from a Bruker .d folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1477,8 +1565,10 @@ Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>(str, dict, pd.DataFrame, pd.DataFrame).
-The acquisition_mode, global_meta_data, frames and fragment_frames.</p>
+<dd class="field-even"><p>(str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame).
+The acquisition_mode, global_meta_data, frames, fragment_frames
+and precursors.
+For diaPASEF, precursors is None.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tuple</p>
@@ -1492,7 +1582,7 @@ The acquisition_mode, global_meta_data, frames and fragment_frames.</p>
 
 <dl class="py function">
 <dt id="alphatims.bruker.set_precursor">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">set_precursor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">precursor_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_order</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_offsets</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intensities</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_intensity_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_counts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/bruker.html#set_precursor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.set_precursor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">set_precursor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">precursor_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">offset_order</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">precursor_offsets</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">quad_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">intensities</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_counts</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#set_precursor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.set_precursor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sum the intensities of all pushes belonging to a single precursor.</p>
 <p>IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
 The first argument is thus expected to be provided as an iterable
@@ -1518,7 +1608,7 @@ spectrum has.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.bruker.trim_spectra">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">trim_spectra</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_intensity_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectrum_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trimmed_spectrum_tof_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trimmed_spectrum_intensity_values</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_spectrum_indptr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/bruker.html#trim_spectra"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.trim_spectra" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">trim_spectra</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">trimmed_spectrum_tof_indices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">trimmed_spectrum_intensity_values</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">new_spectrum_indptr</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/bruker.html#trim_spectra"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.trim_spectra" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trim remaining bytes after merging of multiple pushes.</p>
 <p>IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
 The first argument is thus expected to be provided as an iterable
@@ -1540,13 +1630,13 @@ containing ints instead of a single int.</p>
 
 <dl class="py function">
 <dt id="alphatims.bruker.valid_precursor_index">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">valid_precursor_index</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">precursor_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="reference internal" href="_modules/alphatims/bruker.html#valid_precursor_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.valid_precursor_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">valid_precursor_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">precursor_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">precursor_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/bruker.html#valid_precursor_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.valid_precursor_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if a precursor index is included in the slices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>precursor_index</strong> (<em>int</em>) – The precursor index to validate.</p></li>
-<li><p><strong>precursor_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
+<li><p><strong>precursor_slices</strong> (<em>np.int64</em><em>[</em><em>:</em><em>, </em><em>3</em><em>]</em>) – Each row of the array is assumed to be a (start, stop, step) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) &gt;= 0) = True).</p></li>
 </ul>
@@ -1563,7 +1653,7 @@ False otherwise.</p>
 
 <dl class="py function">
 <dt id="alphatims.bruker.valid_quad_mz_values">
-<code class="sig-prename descclassname"><span class="pre">alphatims.bruker.</span></code><code class="sig-name descname"><span class="pre">valid_quad_mz_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low_mz_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_mz_value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quad_slices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="reference internal" href="_modules/alphatims/bruker.html#valid_quad_mz_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.bruker.valid_quad_mz_values" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">alphatims.bruker.</code><code class="sig-name descname">valid_quad_mz_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">low_mz_value</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">high_mz_value</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">quad_slices</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/bruker.html#valid_quad_mz_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.bruker.valid_quad_mz_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the low and high quad mz values are included in the slices.</p>
 <p>NOTE: Just a part of the quad range needs to overlap with a part
 of a single slice.</p>
@@ -1572,7 +1662,7 @@ of a single slice.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>low_mz_value</strong> (<em>float</em>) – The lower mz value of the current quad selection.</p></li>
 <li><p><strong>high_mz_value</strong> (<em>float</em>) – The upper mz value of the current quad selection.</p></li>
-<li><p><strong>quad_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>:</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+<li><p><strong>quad_slices</strong> (<em>np.float64</em><em>[</em><em>:</em><em>, </em><em>2</em><em>]</em>) – Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
 This array is assumed to be sorted, disjunct and strictly increasing
 (i.e. np.all(np.diff(quad_slices.ravel()) &gt;= 0) = True).</p></li>
 </ul>

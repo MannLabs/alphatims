@@ -166,7 +166,7 @@ header = pn.Row(
 
 # MAIN PART
 project_description = pn.pane.Markdown(
-    """### AlphaTims provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF from Bruker's timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.""",
+    """### AlphaTims provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from Bruker's timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
     width=690
@@ -350,7 +350,7 @@ save_sliced_data_message = pn.pane.Alert(
 
 # SAVE MGF
 save_mgf_path = pn.widgets.TextInput(
-    name='Specify a path to save all MS2 data as .mgf file:',
+    name='Specify a path to save all MS2 spectra as .mgf file:',
     placeholder='e.g. D:\Bruker',
     margin=(15, 10, 0, 10)
 )

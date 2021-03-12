@@ -177,6 +177,7 @@
 <span class="n">IMG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s2">&quot;img&quot;</span><span class="p">)</span>
 <span class="n">LIB_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s2">&quot;lib&quot;</span><span class="p">)</span>
 <span class="n">LOG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">),</span> <span class="s2">&quot;logs&quot;</span><span class="p">)</span>
+<span class="n">DOC_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_PATH</span><span class="p">,</span> <span class="s2">&quot;docs&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LIB_PATH</span><span class="p">,</span> <span class="s2">&quot;interface_parameters.json&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">:</span>
     <span class="n">INTERFACE_PARAMETERS</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_file</span><span class="p">)</span>
 <span class="n">MAX_THREADS</span> <span class="o">=</span> <span class="n">INTERFACE_PARAMETERS</span><span class="p">[</span><span class="s2">&quot;threads&quot;</span><span class="p">][</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
@@ -680,7 +681,7 @@
         <span class="k">return</span> <span class="n">parallel_compiled_func_inner</span><span class="p">(</span><span class="n">_func</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="progress_callback"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.progress_callback">[docs]</a><span class="k">def</span> <span class="nf">progress_callback</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="progress_callback"><a class="viewcode-back" href="../../alphatims.utils.html#alphatims.utils.progress_callback">[docs]</a><span class="k">def</span> <span class="nf">progress_callback</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Add tqdm progress callback to iterable.</span>
 
 <span class="sd">    Parameters</span>
@@ -695,6 +696,10 @@
 <span class="sd">            - PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.</span>
 <span class="sd">            - PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.</span>
 
+<span class="sd">        Default is -1.</span>
+<span class="sd">    total : int</span>
+<span class="sd">        The length of the iterable.</span>
+<span class="sd">        If -1, this will be read as len(iterable), if __len__ is implemented.</span>
 <span class="sd">        Default is -1.</span>
 
 <span class="sd">    Returns</span>
@@ -713,7 +718,10 @@
     <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="n">PROGRESS_CALLBACK_STYLE_NONE</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">iterable</span>
     <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="n">PROGRESS_CALLBACK_STYLE_TEXT</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">total</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="n">PROGRESS_CALLBACK_STYLE_PLOT</span><span class="p">:</span>
         <span class="c1"># TODO: update?</span>
         <span class="k">return</span> <span class="n">tqdm</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">tqdm</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
@@ -744,6 +752,8 @@
 <span class="sd">            - np.array -&gt; array</span>
 <span class="sd">            - pd.dataframes -&gt; subdicts with &quot;is_pd_dataframe: True&quot; attribute.</span>
 <span class="sd">            - bool, int, float and str -&gt; attrs.</span>
+<span class="sd">            - None values are skipped and not stored explicitly.</span>
+
 <span class="sd">    overwrite : bool</span>
 <span class="sd">        If True, existing subgroups, arrays and attrs are fully</span>
 <span class="sd">        truncated/overwritten.</span>
@@ -832,6 +842,8 @@
                 <span class="n">recursed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">,</span>
             <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;The type of </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">, which &quot;</span>
