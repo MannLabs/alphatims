@@ -1466,6 +1466,11 @@ def run():
         sizing_mode='stretch_width',
     )
     server = LAYOUT.show(title='AlphaTims', threaded=True)
+    check_if_server_has_open_connections(server)
+
+
+def check_if_server_has_open_connections(server):
+    # TODO: implementation below is very weak to check if server is open...
     import time
     root = logging.getLogger()
     for i in root.handlers:
@@ -1485,8 +1490,6 @@ def run():
         if (opened > 0) and (closed == opened):
             server.stop()
             break
-
-
 
 
 def update_global_selection(updated_option, updated_value):
