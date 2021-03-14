@@ -9,17 +9,32 @@ import sys
 import warnings
 import logging
 # holoviz libraries
-import colorcet
-import hvplot.pandas
 import holoviews as hv
-from holoviews import opts
+import bokeh.server.views.ws
 # local
 import alphatims.bruker
 import alphatims.utils
 import alphatims.plotting
 
 
+# TODO: do we want to ignore warnings?
 warnings.filterwarnings('ignore')
+
+
+# GLOBAL VARIABLES
+DATASET = None
+PLOTS = pn.Column(None, None, None, sizing_mode='stretch_width',)
+WHOLE_TITLE = str()
+SELECTED_INDICES = np.array([])
+DATAFRAME = pd.DataFrame()
+STACK = alphatims.utils.Global_Stack({})
+SERVER = None
+TAB_COUNTER = 0
+BROWSER = pn.Row(
+    None,
+    PLOTS,
+    sizing_mode='stretch_width',
+)
 
 # EXTENSIONS
 css = '''
@@ -99,15 +114,6 @@ h2 {
 '''
 pn.extension(raw_css=[css])
 hv.extension('bokeh')
-
-
-# LOCAL VARIABLES
-DATASET = None
-PLOTS = pn.Column(None, None, None, sizing_mode='stretch_width',)
-WHOLE_TITLE = str()
-SELECTED_INDICES = np.array([])
-DATAFRAME = pd.DataFrame()
-STACK = alphatims.utils.Global_Stack({})
 
 
 # PATHS
@@ -972,12 +978,6 @@ settings = pn.Column(
     css_classes=['settings']
 )
 
-BROWSER = pn.Row(
-    None,
-    PLOTS,
-    sizing_mode='stretch_width',
-)
-
 
 # PLOTTING
 def get_range_func(color, boundsx):
@@ -1289,18 +1289,6 @@ def update_frame_with_player(*args):
 
 
 @pn.depends(
-    exit_button.param.clicks,
-    watch=True
-)
-def exit_button_event(*args):
-    import sys
-    logging.info("Quitting server...")
-    exit_button.name = "Server closed"
-    exit_button.button_type = "danger"
-    sys.exit()
-
-
-@pn.depends(
     # frame_slider.param.value,
     # frame_start.param.value,
     # frame_end.param.value,
@@ -1459,37 +1447,52 @@ def update_selected_indices_and_dataframe():
 def run():
     global LAYOUT
     global PLOTS
+    global SERVER
     LAYOUT = pn.Column(
         header,
         main_part,
         BROWSER,
         sizing_mode='stretch_width',
     )
-    server = LAYOUT.show(title='AlphaTims', threaded=True)
-    check_if_server_has_open_connections(server)
+    original_open = bokeh.server.views.ws.WSHandler.open
+    bokeh.server.views.ws.WSHandler.open = open_browser_tab(original_open)
+    original_on_close = bokeh.server.views.ws.WSHandler.on_close
+    bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(original_on_close)
+    SERVER = LAYOUT.show(title='AlphaTims', threaded=True)
+    SERVER.join()
 
 
-def check_if_server_has_open_connections(server):
-    # TODO: implementation below is very weak to check if server is open...
-    import time
-    root = logging.getLogger()
-    for i in root.handlers:
-        if isinstance(i, logging.FileHandler):
-            file_handler = i.baseFilename
-    while True:
-        time.sleep(.1)
-        with open(file_handler, "r") as log_file:
-            opened = 0
-            closed = 0
-            for line in log_file:
-                if "WebSocket connection opened" in line:
-                    opened += 1
-                if "WebSocket connection closed" in line:
-                    closed += 1
-        # print(f"Open connections: {opened}, closed connections: {closed}")
-        if (opened > 0) and (closed == opened):
-            server.stop()
-            break
+@pn.depends(
+    exit_button.param.clicks,
+    watch=True
+)
+def exit_button_event(*args):
+    exit_button.name = "Server closed"
+    exit_button.button_type = "danger"
+    quit_server()
+
+
+def open_browser_tab(func):
+    def wrapper(*args, **kwargs):
+        global TAB_COUNTER
+        TAB_COUNTER += 1
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def close_browser_tab(func):
+    def wrapper(*args, **kwargs):
+        global TAB_COUNTER
+        TAB_COUNTER -= 1
+        return_value = func(*args, **kwargs)
+        quit_server()
+        return return_value
+    return wrapper
+
+
+def quit_server():
+    logging.info("Quitting server...")
+    SERVER.stop()
 
 
 def update_global_selection(updated_option, updated_value):
