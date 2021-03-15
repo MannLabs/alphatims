@@ -130,9 +130,9 @@ github_logo_path = os.path.join(
     "github.png"
 )
 
-alphatims_tutorial_path = os.path.join(
+gui_manual_path = os.path.join(
     alphatims.utils.DOC_PATH,
-    "alphatims_tutorial.pdf"
+    "gui_manual.pdf"
 )
 
 
@@ -221,9 +221,9 @@ exit_button = pn.widgets.Button(
     width=100,
     margin=(34, 20, 0, 0)
 )
-alphatims_tutorial = pn.widgets.FileDownload(
-    file=alphatims_tutorial_path,
-    label='AlphaTims tutorial',
+gui_manual = pn.widgets.FileDownload(
+    file=gui_manual_path,
+    label='GUI manual',
     button_type='default',
     auto=True,
     height=31,
@@ -236,7 +236,7 @@ main_part = pn.Column(
     project_description,
     divider_descr,
     pn.Row(
-        alphatims_tutorial,
+        gui_manual,
         upload_file,
         upload_button,
         upload_spinner,
@@ -1003,10 +1003,12 @@ def visualize_tic():
         get_range_func('orange', bounds_x),
         streams=[bounds_x],
     )
+    # tic.remove_tools(bokeh.models.BoxSelectTool)
     fig = tic * dmap
     # TODO: remove "box select (x-axis)" tool as this is not responsive?
     # TODO: plot height does not allows space for hover tool at bottom
     # TODO: both problems can be merged to fix eachother?
+    # TODO: similar for 1d_plot if XIC...
     return fig#.opts(responsive=True)
 
 
@@ -1042,19 +1044,23 @@ def visualize_1d_plot():
         width=None,
         height=320
     )
-    if plot2_x_axis.value == "RT, min":
-        bounds_x = hv.streams.BoundsX(
-            source=line_plot,
-            boundsx=(rt_start.value, rt_end.value)
-        )
-        dmap = hv.DynamicMap(
-            get_range_func('khaki', bounds_x),
-            streams=[bounds_x]
-        )
-        fig = line_plot * dmap
-        return fig#.opts(responsive=True)
-    else:
-        return line_plot
+    # if plot2_x_axis.value == "RT, min":
+    #     bounds_x = hv.streams.BoundsX(
+    #         source=line_plot,
+    #         boundsx=(rt_start.value, rt_end.value)
+    #     )
+    #     dmap = hv.DynamicMap(
+    #         get_range_func('khaki', bounds_x),
+    #         streams=[bounds_x]
+    #     )
+    #     fig = line_plot * dmap
+    #     return fig#.opts(responsive=True)
+    # else:
+    #     return line_plot
+    # NOTE: by default the xlims are now trimmed to the visible selection.
+    # Thus, the XIC is always equal to the whole plot,
+    # making the stream/ dmap redundant...
+    return line_plot
 
 
 def upload_data(*args):
@@ -1457,7 +1463,9 @@ def run():
     original_open = bokeh.server.views.ws.WSHandler.open
     bokeh.server.views.ws.WSHandler.open = open_browser_tab(original_open)
     original_on_close = bokeh.server.views.ws.WSHandler.on_close
-    bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(original_on_close)
+    bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(
+        original_on_close
+    )
     SERVER = LAYOUT.show(title='AlphaTims', threaded=True)
     SERVER.join()
 
