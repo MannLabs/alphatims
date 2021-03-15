@@ -1493,7 +1493,8 @@ def close_browser_tab(func):
         global TAB_COUNTER
         TAB_COUNTER -= 1
         return_value = func(*args, **kwargs)
-        quit_server()
+        if TAB_COUNTER == 0:
+            quit_server()
         return return_value
     return wrapper
 
