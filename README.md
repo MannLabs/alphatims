@@ -37,17 +37,17 @@ AlphaTims is an open-source Python package that provides fast accession and visu
 ---
 ## About
 
-High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is a freely available and open-source. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
+High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available and open-source. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
 
 ---
 ## License
 
-AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages (available in the [requirements](requirements) folder), additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages (available in the [requirements](requirements) folder), additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ---
 ## Installation
 
-AlphaTims can be installed on all major operating systems (Windows, MacOS and Linux).
+AlphaTims can be installed and used on all major operating systems (Windows, MacOS and Linux).
 There are three different types of installation possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
@@ -90,7 +90,7 @@ pip install git+https://github.com/MannLabs/alphatims.git --upgrade
 
 ### Developer
 
-AlphaTims can also be installed in developer mode with a few `bash` commands. This allows to fully customize the software and modify the source code to your specific needs. For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). Once conda is downlaoded and installed, an AlphaTims environment can be created and activated with:
+AlphaTims can also be installed in developer mode with a few `bash` commands. This allows to fully customize the software and modify the source code to your specific needs. For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). Once conda is downloaded and installed, an AlphaTims environment can be created and activated with:
 
 ```bash
 conda create -n alphatims python=3.8 -y
@@ -121,13 +121,13 @@ pip install -e './alphatims[plotting,develop]'
 The following steps are optional, but make working with AlphaTims slightly more convenient:
 
 * To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used (this is optional), the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
-```bash
-conda activate alphatims
-alphatims_bin="$(which alphatims)"
-echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
-conda deactivate
-```
-When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to the path.
+  ```bash
+  conda activate alphatims
+  alphatims_bin="$(which alphatims)"
+  echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
+  conda deactivate
+  ```
+  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to the path.
 * When using Jupyter notebooks and multiple conda environments direcly from the terminal, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available, in addition to all other conda kernels in which the command `conda install ipykernel` was run.
 
 ### Installation issues
