@@ -22,7 +22,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
     * [**GUI**](#gui)
     * [**CLI**](#cli)
     * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
-    * [**Other tools**][other-tools]
+    * [**Other tools**][#other-tools]
   * [**Performance**](#performance)
     * [**Speed**](#speed)
     * [**RAM**](#ram)
