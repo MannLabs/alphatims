@@ -17,6 +17,7 @@ def line_plot(
     title: str = "",
     y_axis_label: str = "intensity",
     remove_zeros: bool = False,
+    trim: bool = True,
     width: int = 1000,
     height: int = 300,
 ):
@@ -51,6 +52,9 @@ def line_plot(
         If False, use the full range of the appropriate dimension of
         the timstof_data.
         Default is False.
+    trim : bool
+        If True, zeros on the left and right are trimmed.
+        Default is True.
     width : int
         The width of this plot.
         Default is 1000.
@@ -97,10 +101,20 @@ def line_plot(
     elif x_dimension == "rt_values":
         x_ticks = timstof_data.rt_values / 60
         plot_opts["title"] = f"XIC - {title}"
-    if remove_zeros:
-        non_zeros = np.flatnonzero(intensities)
-        x_ticks = x_ticks[non_zeros]
-        intensities = x_ticks[intensities]
+    non_zeros = np.flatnonzero(intensities)
+    if len(non_zeros) == 0:
+        x_ticks = np.empty(0, dtype=x_ticks.dtype)
+        intensities = np.empty(0, dtype=intensities.dtype)
+    else:
+        start = max(0, non_zeros[0] - 1)
+        end = non_zeros[-1] + 2
+        if remove_zeros:
+            x_ticks = x_ticks[non_zeros]
+            intensities = intensities[non_zeros]
+        if trim:
+            x_ticks = x_ticks[start: end]
+            intensities = intensities[start: end]
+    print()
     plot = hv.Curve(
         (x_ticks, intensities),
         x_axis_label,
