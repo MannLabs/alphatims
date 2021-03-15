@@ -241,7 +241,7 @@ def detect(**kwargs):
 @export.command("hdf", help="Export BRUKER_D_FOLDER as hdf file.")
 @cli_option("bruker_d_folder", as_argument=True)
 @cli_option("disable_overwrite")
-@cli_option("compress")
+@cli_option("enable_compression")
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -260,7 +260,7 @@ def export_hdf(**kwargs):
             overwrite=not parameters["disable_overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.hdf",
-            compress=parameters["compress"],
+            compress=parameters["enable_compression"],
         )
 
 

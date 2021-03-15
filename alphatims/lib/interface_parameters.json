@@ -168,8 +168,8 @@
     "is_flag": true,
     "required": false
   },
-  "compress": {
-    "help": "Compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 2-10 longer accession times.",
+  "enable_compression": {
+    "help": "Enable compression of hdf files. If set, this roughly halves files sizes (on-disk), at the cost of taking 2-10 longer accession times.",
     "default": false,
     "is_flag": true,
     "required": false
