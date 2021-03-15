@@ -7,7 +7,7 @@ call conda activate alphatimsinstaller
 REM call conda install git -y
 REM call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]'
 REM call conda install freetype
-call pip install ../../.[plotting, develop]
+call pip install ../../.[plotting]
 REM
 call pyinstaller ../pyinstaller/alphatims.spec -y
 call conda deactivate

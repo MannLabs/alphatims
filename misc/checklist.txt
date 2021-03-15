@@ -1,6 +1,6 @@
 Tests passing?
 Docs updated?
-Tutorial updated?
+Tutorial/manual/performance updated?
 README updated?
 No TODOs left?
 Versions updated (__init__.py and alphatims_innoinstaller.iss)?
