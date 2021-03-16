@@ -1,6 +1,6 @@
-bokeh==2.2.3
+bokeh==2.3.0
 datashader==0.11.1
-holoviews==1.13.5
+holoviews==1.14.2
 holoviz==0.11.6
 matplotlib==3.3.4
 plotly==4.12.0
