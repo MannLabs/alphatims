@@ -937,8 +937,6 @@ strike_estimate = pn.widgets.IntInput(
 settings = pn.Column(
     settings_title,
     card_divider,
-    axis_selection_card,
-    card_divider,
     frame_selection_card,
     card_divider,
     scan_selection_card,
@@ -948,6 +946,8 @@ settings = pn.Column(
     tof_selection_card,
     card_divider,
     intensity_selection_card,
+    card_divider,
+    axis_selection_card,
     card_divider,
     export_data_card,
     card_divider,
@@ -1475,8 +1475,6 @@ def run():
     watch=True
 )
 def exit_button_event(*args):
-    exit_button.name = "Server closed"
-    exit_button.button_type = "danger"
     quit_server()
 
 
@@ -1500,6 +1498,8 @@ def close_browser_tab(func):
 
 
 def quit_server():
+    exit_button.name = "Server closed"
+    exit_button.button_type = "danger"
     logging.info("Quitting server...")
     SERVER.stop()
 

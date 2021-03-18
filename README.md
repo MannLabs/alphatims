@@ -3,7 +3,7 @@
 ---
 # AlphaTims
 
-AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
+AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -93,7 +93,7 @@ pip install git+https://github.com/MannLabs/alphatims.git --upgrade
 AlphaTims can also be installed in developer mode with a few `bash` commands. This allows to fully customize the software and modify the source code to your specific needs. For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). Once conda is downloaded and installed, an AlphaTims environment can be created and activated with:
 
 ```bash
-conda create -n alphatims python=3.8 -y
+conda create -n alphatims python=3.8 pip=20.2 -y
 conda activate alphatims
 ```
 
@@ -127,7 +127,7 @@ The following steps are optional, but make working with AlphaTims slightly more 
   echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
   conda deactivate
   ```
-  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to the path.
+  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to Windows' path variable.
 * When using Jupyter notebooks and multiple conda environments direcly from the terminal, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available, in addition to all other conda kernels in which the command `conda install ipykernel` was run.
 
 ### Installation issues
