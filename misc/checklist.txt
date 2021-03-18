@@ -1,22 +1,34 @@
 Tests passing?
   python -m unittest tests.test_bruker
+
 Docs updated?
   make html
+
 Tutorial/manual/performance updated?
+
 README updated?
+
 No TODOs left?
+
 Versions updated
   __init__.py
   alphatims_innoinstaller.iss
+
 Merged into master branch?
+
 ReadTheDocs up-to-date?
   https://docs.readthedocs.io/en/stable/
+
 PyPi up-to-date?
   https://realpython.com/pypi-publish-python-package/
+
 Releases for all Windows, MacOS and Linux?
+
   source create_installer_macos.sh
   mv dist/alphatims.app.zip ../releases/VERSION
+
   source create_installer_linux.sh
   mv dist/alphatims ../releases/VERSION
-  source create_installer_windows.bat
+
+  create_installer_windows.bat
   mv dist/alphatims_installer_windows.exe ../releases/VERSION
