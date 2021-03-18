@@ -232,7 +232,7 @@ These utilities primarily focus on:</p>
 </table>
 <dl class="py class">
 <dt id="alphatims.utils.Global_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Global_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">Global_Stack</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_available_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A stack that holds multiple option stacks.</p>
 <p>The current value of each option stack can be retrieved by indexing,
@@ -284,7 +284,7 @@ i.e. option_value = self[option_key].</p>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">all_available_options</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_available_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a global stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -296,7 +296,7 @@ which can be used to create an Option_Stack.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.current_values">
-<em class="property">property </em><code class="sig-name descname">current_values</code><a class="headerlink" href="#alphatims.utils.Global_Stack.current_values" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">current_values</span></code><a class="headerlink" href="#alphatims.utils.Global_Stack.current_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dict with (option_key: option_value) mapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -307,7 +307,7 @@ which can be used to create an Option_Stack.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.is_locked">
-<em class="property">property </em><code class="sig-name descname">is_locked</code><a class="headerlink" href="#alphatims.utils.Global_Stack.is_locked" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_locked</span></code><a class="headerlink" href="#alphatims.utils.Global_Stack.is_locked" title="Permalink to this definition">¶</a></dt>
 <dd><p>A flag to check if this stack is modifiable</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -318,13 +318,13 @@ which can be used to create an Option_Stack.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.lock">
-<code class="sig-name descname">lock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.lock" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">lock</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.lock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.lock" title="Permalink to this definition">¶</a></dt>
 <dd><p>A context manager to lock this stack and prevent modification.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.redo">
-<code class="sig-name descname">redo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.redo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">redo</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.redo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.redo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increase the stack pointer with 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -339,7 +339,7 @@ Otherwise (option_name, new_value) if the pointer was increased.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.size">
-<em class="property">property </em><code class="sig-name descname">size</code><a class="headerlink" href="#alphatims.utils.Global_Stack.size" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">size</span></code><a class="headerlink" href="#alphatims.utils.Global_Stack.size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The size of this stack without the initial value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -350,7 +350,7 @@ Otherwise (option_name, new_value) if the pointer was increased.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.trim">
-<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.trim" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">trim</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.trim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.trim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all elements above of the current stack pointer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -367,7 +367,7 @@ i.e. the stack pointer was at the top.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.undo">
-<code class="sig-name descname">undo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.undo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">undo</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.undo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.undo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reduce the stack pointer with 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -382,7 +382,7 @@ Otherwise (option_name, new_value) if the pointer was reduced.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Global_Stack.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_key</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_value</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="reference internal" href="_modules/alphatims/utils.html#Global_Stack.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Global_Stack.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update an option stack with a value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -407,7 +407,7 @@ Otherwise (option_name, new_value).</p>
 
 <dl class="py class">
 <dt id="alphatims.utils.Option_Stack">
-<em class="property">class </em><code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">Option_Stack</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">Option_Stack</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_initial_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A stack with the option to redo and undo.</p>
 <p><strong>Methods:</strong></p>
@@ -454,7 +454,7 @@ Otherwise (option_name, new_value).</p>
 </table>
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">option_initial_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option_initial_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an option stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -469,7 +469,7 @@ Can be any object that supports the “!=” operator.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.current_value">
-<em class="property">property </em><code class="sig-name descname">current_value</code><a class="headerlink" href="#alphatims.utils.Option_Stack.current_value" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">current_value</span></code><a class="headerlink" href="#alphatims.utils.Option_Stack.current_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The current value of this stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -480,7 +480,7 @@ Can be any object that supports the “!=” operator.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.option_name">
-<em class="property">property </em><code class="sig-name descname">option_name</code><a class="headerlink" href="#alphatims.utils.Option_Stack.option_name" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">option_name</span></code><a class="headerlink" href="#alphatims.utils.Option_Stack.option_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The name of this stack.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -491,7 +491,7 @@ Can be any object that supports the “!=” operator.</p></li>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.redo">
-<code class="sig-name descname">redo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.redo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">redo</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.redo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.redo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increase the stack pointer with 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -506,7 +506,7 @@ Otherwise the new value if the pointer was increased.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.size">
-<em class="property">property </em><code class="sig-name descname">size</code><a class="headerlink" href="#alphatims.utils.Option_Stack.size" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">size</span></code><a class="headerlink" href="#alphatims.utils.Option_Stack.size" title="Permalink to this definition">¶</a></dt>
 <dd><p>The size of this stack without the initial value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -517,7 +517,7 @@ Otherwise the new value if the pointer was increased.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.trim">
-<code class="sig-name descname">trim</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.trim" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">trim</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.trim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.trim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all elements above of the current stack pointer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -534,7 +534,7 @@ i.e. the stack pointer was at the top.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.undo">
-<code class="sig-name descname">undo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.undo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">undo</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.undo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.undo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reduce the stack pointer with 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -549,7 +549,7 @@ Otherwise the new value if the pointer was reduced.</p>
 
 <dl class="py method">
 <dt id="alphatims.utils.Option_Stack.update">
-<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">option_value</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_value</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="reference internal" href="_modules/alphatims/utils.html#Option_Stack.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.Option_Stack.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update this stack with the value.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -570,7 +570,7 @@ False if the provided value equald the current value of this stack.</p>
 
 <dl class="py function">
 <dt id="alphatims.utils.check_github_version">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">check_github_version</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#check_github_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.check_github_version" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">check_github_version</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="_modules/alphatims/utils.html#check_github_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.check_github_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks and logs the current version of AlphaTims.</p>
 <p>Check if the local version equals the AlphaTims GitHub master branch.
 This is only possible with an active internet connection and
@@ -588,7 +588,7 @@ if no credentials are required for GitHub.</p>
 
 <dl class="py function">
 <dt id="alphatims.utils.create_dict_from_hdf_group">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">create_dict_from_hdf_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hdf_group</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/utils.html#create_dict_from_hdf_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.create_dict_from_hdf_group" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">create_dict_from_hdf_group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf_group</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="reference internal" href="_modules/alphatims/utils.html#create_dict_from_hdf_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.create_dict_from_hdf_group" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the contents of an HDF group and return as normal Python dict.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -613,7 +613,7 @@ it is automatically converted to a pd.dataFrame.</p>
 
 <dl class="py function">
 <dt id="alphatims.utils.create_hdf_group_from_dict">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">create_hdf_group_from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hdf_group</span></em>, <em class="sig-param"><span class="n">data_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">compress</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">recursed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">chunked</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#create_hdf_group_from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.create_hdf_group_from_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">create_hdf_group_from_dict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursed</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunked</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/utils.html#create_hdf_group_from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.create_hdf_group_from_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a dict to an open hdf group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -663,7 +663,7 @@ Default is False.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.load_parameters">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">load_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameter_file_name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="_modules/alphatims/utils.html#load_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.load_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">load_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="reference internal" href="_modules/alphatims/utils.html#load_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.load_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a parameter dict from a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -680,7 +680,7 @@ Default is False.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.njit">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">njit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#njit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.njit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">njit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#njit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.njit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A wrapper for the numba.njit decorator.</p>
 <p>The “cache” option is set to True by default.
 This can be overriden with kwargs.</p>
@@ -703,7 +703,7 @@ This can be overriden with kwargs.</p>
 
 <dl class="py function">
 <dt id="alphatims.utils.pjit">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">pjit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">thread_count</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cache</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#pjit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.pjit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">pjit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#pjit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.pjit" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator that parallelizes the numba.njit decorator with threads.</p>
 <p>The first argument of the decorated function need to be an iterable.
 A range-object will be most performant as iterable.
@@ -737,7 +737,7 @@ Default is True (in contrast to numba).</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.progress_callback">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">progress_callback</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">iterable</span></em>, <em class="sig-param"><span class="n">style</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">total</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#progress_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.progress_callback" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">progress_callback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/alphatims/utils.html#progress_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.progress_callback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add tqdm progress callback to iterable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -773,7 +773,7 @@ Default is -1.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.save_parameters">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">save_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameter_file_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">paramaters</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#save_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.save_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">save_parameters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_file_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramaters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/utils.html#save_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.save_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save parameters to a parameter file.</p>
 <p>IMPORTANT NOTE: This overwrites any existing file.</p>
 <dl class="field-list simple">
@@ -788,7 +788,7 @@ Default is -1.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.set_logger">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_logger</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">log_file_name</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">stream</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">log_level</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">progress_callback</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">set_logger</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="_modules/alphatims/utils.html#set_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.set_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the log stream and file.</p>
 <p>All previously set handlers will be disabled with this command.</p>
 <dl class="field-list simple">
@@ -826,7 +826,7 @@ Default is True.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.set_threads">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">set_threads</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">set_global</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/alphatims/utils.html#set_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.set_threads" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">set_threads</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_global</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="reference internal" href="_modules/alphatims/utils.html#set_threads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.set_threads" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse and set the (global) number of threads.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -851,7 +851,7 @@ Default is True.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.show_platform_info">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">show_platform_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#show_platform_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.show_platform_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">show_platform_info</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/utils.html#show_platform_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.show_platform_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log all platform information.</p>
 <p>This is done in the following format:</p>
 <blockquote>
@@ -870,7 +870,7 @@ Default is True.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.show_python_info">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">show_python_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#show_python_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.show_python_info" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">show_python_info</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/utils.html#show_python_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.show_python_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log all Python information.</p>
 <p>This is done in the following format:</p>
 <blockquote>
@@ -886,7 +886,7 @@ Default is True.</p></li>
 
 <dl class="py function">
 <dt id="alphatims.utils.threadpool">
-<code class="sig-prename descclassname">alphatims.utils.</code><code class="sig-name descname">threadpool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">thread_count</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">progress_callback</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/alphatims/utils.html#threadpool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#alphatims.utils.threadpool" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">alphatims.utils.</span></code><code class="sig-name descname"><span class="pre">threadpool</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="_modules/alphatims/utils.html#threadpool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#alphatims.utils.threadpool" title="Permalink to this definition">¶</a></dt>
 <dd><p>A decorator that parallelizes a function with threads and callback.</p>
 <p>The first argument of the decorated function need to be an iterable.
 The original function should accept a single element of this iterable
