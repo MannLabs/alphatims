@@ -243,13 +243,13 @@ Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 
 Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
 
-| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)          |
-|------|----------|---------------|-------------------|--------|--------------------------|
-| DDA  | 6 min    | 214,172,697   | 1.55 s / 536 ms    | 571 ms | 1.64 / 45.7 / 27.0 / 78.8 |
-| DIA  | 6 min    | 158,552,099   | 1.09 s / 381 ms    | 403 ms | 6.40 / 26.7 / 626 / 109     |
-| DDA  | 21 min   | 295,251,252   | 3.07 s / 913 ms    | 757 ms | 1.74 / 72.5 / 122 / 186      |
-| DIA  | 21 min   | 730,564,765   | 4.54 s / 2.20 s    | 1.85 s | 0.855 / 122 / 5040 / 404    |
-| DDA  | 120 min  | 2,074,019,899 | 24.1 s / 10.6 s    | 5.70 s  | 0.709 / 371 / 609 / 1200    |
+| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)         |
+|------|----------|---------------|-------------------|--------|----------------------------|
+| DDA  | 6 min    | 214,172,697   | 1.85 s / 537 ms   | 581 ms | 2.08 / 38.7 / 29.8 / 93.9  |
+| DIA  | 6 min    | 158,552,099   | 1.35 s / 397 ms   | 446 ms | 7.94 / 27.8 / 788 / 115    |
+| DDA  | 21 min   | 295,251,252   | 3.92 s / 939 ms   | 833 ms | 2.48 / 72.9 / 124 / 213    |
+| DIA  | 21 min   | 730,564,765   | 6.82 s / 2.35 s   | 1.87 s | 1.08 / 142 / 6210 / 484    |
+| DDA  | 120 min  | 2,074,019,899 | 25.7 s / 10.8 s   | 5.56 s | 0.874 / 422 / 706 / 1380   |
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
