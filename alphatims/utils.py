@@ -689,7 +689,7 @@ def create_hdf_group_from_dict(
                 compress=compress,
             )
         elif value is None:
-            return
+            continue
         else:
             raise ValueError(
                 f"The type of {key} is {type(value)}, which "
