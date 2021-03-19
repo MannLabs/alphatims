@@ -1,6 +1,6 @@
 Package: AlphaTims
 Version: 0.1.210317
-Architecture: any
+Architecture: all
 Maintainer: Mann Labs <opensource@alphapept.com>
 Description: AlphaTims GUI
   AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from Bruker’s timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.
