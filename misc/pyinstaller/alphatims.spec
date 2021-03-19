@@ -21,8 +21,7 @@ block_cipher = None
 location = os.getcwd()
 project = "alphatims"
 remove_tests = True
-bundle_name = "alphatims"
-bundle_identifier = f"{bundle_name}.{alphatims.__version__}"
+bundle_name = "AlphaTims"
 #####################
 
 
@@ -139,11 +138,3 @@ else:
 		upx_exclude=[],
 		name=exe_name
 	)
-	if sys.platform[:6] == "darwin":
-		app = BUNDLE(
-			coll,
-			name=bundle_name,
-			icon=icon,
-			bundle_identifier=bundle_identifier,
-			# console=True
-		)

@@ -11,7 +11,17 @@ pip install '../../.[plotting]'
 pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
-mv dist/alphatims dist/AlphaTims.app
-tar -czf dist/AlphaTims.app.zip dist/AlphaTims.app
+# mv dist/alphatims dist/AlphaTims.app
+# tar -czf dist/AlphaTims.app.zip dist/AlphaTims.app
 # chmod +x dist/alphatims.app
 # TODO No console is opened and program not blocked untill close, meaning loose threads!
+# pkgbuild --root dist/alphatims --identifier org.alphatims.0.1.210317 --install-location /Applications/AlphaTims.app --scripts scripts --version 0.1.210317 alphatims.pkg
+# productbuild --distribution distribution.xml --resources Resources --package-path alphatims.pkg dist/alphatims_installer_macos.pkg
+mkdir -p dist/alphatims/Contents/Resources
+cp ../alpha_logo.icns dist/alphatims/Contents/Resources
+mv dist/alphatims_gui dist/alphatims/Contents/MacOS
+cp Info.plist dist/alphatims/Contents
+cp alphatims_terminal dist/alphatims/Contents/MacOS
+cp ../../LICENSE.txt Resources/LICENSE.txt
+pkgbuild --root dist/alphatims --identifier org.alphatims.0.1.210317 --version 0.1.210317 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg
+productbuild --distribution distribution.xml --resources Resources --package-path alphatims.pkg dist/alphatims_installer_macos.pkg
