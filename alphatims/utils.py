@@ -94,6 +94,8 @@ def set_logger(
         root.addHandler(stream_handler)
     if log_file_name is not None:
         if log_file_name == "":
+            if not os.path.exists(LOG_PATH):
+                os.makedirs(LOG_PATH)
             log_file_name = LOG_PATH
         log_file_name = os.path.abspath(log_file_name)
         if os.path.isdir(log_file_name):

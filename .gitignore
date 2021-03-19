@@ -130,7 +130,7 @@ dmypy.json
 
 # Misc
 *.DS_Store
-logs/*
+alphatims/logs
 *sandbox*
 misc/releases/*
 !docs/_build

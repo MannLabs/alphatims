@@ -260,7 +260,7 @@ All slices were performed in a single dimension. Including more slices makes the
 
 All of these analyses were timed with `timeit` and are the average of at least 7 runs. They were obtained on the following system:
 
-* **MacBook Pro:** (13-inch, 2020, Four Thunderbolt 3 ports)
+* **MacBook Pro:** 13-inch, 2020, Four Thunderbolt 3 ports
 * **OS version:** macOS Catalina 10.15.7
 * **Processor:** 2.3 GHz Quad-Core Intel Core i7
 * **Memory:** 32 GB 3733 MHz LPDDR4X
