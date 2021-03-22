@@ -61,7 +61,7 @@ There are three different types of installation possible:
 The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
 * [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe)
-* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app.zip)
+* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_macos.pkg)
 * [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_linux.deb)
 
 ***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
