@@ -1929,7 +1929,7 @@ def parse_keys(data: TimsTOF, keys) -> dict:
     if "quad_values" not in dimension_slices:
         dimension_slices["quad_values"] = np.array(
             [[-np.inf, np.inf]],
-            dtype=np.float
+            dtype=np.float64
         )
     return dimension_slices
 
@@ -1969,11 +1969,11 @@ def convert_slice_key_to_float_array(key):
         else:
             start = key
             stop = key
-        return np.array([[start, stop]], dtype=np.float)
+        return np.array([[start, stop]], dtype=np.float64)
     else:
         if not isinstance(key, np.ndarray):
-            key = np.array(key, dtype=np.float)
-        key = key.astype(np.float)
+            key = np.array(key, dtype=np.float64)
+        key = key.astype(np.float64)
         if len(key.shape) == 1:
             return np.array([key, key]).T
         elif len(key.shape) == 2:

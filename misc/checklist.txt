@@ -1,5 +1,4 @@
 Tests passing?
-  cd alphatims
   python -m unittest tests.test_bruker
 
 Docs updated?
