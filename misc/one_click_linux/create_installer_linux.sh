@@ -13,7 +13,7 @@ pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 # mv dist/alphatims dist/AlphaTims
 mkdir -p dist/alphatims_installer_linux/usr/local/bin
-cp dist/alphatims dist/alphatims_installer_linux/usr/local/bin
+mv dist/AlphaTims dist/alphatims_installer_linux/usr/local/bin/alphatims
 mkdir dist/alphatims_installer_linux/DEBIAN
 cp control dist/alphatims_installer_linux/DEBIAN
 dpkg-deb --build --root-owner-group dist/alphatims_installer_linux/
