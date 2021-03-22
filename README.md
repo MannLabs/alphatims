@@ -266,7 +266,7 @@ All of these analyses were timed with `timeit` and are the average of at least 7
 * **Memory:** 32 GB 3733 MHz LPDDR4X
 * **Startup Disk:** Macintosh HD
 
-Full details are available in the [perfomance notebook](nbs/performance.ipynb).
+Full details are available in the [performance notebook](nbs/performance.ipynb).
 
 ### RAM
 
