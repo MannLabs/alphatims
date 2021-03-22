@@ -29,12 +29,12 @@ Releases for all Windows, MacOS and Linux?
 
   cd misc/one_click_macos
   source create_installer_macos.sh
-  mv dist/alphatims.app.zip ../releases/VERSION
+  # mv dist/alphatims_installer_windows.pkg ../releases/VERSION
 
   cd misc/one_click_LINUX
   source create_installer_linux.sh
-  mv dist/alphatims ../releases/VERSION
+  # mv dist/alphatims_installer_windows.deb ../releases/VERSION
 
   cd misc/one_click_windows
   create_installer_windows.bat
-  mv dist/alphatims_installer_windows.exe ../releases/VERSION
+  # mv dist/alphatims_installer_windows.exe ../releases/VERSION
