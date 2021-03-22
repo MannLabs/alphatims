@@ -15,8 +15,9 @@ def line_plot(
     selected_indices,
     x_axis_label: str,
     title: str = "",
-    y_axis_label: str = "Intensity",
+    y_axis_label: str = "intensity",
     remove_zeros: bool = False,
+    trim: bool = True,
     width: int = 1000,
     height: int = 300,
 ):
@@ -34,16 +35,16 @@ def line_plot(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - rt
+            - mobility
+            - mz
     title : str
         The title of this plot.
         Will be prepended with "Spectrum", "Mobilogram" or "XIC".
         Default is "".
     y_axis_label : str
         Should not be set for a 1D line plot.
-        Default is "Intensity".
+        Default is "intensity".
     remove_zeros : bool
         If True, zeros are removed.
         Note that a line plot connects consecutive points,
@@ -51,6 +52,9 @@ def line_plot(
         If False, use the full range of the appropriate dimension of
         the timstof_data.
         Default is False.
+    trim : bool
+        If True, zeros on the left and right are trimmed.
+        Default is True.
     width : int
         The width of this plot.
         Default is 1000.
@@ -63,6 +67,14 @@ def line_plot(
     : hv.Curve
         A curve plot that represents an XIC, mobilogram or spectrum.
     """
+    axis_dict = {
+        "mz": "m/z, Th",
+        "rt": "RT, min",
+        "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
+        "intensity": "Intensity",
+    }
+    x_axis_label = axis_dict[x_axis_label]
+    y_axis_label = axis_dict[y_axis_label]
     labels = {
         'm/z, Th': "mz_values",
         'RT, min': "rt_values",
@@ -74,10 +86,11 @@ def line_plot(
         "width": width,
         "height": height,
         "align": 'center',
-        "tools": ['hover'],
+        "tools": ['hover', 'zoom_in', 'zoom_out'],
         "line_width": 1,
         "yformatter": '%.1e',
         "align": 'center',
+        "hooks": [_disable_logo],
     }
     if x_dimension == "mz_values":
         x_ticks = timstof_data.mz_values
@@ -88,10 +101,20 @@ def line_plot(
     elif x_dimension == "rt_values":
         x_ticks = timstof_data.rt_values / 60
         plot_opts["title"] = f"XIC - {title}"
-    if remove_zeros:
-        non_zeros = np.flatnonzero(intensities)
-        x_ticks = x_ticks[non_zeros]
-        intensities = x_ticks[intensities]
+    non_zeros = np.flatnonzero(intensities)
+    if len(non_zeros) == 0:
+        x_ticks = np.empty(0, dtype=x_ticks.dtype)
+        intensities = np.empty(0, dtype=intensities.dtype)
+    else:
+        start = max(0, non_zeros[0] - 1)
+        end = non_zeros[-1] + 2
+        if remove_zeros:
+            x_ticks = x_ticks[non_zeros]
+            intensities = intensities[non_zeros]
+        if trim:
+            x_ticks = x_ticks[start: end]
+            intensities = intensities[start: end]
+    print()
     plot = hv.Curve(
         (x_ticks, intensities),
         x_axis_label,
@@ -106,9 +129,10 @@ def heatmap(
     x_axis_label: str,
     y_axis_label: str,
     title: str = "",
-    z_axis_label: str = "Intensity",
+    z_axis_label: str = "intensity",
     width: int = 1000,
     height: int = 300,
+    rescale_to_minutes: bool = True,
 ):
     """Create a scatterplot / heatmap for a dataframe.
 
@@ -124,35 +148,48 @@ def heatmap(
         A label that is used for projection
         (i.e. intensities are summed) on the x-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - mz
+            - rt
+            - mobility
     y_axis_label : str
         A label that is used for projection
         (i.e. intensities are summed) on the y-axis. Options are:
 
-            - "m/z, Th"
-            - "RT, min"
-            - "Inversed IM, V·s·cm\u207B\u00B2"
+            - mz
+            - rt
+            - mobility
     title : str
         The title of this plot.
         Will be prepended with "Heatmap".
         Default is "".
     z_axis_label : str
         Should not be set for a 2D scatterplot / heatmap.
-        Default is "Intensity".
+        Default is "intensity".
     width : int
         The width of this plot.
         Default is 1000.
     height : int
         The height of this plot.
         Default is 300.
+    rescale_to_minutes : bool
+        If True, the rt_values of the dataframe will be divided by 60.
+        WARNING: this updates the dataframe directly and is persistent!
+        Default is True.
 
     Returns
     -------
     hv.Scatter
         A scatter plot projected on the 2 dimensions.
     """
+    axis_dict = {
+        "mz": "m/z, Th",
+        "rt": "RT, min",
+        "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
+        "intensity": "Intensity",
+    }
+    x_axis_label = axis_dict[x_axis_label]
+    y_axis_label = axis_dict[y_axis_label]
+    z_axis_label = axis_dict[z_axis_label]
     labels = {
         'm/z, Th': "mz_values",
         'RT, min': "rt_values",
@@ -169,7 +206,8 @@ def heatmap(
     #         (f'{z_axis_label}', f'@{z_dimension}'),
     #     ]
     # )
-    df["rt_values"] /= 60
+    if rescale_to_minutes:
+        df["rt_values"] /= 60
     scatter = df.hvplot.scatter(
         x=x_dimension,
         y=y_dimension,
@@ -186,15 +224,22 @@ def heatmap(
         #     df[x_dimension].max()
         # ),
         title=f'Heatmap - {title}',
+        aggregator='sum',
         # tools=[hover],
         datashade=True,
         dynspread=True,
         cmap=colorcet.fire,
-        nonselection_color='green',
-        selection_color='blue',
-        color="white",
+        # nonselection_color='green',
+        # selection_color='blue',
+        # color="white",
         width=width,
         height=height,
+    )
+    # df["rt_values"] *= 60
+    scatter.opts(
+        bgcolor="black",
+        tools=['zoom_in', 'zoom_out'],
+        hooks=[_disable_logo],
     )
     return scatter
 
@@ -239,7 +284,7 @@ def tic_plot(
         line_width=1,
         yformatter='%.1e',
         shared_axes=True,
-        tools=[hover]
+        tools=[hover, 'zoom_in', 'zoom_out'],
     )
     data = timstof_data.frames.query('MsMsType == 0')[[
         'Time', 'SummedIntensities']
@@ -252,7 +297,12 @@ def tic_plot(
     ).opts(
         tic_opts,
         opts.Curve(
-            title="TIC - " + title
-        )
+            title="TIC - " + title,
+            hooks=[_disable_logo],
+        ),
     )
     return tic
+
+
+def _disable_logo(plot, element):
+    plot.state.toolbar.logo = None

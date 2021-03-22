@@ -6,9 +6,6 @@ conda activate alphatimsdocs
 # call conda install git -y
 # call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]' --use-feature=2020-resolver
 # brew install freetype
-pip install '../.'
-pip install sphinx_rtd_theme
-pip install sphinx
-pip install autodocsumm
+pip install '../.[develop, plotting]'
 make html
 conda deactivate

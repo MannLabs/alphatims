@@ -6,16 +6,35 @@ import numpy as np
 import pandas as pd
 import panel as pn
 import sys
+import warnings
+import logging
 # holoviz libraries
-import colorcet
-import hvplot.pandas
 import holoviews as hv
-from holoviews import opts
+import bokeh.server.views.ws
 # local
 import alphatims.bruker
 import alphatims.utils
 import alphatims.plotting
 
+
+# TODO: do we want to ignore warnings?
+warnings.filterwarnings('ignore')
+
+
+# GLOBAL VARIABLES
+DATASET = None
+PLOTS = pn.Column(None, None, None, sizing_mode='stretch_width',)
+WHOLE_TITLE = str()
+SELECTED_INDICES = np.array([])
+DATAFRAME = pd.DataFrame()
+STACK = alphatims.utils.Global_Stack({})
+SERVER = None
+TAB_COUNTER = 0
+BROWSER = pn.Row(
+    None,
+    PLOTS,
+    sizing_mode='stretch_width',
+)
 
 # EXTENSIONS
 css = '''
@@ -97,30 +116,30 @@ pn.extension(raw_css=[css])
 hv.extension('bokeh')
 
 
-# LOCAL VARIABLES
-DATASET = None
-SERVER = None
-PLOTS = None
-WHOLE_TITLE = str()
-SELECTED_INDICES = np.array([])
-DATAFRAME = pd.DataFrame()
-STACK = alphatims.utils.Global_Stack({})
-GLOBAL_INIT_LOCK = True
-
-
 # PATHS
-biochem_logo_path = os.path.join(alphatims.utils.IMG_PATH, "mpi_logo.png")
+biochem_logo_path = os.path.join(
+    alphatims.utils.IMG_PATH,
+    "mpi_logo.png"
+)
 mpi_logo_path = os.path.join(
     alphatims.utils.IMG_PATH,
     "max-planck-gesellschaft.jpg"
 )
-github_logo_path = os.path.join(alphatims.utils.IMG_PATH, "github.png")
+github_logo_path = os.path.join(
+    alphatims.utils.IMG_PATH,
+    "github.png"
+)
+
+gui_manual_path = os.path.join(
+    alphatims.utils.DOC_PATH,
+    "gui_manual.pdf"
+)
 
 
 # HEADER
 header_titel = pn.pane.Markdown(
     '# AlphaTims',
-    width=1250
+    sizing_mode='stretch_width',
 )
 mpi_biochem_logo = pn.pane.PNG(
     biochem_logo_path,
@@ -142,6 +161,7 @@ github_logo = pn.pane.PNG(
     github_logo_path,
     link_url='https://github.com/MannLabs/alphatims',
     height=70,
+    align='end'
 )
 
 header = pn.Row(
@@ -149,21 +169,22 @@ header = pn.Row(
     mpi_logo,
     header_titel,
     github_logo,
-    height=73
+    height=73,
+    sizing_mode='stretch_width'
 )
 
 
 # MAIN PART
 project_description = pn.pane.Markdown(
-    """### AlphaTIMS is an open-source Python package for fast accessing Bruker TimsTOF data. It provides a very efficient indexed data structure that allows to access four-dimensional TIMS-time of flight data in the standard numerical python (NumPy) manner. AlphaTIMS is a key enabling tool to deal with the large and high dimensional TIMS data.""",
+    """### AlphaTims provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from Bruker's timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.""",
     margin=(10, 0, 0, 0),
     css_classes=['main-part'],
-    width=615
+    width=690
 )
 
 divider_descr = pn.pane.HTML(
     '<hr style="height: 6px; border:none; background-color: #045082; width: 1140px">',
-    width=1510,
+    sizing_mode='stretch_width',
     align='center'
 )
 upload_file = pn.widgets.TextInput(
@@ -188,31 +209,50 @@ upload_spinner = pn.indicators.LoadingSpinner(
     height=40
 )
 upload_error = pn.pane.Alert(
-    width=400,
+    width=800,
     alert_type="danger",
-    margin=(-15, 0, 10, 200),
+    align='center',
+    margin=(-15, 0, -5, 0),
 )
 exit_button = pn.widgets.Button(
     name='Quit',
-    button_type='primary',
+    button_type='default',
     height=31,
     width=100,
     margin=(34, 20, 0, 0)
 )
+gui_manual = pn.widgets.FileDownload(
+    file=gui_manual_path,
+    label='GUI manual',
+    button_type='default',
+    auto=True,
+    height=31,
+    width=200,
+    margin=(34, 20, 0, 20)
+)
+
+
 main_part = pn.Column(
     project_description,
     divider_descr,
     pn.Row(
+        gui_manual,
         upload_file,
         upload_button,
         upload_spinner,
         exit_button,
-        align='center'
+        align='center',
+        sizing_mode='stretch_width',
     ),
-    upload_error,
+    pn.Row(
+        upload_error,
+        align='center',
+        width=870,
+        margin=(-15, 0, 0, 0)
+    ),
     background='#eaeaea',
-    width=1510,
-    height=360,
+    sizing_mode='stretch_width',
+    height=352,
     margin=(5, 0, 10, 0)
 )
 
@@ -241,54 +281,132 @@ selectors_divider = pn.pane.HTML(
 card_divider = pn.pane.HTML(
     '<hr style="height: 1.5px; border:none; background-color: black; width: 415px;">',
     align='center',
-    margin=(10, 10, 5, 10)
+    margin=(3, 10, 3, 10)
 )
 
 
 # SAVE TO HDF
+save_hdf_path = pn.widgets.TextInput(
+    name='Specify a path to save all data as a portable .hdf file:',
+    placeholder='e.g. D:\Bruker',
+    margin=(15, 10, 0, 10)
+)
+save_hdf_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_hdf_compress = pn.widgets.Checkbox(
+    name='compress',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
 save_hdf_button = pn.widgets.Button(
-    name='Save to HDF',
+    name='Save as HDF',
     button_type='default',
     height=31,
-    width=200,
-    margin=(15, 0, 0, 120)
+    width=100,
+    margin=(10, 10, 0, 0)
 )
 save_spinner = pn.indicators.LoadingSpinner(
     value=False,
     bgcolor='light',
     color='secondary',
-    margin=(15, 15, 0, 15),
+    margin=(11, 0, 0, 15),
     width=30,
     height=30
 )
-save_message = pn.pane.Alert(
+save_hdf_message = pn.pane.Alert(
     alert_type='success',
-    margin=(-10, 15, 20, 85),
+    margin=(-15, 5, -10, 15),
+    # height=35,
     width=300
 )
 
+# SAVE SLICED DATA
+save_sliced_data_path = pn.widgets.TextInput(
+    name='Specify a path to save the currently selected data as .csv file:',
+    placeholder='e.g. D:\Bruker',
+    margin=(15, 10, 0, 10)
+)
+save_sliced_data_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_sliced_data_button = pn.widgets.Button(
+    name='Save as CSV',
+    button_type='default',
+    height=31,
+    width=100,
+    margin=(10, 10, 0, 0)
+)
+save_sliced_data_spinner = pn.indicators.LoadingSpinner(
+    value=False,
+    bgcolor='light',
+    color='secondary',
+    margin=(11, 0, 0, 15),
+    width=30,
+    height=30
+)
+save_sliced_data_message = pn.pane.Alert(
+    alert_type='success',
+    margin=(-15, 5, -10, 15),
+    width=300
+)
+
+# SAVE MGF
+save_mgf_path = pn.widgets.TextInput(
+    name='Specify a path to save all MS2 spectra as .mgf file:',
+    placeholder='e.g. D:\Bruker',
+    margin=(15, 10, 0, 10)
+)
+save_mgf_overwrite = pn.widgets.Checkbox(
+    name='overwrite',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
+save_mgf_button = pn.widgets.Button(
+    name='Save as MGF',
+    button_type='default',
+    height=31,
+    width=100,
+    margin=(10, 10, 0, 0)
+)
+save_mgf_spinner = pn.indicators.LoadingSpinner(
+    value=False,
+    bgcolor='light',
+    color='secondary',
+    margin=(11, 0, 0, 15),
+    width=30,
+    height=30
+)
+save_mgf_message = pn.pane.Alert(
+    alert_type='success',
+    margin=(-15, 5, -10, 15),
+    width=300
+)
 
 # frame/RT selection
 frame_slider = pn.widgets.IntRangeSlider(
     show_value=False,
     bar_color='#045082',
-    start=1,
     step=1,
     margin=(10, 20, 10, 20)
 )
 frame_start = pn.widgets.IntInput(
     name='Start frame',
-    value=1,
     step=1,
-    start=1,
     width=80,
-    margin=(0, 0, 0, 0)
+    margin=(0, 0, 0, 14)
 )
 rt_start = pn.widgets.FloatInput(
     name='Start RT (min)',
-    value=0.00,
     step=0.50,
-    start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -296,16 +414,13 @@ rt_start = pn.widgets.FloatInput(
 )
 frame_end = pn.widgets.IntInput(
     name='End frame',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 rt_end = pn.widgets.FloatInput(
     name='End RT (min)',
     step=0.50,
-    start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -315,26 +430,21 @@ rt_end = pn.widgets.FloatInput(
 
 # scans/IM selection
 scan_slider = pn.widgets.IntRangeSlider(
-    # name='Scans',
     show_value=False,
     bar_color='#045082',
-    start=1,
+    width=390,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 scan_start = pn.widgets.IntInput(
     name='Start scan',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 im_start = pn.widgets.FloatInput(
     name='Start IM',
-    # value=0.00,
     step=0.10,
-    # start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -343,14 +453,12 @@ im_start = pn.widgets.FloatInput(
 scan_end = pn.widgets.IntInput(
     name='End scan',
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 im_end = pn.widgets.FloatInput(
     name='End IM',
     step=0.10,
-    # start=0.00,
     width=80,
     format='0,0.000',
     margin=(0, 0, 0, 20),
@@ -360,26 +468,21 @@ im_end = pn.widgets.FloatInput(
 
 # tof and m/z selection
 tof_slider = pn.widgets.IntRangeSlider(
-    # name='TOF',
     show_value=False,
     bar_color='#045082',
-    start=1,
+    width=390,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 tof_start = pn.widgets.IntInput(
     name='Start TOF',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 mz_start = pn.widgets.FloatInput(
     name='Start m/z',
-    value=0.00,
     step=0.10,
-    start=0.00,
     width=80,
     format='0.00',
     margin=(0, 0, 0, 20),
@@ -387,16 +490,13 @@ mz_start = pn.widgets.FloatInput(
 )
 tof_end = pn.widgets.IntInput(
     name='End TOF',
-    value=2,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 mz_end = pn.widgets.FloatInput(
     name='End m/z',
     step=0.10,
-    start=0.00,
     width=85,
     format='0.00',
     margin=(0, 0, 0, 20),
@@ -405,15 +505,12 @@ mz_end = pn.widgets.FloatInput(
 
 
 # Precursor selection
-# precursor_fragment_toggle_button = pn.widgets.Toggle(
-#     name='Showing only MS1 ions (precursors)',
-#     button_type='primary'
-# )
 select_ms1_precursors = pn.widgets.Checkbox(
     name='Show MS1 ions (precursors)',
     value=True,
     width=200,
     align="center",
+    margin=(20, 0, 10, 0)
 )
 select_ms2_fragments = pn.widgets.Checkbox(
     name='Show MS2 ions (fragments)',
@@ -424,142 +521,103 @@ select_ms2_fragments = pn.widgets.Checkbox(
 
 # quad selection
 quad_slider = pn.widgets.RangeSlider(
-    # name='Quad',
     show_value=False,
     bar_color='#045082',
     align="center",
-    start=0,
-    value=(0, 0),
     step=1,
     margin=(5, 20),
     disabled=True
 )
 quad_start = pn.widgets.FloatInput(
     name='Start QUAD',
-    value=0.00,
     step=0.50,
     align="center",
-    start=0.00,
     width=80,
     format='0.00',
-    margin=(5, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 quad_end = pn.widgets.FloatInput(
     name='End QUAD',
-    value=0.00,
     step=0.50,
     align="center",
-    start=0.00,
     width=80,
     format='0.00',
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
 
 #  precursor selection
 precursor_slider = pn.widgets.IntRangeSlider(
-    # name='TOF',
     show_value=False,
     bar_color='#045082',
     align="center",
-    start=1,
     step=1,
     margin=(5, 20),
     disabled=True
 )
 precursor_start = pn.widgets.IntInput(
     name='Start precursor',
-    value=1,
     step=1,
     align="center",
-    start=1,
     width=80,
     margin=(0, 0, 0, 0),
     disabled=True
 )
 precursor_end = pn.widgets.IntInput(
     name='End precursor',
-    value=2,
     step=1,
     align="center",
-    start=1,
     width=80,
-    margin=(0, 0, 0, 20),
+    margin=(0, 0, 0, 0),
     disabled=True
 )
 
 
 # Intensity selection
-intensity_slider = pn.widgets.RangeSlider(
+intensity_slider = pn.widgets.IntRangeSlider(
     # name='TOF',
     show_value=False,
     bar_color='#045082',
-    start=1,
+    width=390,
     step=1,
-    margin=(5, 20)
+    margin=(20, 0, 10, 28)
 )
 intensity_start = pn.widgets.IntInput(
     name='Start intensity',
-    value=1,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 intensity_end = pn.widgets.IntInput(
     name='End intensity',
-    value=2,
     step=1,
-    start=1,
     width=80,
     margin=(0, 0, 0, 0)
 )
 
 
 selection_actions = pn.pane.Markdown(
-    'Redo / Undo',
+    'Undo | Redo',
     align='center',
     margin=(-18, 0, 0, 0)
 )
 undo_button = pn.widgets.Button(
     name='\u21b6',
-    # button_type='primary',
     disabled=False,
     height=32,
     width=50,
-    margin=(-3, 20, 0, 20),
+    margin=(-3, 5, 0, 0),
     align="center"
 )
 redo_button = pn.widgets.Button(
     name='↷',
-    # button_type='primary',
     disabled=False,
     height=32,
     width=50,
-    margin=(-3, 20, 0, 0),
+    margin=(-3, 0, 0, 5),
     align="center"
-)
-
-
-# Download selected data
-def export_sliced_data():
-    from io import StringIO
-    sio = StringIO()
-    DATAFRAME.to_csv(sio, index=False)
-    sio.seek(0)
-    return sio
-
-
-download_selection = pn.widgets.FileDownload(
-    callback=export_sliced_data,
-    filename='sliced_data.csv',
-    button_type='default',
-    height=31,
-    width=250,
-    margin=(5, 20, 15, 20),
-    align='center'
 )
 
 
@@ -567,14 +625,14 @@ download_selection = pn.widgets.FileDownload(
 player_title = pn.pane.Markdown(
     "Quick Data Overview",
     align='center',
-    margin=(-5, 0, -20, 0)
+    margin=(20, 0, -20, 0)
 )
 player = pn.widgets.DiscretePlayer(
-    interval=1800,
+    interval=2200,
     value=1,
     show_loop_controls=True,
     loop_policy='once',
-    width=430,
+    width=400,
     align='center'
 )
 
@@ -591,25 +649,25 @@ plot1_x_axis = pn.widgets.Select(
     value='m/z, Th',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 20),
+    margin=(0, 20, 20, 20),
 )
 plot1_y_axis = pn.widgets.Select(
     name='Y axis',
     value='Inversed IM, V·s·cm\u207B\u00B2',
     options=['m/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2', 'RT, min'],
     width=180,
-    margin=(0, 20, 0, 10),
+    margin=(0, 20, 20, 10),
 )
 
 # plot 2
 plot2_title = pn.pane.Markdown(
     '#### Axis for XIC/Spectrum/Mobilogram',
     align='center',
-    margin=(-10, 0, -5, 0),
+    margin=(10, 0, -25, 0),
 )
 plot2_x_axis = pn.widgets.Select(
     name='X axis',
-    value='Inversed IM, V·s·cm\u207B\u00B2',
+    value='RT, min',
     options=['RT, min', 'm/z, Th', 'Inversed IM, V·s·cm\u207B\u00B2'],
     width=180,
     margin=(0, 20, 0, 20),
@@ -621,7 +679,6 @@ plot2_x_axis = pn.widgets.Select(
 frame_selection_card = pn.Card(
     player_title,
     player,
-    sliders_divider,
     frame_slider,
     pn.Row(
         frame_start,
@@ -629,12 +686,12 @@ frame_selection_card = pn.Card(
         selectors_divider,
         frame_end,
         rt_end,
-        align='center',
+#         align='center',
     ),
-    title='Select rt_values / frame_indices',
+    title='Select rt_values / frame_indices (LC)',
     collapsed=False,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -659,10 +716,10 @@ scan_selection_card = pn.Card(
         im_end,
         align='center',
     ),
-    title='Select mobility_values / scan_indices',
+    title='Select mobility_values / scan_indices (TIMS)',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -689,7 +746,6 @@ quad_selection_card = pn.Card(
         quad_end,
         align='center',
     ),
-    # sliders_divider,
     sliders_divider,
     precursor_slider,
     pn.Row(
@@ -698,10 +754,10 @@ quad_selection_card = pn.Card(
         precursor_end,
         align='center',
     ),
-    title='Select quad_values / precursor_indices',
+    title='Select quad_values / precursor_indices (QUADRUPOLE)',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -709,7 +765,7 @@ quad_selection_card = pn.Card(
 quad_selection_card.jscallback(
     collapsed="""
         var $container = $("html,body");
-        var $scrollTo = $('.test');
+        var $scrollTo = $('.axis_selection_settings');
 
         $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
         """,
@@ -726,10 +782,10 @@ tof_selection_card = pn.Card(
         mz_end,
         align='center',
     ),
-    title='Select mz_values / tof_indices',
+    title='Select mz_values / tof_indices (TOF)',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -752,10 +808,10 @@ intensity_selection_card = pn.Card(
         intensity_end,
         align='center',
     ),
-    title='Select intensity_values',
+    title='Select intensity_values (DETECTOR)',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -781,7 +837,7 @@ axis_selection_card = pn.Card(
     title='Select axis for plots',
     collapsed=True,
     width=430,
-    margin=(20, 10, 10, 17),
+    margin=(10, 10, 10, 15),
     background='#EAEAEA',
     header_background='EAEAEA',
     css_classes=['axis_selection_settings']
@@ -796,18 +852,90 @@ axis_selection_card.jscallback(
     args={'card': axis_selection_card}
 )
 
+export_data_card = pn.Card(
+    save_hdf_path,
+    pn.Row(
+        pn.Column(
+            save_hdf_overwrite,
+            save_hdf_compress,
+            margin=(0, 50, 0, -100),
+            # align="center"
+        ),
+        save_hdf_button,
+        save_spinner,
+        align="center",
+    ),
+    save_hdf_message,
+    save_sliced_data_path,
+    pn.Row(
+        # TODO: weird spacing?
+        pn.Column(
+            save_sliced_data_overwrite,
+            None,
+            # align="center",
+            margin=(0, 50, 0, -100),
+        ),
+        save_sliced_data_button,
+        save_sliced_data_spinner,
+        align="center",
+    ),
+    save_sliced_data_message,
+    save_mgf_path,
+    pn.Row(
+        # TODO: weird spacing?
+        pn.Column(
+            save_mgf_overwrite,
+            None,
+            # align="center",
+            margin=(0, 50, 0, -100),
+        ),
+        save_mgf_button,
+        save_mgf_spinner,
+        align="center",
+    ),
+    save_mgf_message,
+    title='Export data',
+    collapsed=True,
+    width=430,
+    margin=(10, 10, 10, 15),
+    background='#EAEAEA',
+    header_background='EAEAEA',
+    css_classes=['axis_selection_settings']
+)
+export_data_card.jscallback(
+    collapsed="""
+        var $container = $("html,body");
+        var $scrollTo = $('.test');
+
+        $container.animate({scrollTop: $container.offset().top + $container.scrollTop(), scrollLeft: 0},300);
+        """,
+    args={'card': export_data_card}
+)
+
+strike_title = pn.pane.Markdown(
+    'Strike count (limit / current estimate)',
+    align='center',
+    margin=(-18, 0, 0, 0)
+)
+strike_threshold = pn.widgets.IntInput(
+    # name="Strike count upper limit",
+    step=1,
+    width=110,
+    value=10000000,
+    margin=(0, 0, 0, 14)
+)
+strike_estimate = pn.widgets.IntInput(
+    # name='Strike count estimate',
+    step=1,
+    width=110,
+    value=0,
+    margin=(0, 0, 0, 14),
+    disabled=True
+)
 
 # putting together all settings widget
 settings = pn.Column(
     settings_title,
-    card_divider,
-    pn.Row(
-        save_hdf_button,
-        save_spinner
-    ),
-    save_message,
-    card_divider,
-    axis_selection_card,
     card_divider,
     frame_selection_card,
     card_divider,
@@ -819,7 +947,10 @@ settings = pn.Column(
     card_divider,
     intensity_selection_card,
     card_divider,
-
+    axis_selection_card,
+    card_divider,
+    export_data_card,
+    card_divider,
     pn.Row(
         pn.Column(
             selection_actions,
@@ -829,73 +960,119 @@ settings = pn.Column(
             ),
             align="center"
         ),
+        pn.Column(
+            strike_title,
+            pn.Row(
+                strike_threshold,
+                strike_estimate,
+            ),
+            align="center"
+        ),
         align="center",
+        margin=(0, 0, 20, 0)
     ),
-    card_divider,
-    download_selection,
+    pn.Spacer(sizing_mode='stretch_height'),
     width=460,
     align='center',
-    margin=(0, 0, 0, 0),
+    margin=(0, 0, 20, 0),
     css_classes=['settings']
 )
 
 
 # PLOTTING
+def get_range_func(color, boundsx):
+    def _range(boundsx):
+        return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
+    return _range
+
+
 def visualize_tic():
-    tic = alphatims.plotting.tic_plot(DATASET, WHOLE_TITLE)
+    tic = alphatims.plotting.tic_plot(
+        DATASET,
+        WHOLE_TITLE,
+        width=None,
+        height=320
+    )
     # implement the selection
+    # tic.opts(responsive=True)
     bounds_x = hv.streams.BoundsX(
         source=tic,
-        boundsx=(rt_start.value, rt_end.value)
+        boundsx=(rt_start.value, rt_end.value),
     )
-
-    def get_range_func(color):
-        def _range(boundsx):
-            rt_start.value = boundsx[0]
-            rt_end.value = boundsx[1]
-            return hv.VSpan(boundsx[0], boundsx[1]).opts(color=color)
-        return _range
-
-    dmap = hv.DynamicMap(get_range_func('orange'), streams=[bounds_x])
+    dmap = hv.DynamicMap(
+        get_range_func('orange', bounds_x),
+        streams=[bounds_x],
+    )
+    # tic.remove_tools(bokeh.models.BoxSelectTool)
     fig = tic * dmap
-    return fig.opts(responsive=True)
+    # TODO: remove "box select (x-axis)" tool as this is not responsive?
+    # TODO: plot height does not allows space for hover tool at bottom
+    # TODO: both problems can be merged to fix eachother?
+    # TODO: similar for 1d_plot if XIC...
+    return fig#.opts(responsive=True)
 
 
 def visualize_scatter():
+    axis_dict = {
+        "m/z, Th": "mz",
+        "RT, min": "rt",
+        "Inversed IM, V·s·cm\u207B\u00B2": "mobility",
+        "Intensity": "intensity",
+    }
     return alphatims.plotting.heatmap(
         DATAFRAME,
-        plot1_x_axis.value,
-        plot1_y_axis.value,
+        axis_dict[plot1_x_axis.value],
+        axis_dict[plot1_y_axis.value],
         WHOLE_TITLE,
+        width=None,
+        height=320
     )
 
 
 def visualize_1d_plot():
-    return alphatims.plotting.line_plot(
+    axis_dict = {
+        "m/z, Th": "mz",
+        "RT, min": "rt",
+        "Inversed IM, V·s·cm\u207B\u00B2": "mobility",
+        "Intensity": "intensity",
+    }
+    line_plot = alphatims.plotting.line_plot(
         DATASET,
         SELECTED_INDICES,
-        plot2_x_axis.value,
+        axis_dict[plot2_x_axis.value],
         WHOLE_TITLE,
+        width=None,
+        height=320
     )
+    # if plot2_x_axis.value == "RT, min":
+    #     bounds_x = hv.streams.BoundsX(
+    #         source=line_plot,
+    #         boundsx=(rt_start.value, rt_end.value)
+    #     )
+    #     dmap = hv.DynamicMap(
+    #         get_range_func('khaki', bounds_x),
+    #         streams=[bounds_x]
+    #     )
+    #     fig = line_plot * dmap
+    #     return fig#.opts(responsive=True)
+    # else:
+    #     return line_plot
+    # NOTE: by default the xlims are now trimmed to the visible selection.
+    # Thus, the XIC is always equal to the whole plot,
+    # making the stream/ dmap redundant...
+    return line_plot
 
 
-# Widget dependancies
-@pn.depends(
-    upload_button.param.clicks,
-    watch=True
-)
 def upload_data(*args):
     sys.path.append('../')
     global DATASET
+    global DATAFRAME
+    global SELECTED_INDICES
     global WHOLE_TITLE
     if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
         ext = os.path.splitext(upload_file.value)[-1]
-        if ext == '.d':
-            save_hdf_button.disabled = False
-            save_message.object = ''
-        elif ext == '.hdf':
-            save_hdf_button.disabled = True
-            save_message.object = ''
+        save_hdf_message.object = ''
+        save_sliced_data_message.object = ''
         upload_error.object = None
         if DATASET and os.path.basename(
             DATASET.bruker_d_folder_name
@@ -906,6 +1083,9 @@ def upload_data(*args):
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
                 upload_spinner.value = True
+                DATASET = None
+                DATAFRAME = None
+                SELECTED_INDICES = None
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
@@ -925,10 +1105,10 @@ def upload_data(*args):
                     ]
                 )
             except ValueError as e:
-                print(e)
+                logging.exception(e)
                 upload_error.object = "#### This file is corrupted and can't be uploaded."
     else:
-        upload_error.object = '#### Please, specify a path to .d Bruker folder or .hdf file.'
+        upload_error.object = '#### Please, specify a correct path to .d Bruker folder or .hdf file.'
 
 
 @pn.depends(
@@ -936,35 +1116,93 @@ def upload_data(*args):
     watch=True
 )
 def save_hdf(*args):
-    save_message.object = ''
+    save_hdf_message.object = ''
     save_spinner.value = True
-    file_name = os.path.join(DATASET.directory, f"{DATASET.sample_name}.hdf")
-    directory = DATASET.bruker_d_folder_name
-    DATASET.save_as_hdf(
-        overwrite=True,
-        directory=directory,
-        file_name=file_name,
-        compress=False,
-    )
+    directory = os.path.dirname(save_hdf_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    if save_hdf_overwrite.value or not os.path.exists(save_hdf_path.value):
+        try:
+            DATASET.save_as_hdf(
+                overwrite=save_hdf_overwrite.value,
+                directory=directory,
+                file_name=os.path.basename(save_hdf_path.value),
+                compress=save_hdf_compress.value,
+            )
+            save_hdf_message.alert_type = 'success'
+            save_hdf_message.object = '#### The HDF file is successfully saved.'
+        except ValueError:
+            save_hdf_message.alert_type = 'danger'
+            save_hdf_message.object = '#### Could not save the file for unknown reasons.'
+    else:
+        save_hdf_message.alert_type = 'danger'
+        save_hdf_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
     save_spinner.value = False
-    save_message.object = '#### The HDF file is successfully saved outside .d folder.'
 
 
 @pn.depends(
-    upload_button.param.clicks
+    save_sliced_data_button.param.clicks,
+    watch=True
+)
+def save_sliced_data(*args):
+    save_sliced_data_message.object = ''
+    save_sliced_data_spinner.value = True
+    directory = os.path.dirname(save_sliced_data_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    if save_sliced_data_overwrite.value or not os.path.exists(
+        save_sliced_data_path.value
+    ):
+        DATAFRAME.to_csv(save_sliced_data_path.value, index=False)
+        save_sliced_data_message.alert_type = 'success'
+        save_sliced_data_message.object = '#### The CSV file is successfully saved.'
+    else:
+        save_sliced_data_message.alert_type = 'danger'
+        save_sliced_data_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
+    save_sliced_data_spinner.value = False
+
+
+@pn.depends(
+    save_mgf_button.param.clicks,
+    watch=True
+)
+def save_mgf(*args):
+    save_mgf_message.object = ''
+    save_mgf_spinner.value = True
+    directory = os.path.dirname(save_mgf_path.value)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    if save_mgf_overwrite.value or not os.path.exists(
+        save_mgf_path.value
+    ):
+        DATASET.save_as_mgf(
+            overwrite=save_mgf_overwrite.value,
+            directory=directory,
+            file_name=os.path.basename(save_mgf_path.value),
+        )
+        save_mgf_message.alert_type = 'success'
+        save_mgf_message.object = '#### The MGF file is successfully saved.'
+    else:
+        save_mgf_message.alert_type = 'danger'
+        save_mgf_message.object = '#### The file already exists. Specify another name or allow to overwrite the file.'
+    save_mgf_spinner.value = False
+
+
+@pn.depends(
+    upload_button.param.clicks,
+    watch=True
 )
 def init_settings(*args):
+    global STACK
+    upload_data()
     if DATASET:
-        global STACK
-        global GLOBAL_INIT_LOCK
-        GLOBAL_INIT_LOCK = True
         STACK = alphatims.utils.Global_Stack(
             {
-                "intensities": (0, DATASET.intensity_max_value),
+                "intensities": (0, int(DATASET.intensity_max_value)),
                 "frames": (1, 2),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
-                "quads": (0, DATASET.quad_mz_max_value),
+                "quads": (DATASET.quad_mz_min_value, DATASET.quad_mz_max_value),
                 "precursors": (1, DATASET.precursor_max_index),
                 "show_fragments": select_ms2_fragments.value,
                 "show_precursors": select_ms1_precursors.value,
@@ -975,6 +1213,13 @@ def init_settings(*args):
                 ),
             }
         )
+
+        update_frame_widgets_to_stack()
+        update_scan_widgets_to_stack()
+        update_quad_widgets_to_stack()
+        update_precursor_widgets_to_stack()
+        update_tof_widgets_to_stack()
+        update_intensity_widgets_to_stack()
 
         frames_msmstype = DATASET.frames.query('MsMsType == 0')
         step = len(frames_msmstype) // 10
@@ -1011,22 +1256,34 @@ def init_settings(*args):
         intensity_start.start, intensity_start.end = STACK["intensities"]
         intensity_end.start, intensity_end.end = STACK["intensities"]
 
-        update_frame_widgets_to_stack()
-        update_scan_widgets_to_stack()
-        update_quad_widgets_to_stack()
-        update_precursor_widgets_to_stack()
-        update_tof_widgets_to_stack()
-        update_intensity_widgets_to_stack()
+        save_hdf_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}.hdf",
+        )
+        save_sliced_data_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}_data_slice.csv",
+        )
+        save_mgf_path.value = os.path.join(
+            DATASET.directory,
+            f"{DATASET.sample_name}.mgf",
+        )
+        if not DATASET.acquisition_mode == "ddaPASEF":
+            save_mgf_path.disabled = True
+            save_mgf_overwrite.disabled = True
+            save_mgf_button.disabled = True
+            save_mgf_spinner.disabled = True
+            save_mgf_message.disabled = True
 
-        GLOBAL_INIT_LOCK = False
-        STACK.is_locked = False
         # first init needed:
+        plot2_x_axis.value = 'RT, min'
         plot2_x_axis.value = 'm/z, Th'
 
+        BROWSER[0] = settings
+
         upload_spinner.value = False
-        return settings
     else:
-        return None
+        BROWSER[0] = None
 
 
 @pn.depends(
@@ -1038,23 +1295,11 @@ def update_frame_with_player(*args):
 
 
 @pn.depends(
-    exit_button.param.clicks,
-    watch=True
-)
-def exit_button_event(*args):
-    import logging
-    logging.info("Quitting server...")
-    exit_button.name = "Server closed"
-    exit_button.button_type = "danger"
-    SERVER.stop()
-
-
-@pn.depends(
-    frame_slider.param.value,
-    frame_start.param.value,
-    frame_end.param.value,
-    rt_start.param.value,
-    rt_end.param.value,
+    # frame_slider.param.value,
+    # frame_start.param.value,
+    # frame_end.param.value,
+    # rt_start.param.value,
+    # rt_end.param.value,
 
     scan_slider.param.value,
     scan_start.param.value,
@@ -1087,6 +1332,7 @@ def exit_button_event(*args):
     # precursor_fragment_toggle_button.param.value,
     select_ms1_precursors.param.value,
     select_ms2_fragments.param.value,
+    watch=True,
 )
 def update_plots_and_settings(*args):
     if DATASET:
@@ -1099,8 +1345,8 @@ def update_plots_and_settings(*args):
                 "show_precursors",
                 select_ms1_precursors.value
             )
-        if updated_value is None:
-            updated_option, updated_value = check_frames_stack()
+        # if updated_value is None:
+        #     updated_option, updated_value = check_frames_stack()
         if updated_value is None:
             updated_option, updated_value = check_scans_stack()
         if updated_value is None:
@@ -1148,103 +1394,148 @@ def update_selected_indices_and_dataframe():
     global SELECTED_INDICES
     global DATAFRAME
     if DATASET:
-        frame_values = alphatims.bruker.convert_slice_key_to_int_array(
+        frame_indices = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*frame_slider.value), "frame_indices"
         )
-        scan_values = alphatims.bruker.convert_slice_key_to_int_array(
+        scan_indices = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*scan_slider.value), "scan_indices"
         )
         if select_ms1_precursors.value:
             quad_values = np.array([[-1, 0]])
-            precursor_values = np.array([[0, 1, 1]])
+            precursor_indices = np.array([[0, 1, 1]])
         else:
             quad_values = np.empty(shape=(0, 2), dtype=np.float64)
-            precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
+            precursor_indices = np.empty(shape=(0, 3), dtype=np.int64)
         if select_ms2_fragments.value:
             quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                DATASET, slice(*quad_slider.value)
+                slice(*quad_slider.value)
             )
-            precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
+            precursor_indices_ = alphatims.bruker.convert_slice_key_to_int_array(
                 DATASET, slice(*precursor_slider.value), "precursor_indices"
             )
             quad_values = np.vstack([quad_values, quad_values_])
-            precursor_values = np.vstack([precursor_values, precursor_values_])
-        tof_values = alphatims.bruker.convert_slice_key_to_int_array(
+            precursor_indices = np.vstack([precursor_indices, precursor_indices_])
+        tof_indices = alphatims.bruker.convert_slice_key_to_int_array(
             DATASET, slice(*tof_slider.value), "tof_indices"
         )
         intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-            DATASET, slice(*intensity_slider.value)
+            slice(*intensity_slider.value)
         )
-        SELECTED_INDICES = alphatims.bruker.filter_indices(
-            frame_slices=frame_values,
-            scan_slices=scan_values,
-            precursor_slices=precursor_values,
-            tof_slices=tof_values,
+        strike_estimate.value = DATASET.estimate_strike_count(
+            frame_slices=frame_indices,
+            scan_slices=scan_indices,
+            precursor_slices=precursor_indices,
+            tof_slices=tof_indices,
             quad_slices=quad_values,
-            intensity_slices=intensity_values,
-            frame_max_index=DATASET.frame_max_index,
-            scan_max_index=DATASET.scan_max_index,
-            tof_indptr=DATASET.tof_indptr,
-            precursor_indices=DATASET.precursor_indices,
-            quad_mz_values=DATASET.quad_mz_values,
-            quad_indptr=DATASET.quad_indptr,
-            tof_indices=DATASET.tof_indices,
-            intensities=DATASET.intensity_values
         )
+        if strike_estimate.value > strike_threshold.value:
+            SELECTED_INDICES = np.empty((0,), dtype=np.int64)
+        else:
+            SELECTED_INDICES = alphatims.bruker.filter_indices(
+                frame_slices=frame_indices,
+                scan_slices=scan_indices,
+                precursor_slices=precursor_indices,
+                tof_slices=tof_indices,
+                quad_slices=quad_values,
+                intensity_slices=intensity_values,
+                frame_max_index=DATASET.frame_max_index,
+                scan_max_index=DATASET.scan_max_index,
+                push_indptr=DATASET.push_indptr,
+                precursor_indices=DATASET.precursor_indices,
+                quad_mz_values=DATASET.quad_mz_values,
+                quad_indptr=DATASET.quad_indptr,
+                tof_indices=DATASET.tof_indices,
+                intensities=DATASET.intensity_values
+            )
         DATAFRAME = DATASET.as_dataframe(SELECTED_INDICES)
 
 
 def run():
-    global SERVER
     global LAYOUT
+    global PLOTS
+    global SERVER
     LAYOUT = pn.Column(
         header,
         main_part,
-        pn.Row(
-            init_settings,
-            update_plots_and_settings,
-        ),
+        BROWSER,
+        sizing_mode='stretch_width',
     )
-    SERVER = LAYOUT.show(threaded=True)
+    original_open = bokeh.server.views.ws.WSHandler.open
+    bokeh.server.views.ws.WSHandler.open = open_browser_tab(original_open)
+    original_on_close = bokeh.server.views.ws.WSHandler.on_close
+    bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(
+        original_on_close
+    )
+    SERVER = LAYOUT.show(title='AlphaTims', threaded=True)
+    SERVER.join()
+
+
+@pn.depends(
+    exit_button.param.clicks,
+    watch=True
+)
+def exit_button_event(*args):
+    quit_server()
+
+
+def open_browser_tab(func):
+    def wrapper(*args, **kwargs):
+        global TAB_COUNTER
+        TAB_COUNTER += 1
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def close_browser_tab(func):
+    def wrapper(*args, **kwargs):
+        global TAB_COUNTER
+        TAB_COUNTER -= 1
+        return_value = func(*args, **kwargs)
+        if TAB_COUNTER == 0:
+            quit_server()
+        return return_value
+    return wrapper
+
+
+def quit_server():
+    exit_button.name = "Server closed"
+    exit_button.button_type = "danger"
+    logging.info("Quitting server...")
+    SERVER.stop()
 
 
 def update_global_selection(updated_option, updated_value):
-    global PLOTS
-    global GLOBAL_INIT_LOCK
-    if updated_value is None:
-        STACK.is_locked = GLOBAL_INIT_LOCK
-        return PLOTS
-    if updated_value != "plot_axis":
-        print("updating selection")
-        GLOBAL_INIT_LOCK = True
-        update_widgets(updated_option)
-        GLOBAL_INIT_LOCK = False
-        update_selected_indices_and_dataframe()
-    if DATASET:
-        PLOTS = pn.Column(
-            visualize_tic(),
-            visualize_scatter(),
-            visualize_1d_plot()
-        )
-        STACK.is_locked = GLOBAL_INIT_LOCK
-        return PLOTS
+    if updated_value is not None:
+        if updated_value != "plot_axis":
+            logging.info(
+                f"Updating selection of '{updated_option}' "
+                f"with {updated_value}"
+            )
+            update_widgets(updated_option)
+            update_selected_indices_and_dataframe()
+        if DATASET:
+            logging.info("Updating plots")
+            PLOTS[0] = visualize_tic()
+            PLOTS[1] = visualize_scatter()
+            PLOTS[2] = visualize_1d_plot()
 
 
 def update_widgets(updated_option):
-    if updated_option == "show_fragments":
-        update_toggle_fragments()
-    if updated_option == "frames":
-        update_frame_widgets_to_stack()
-    if updated_option == "scans":
-        update_scan_widgets_to_stack()
-    if updated_option == "quads":
-        update_quad_widgets_to_stack()
-    if updated_option == "precursors":
-        update_precursor_widgets_to_stack()
-    if updated_option == "tofs":
-        update_tof_widgets_to_stack()
-    if updated_option == "intensities":
-        update_intensity_widgets_to_stack()
+    with STACK.lock():
+        if updated_option == "show_fragments":
+            update_toggle_fragments()
+        if updated_option == "frames":
+            update_frame_widgets_to_stack()
+        if updated_option == "scans":
+            update_scan_widgets_to_stack()
+        if updated_option == "quads":
+            update_quad_widgets_to_stack()
+        if updated_option == "precursors":
+            update_precursor_widgets_to_stack()
+        if updated_option == "tofs":
+            update_tof_widgets_to_stack()
+        if updated_option == "intensities":
+            update_intensity_widgets_to_stack()
 
 
 def update_toggle_fragments():
@@ -1257,54 +1548,71 @@ def update_toggle_fragments():
 
 
 def update_frame_widgets_to_stack():
-    frame_slider.value = STACK["frames"]
-    frame_start.value, frame_end.value = STACK["frames"]
-    rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
-    index = STACK["frames"][1]
-    if index < len(DATASET.rt_values):
-        rt_end.value = DATASET.rt_values[index] / 60
-    else:
-        rt_end.value = DATASET.rt_values[-1] / 60
+    with STACK.lock():
+        frame_slider.value = STACK["frames"]
+        frame_start.value, frame_end.value = STACK["frames"]
+        rt_start.value = DATASET.rt_values[STACK["frames"][0]] / 60
+        index = STACK["frames"][1]
+        if index < len(DATASET.rt_values):
+            rt_end.value = DATASET.rt_values[index] / 60
+        else:
+            rt_end.value = DATASET.rt_values[-1] / 60
 
 
 def update_scan_widgets_to_stack():
-    scan_slider.value = STACK["scans"]
-    scan_start.value, scan_end.value = STACK["scans"]
-    im_start.value = DATASET.mobility_values[STACK["scans"][0]]
-    index = STACK["scans"][1]
-    if index < len(DATASET.mobility_values):
-        im_end.value = DATASET.mobility_values[index]
-    else:
-        im_end.value = DATASET.mobility_values[-1]
+    with STACK.lock():
+        scan_slider.value = STACK["scans"]
+        scan_start.value, scan_end.value = STACK["scans"]
+        im_start.value = DATASET.mobility_values[STACK["scans"][0]]
+        index = STACK["scans"][1]
+        if index < len(DATASET.mobility_values):
+            im_end.value = DATASET.mobility_values[index]
+        else:
+            im_end.value = DATASET.mobility_values[-1]
 
 
 def update_quad_widgets_to_stack():
-    quad_slider.value = STACK["quads"]
-    quad_start.value, quad_end.value = STACK["quads"]
+    with STACK.lock():
+        quad_slider.value = STACK["quads"]
+        quad_start.value, quad_end.value = STACK["quads"]
 
 
 def update_precursor_widgets_to_stack():
-    precursor_slider.value = STACK["precursors"]
-    precursor_start.value, precursor_end.value = STACK["precursors"]
+    with STACK.lock():
+        precursor_slider.value = STACK["precursors"]
+        precursor_start.value, precursor_end.value = STACK["precursors"]
 
 
 def update_tof_widgets_to_stack():
-    tof_slider.value = STACK["tofs"]
-    tof_start.value, tof_end.value = STACK["tofs"]
-    mz_start.value = DATASET.mz_values[STACK["tofs"][0]]
-    index = STACK["tofs"][1]
-    if index < len(DATASET.mz_values):
-        mz_end.value = DATASET.mz_values[index]
-    else:
-        mz_end.value = DATASET.mz_values[-1]
+    with STACK.lock():
+        tof_slider.value = STACK["tofs"]
+        tof_start.value, tof_end.value = STACK["tofs"]
+        mz_start.value = DATASET.mz_values[STACK["tofs"][0]]
+        index = STACK["tofs"][1]
+        if index < len(DATASET.mz_values):
+            mz_end.value = DATASET.mz_values[index]
+        else:
+            mz_end.value = DATASET.mz_values[-1]
 
 
 def update_intensity_widgets_to_stack():
-    intensity_slider.value = STACK["intensities"]
-    intensity_start.value, intensity_end.value = STACK["intensities"]
+    with STACK.lock():
+        intensity_slider.value = STACK["intensities"]
+        intensity_start.value, intensity_end.value = STACK["intensities"]
 
 
-def check_frames_stack():
+@pn.depends(
+    frame_slider.param.value,
+    frame_start.param.value,
+    frame_end.param.value,
+    rt_start.param.value,
+    rt_end.param.value,
+    watch=True
+)
+def check_frames_stack(*args):
+    if STACK.is_locked:
+        return
+    current_low, current_max = STACK["frames"]
     updated_option, updated_value = STACK.update(
         "frames", frame_slider.value
     )
@@ -1320,10 +1628,24 @@ def check_frames_stack():
         updated_option, updated_value = STACK.update(
             "frames", (int(start_), int(end_))
         )
-    return updated_option, updated_value
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "frames", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "frames", (updated_value[1], updated_value[1] + 1)
+            )
+        update_frame_widgets_to_stack()
+        update_global_selection(updated_option, updated_value)
 
 
 def check_scans_stack():
+    current_low, current_max = STACK["scans"]
     updated_option, updated_value = STACK.update(
         "scans", scan_slider.value
     )
@@ -1339,10 +1661,23 @@ def check_scans_stack():
         updated_option, updated_value = STACK.update(
             "scans", (int(start_), int(end_))
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "scans", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "scans", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_quads_stack():
+    current_low, current_max = STACK["quads"]
     updated_option, updated_value = STACK.update(
         "quads", quad_slider.value
     )
@@ -1350,10 +1685,23 @@ def check_quads_stack():
         updated_option, updated_value = STACK.update(
             "quads", (quad_start.value, quad_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "quads", (updated_value[0], updated_value[0])
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "quads", (updated_value[1], updated_value[1])
+            )
     return updated_option, updated_value
 
 
 def check_precursors_stack():
+    current_low, current_max = STACK["precursors"]
     updated_option, updated_value = STACK.update(
         "precursors", precursor_slider.value
     )
@@ -1361,10 +1709,23 @@ def check_precursors_stack():
         updated_option, updated_value = STACK.update(
             "precursors", (precursor_start.value, precursor_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "precursors", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "precursors", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_tofs_stack():
+    current_low, current_max = STACK["tofs"]
     updated_option, updated_value = STACK.update(
         "tofs", tof_slider.value
     )
@@ -1380,10 +1741,23 @@ def check_tofs_stack():
         updated_option, updated_value = STACK.update(
             "tofs", (int(start_), int(end_))
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "tofs", (updated_value[0], updated_value[0] + 1)
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "tofs", (updated_value[1], updated_value[1] + 1)
+            )
     return updated_option, updated_value
 
 
 def check_intensities_stack():
+    current_low, current_max = STACK["intensities"]
     updated_option, updated_value = STACK.update(
         "intensities", intensity_slider.value
     )
@@ -1391,4 +1765,16 @@ def check_intensities_stack():
         updated_option, updated_value = STACK.update(
             "intensities", (intensity_start.value, intensity_end.value)
         )
+    if updated_value is not None:
+        if current_low != updated_value[0]:
+            if updated_value[0] >= updated_value[1]:
+                STACK.undo()
+                updated_option, updated_value = STACK.update(
+                    "intensities", (updated_value[0], updated_value[0])
+                )
+        elif updated_value[0] >= updated_value[1]:
+            STACK.undo()
+            updated_option, updated_value = STACK.update(
+                "intensities", (updated_value[1], updated_value[1])
+            )
     return updated_option, updated_value

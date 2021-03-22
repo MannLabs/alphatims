@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 import json
+import contextlib
 # local
 import alphatims
 
@@ -21,7 +22,8 @@ BASE_PATH = os.path.dirname(__file__)
 EXT_PATH = os.path.join(BASE_PATH, "ext")
 IMG_PATH = os.path.join(BASE_PATH, "img")
 LIB_PATH = os.path.join(BASE_PATH, "lib")
-LOG_PATH = os.path.join(os.path.dirname(BASE_PATH), "logs")
+LOG_PATH = os.path.join(BASE_PATH, "logs")
+DOC_PATH = os.path.join(BASE_PATH, "docs")
 with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:
     INTERFACE_PARAMETERS = json.load(in_file)
 MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
@@ -34,10 +36,11 @@ LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/
 
 def set_logger(
     *,
-    log_file_name: str = "",
+    log_file_name="",
     stream: bool = True,
     log_level: int = logging.INFO,
-    overwrite: bool = False
+    overwrite: bool = False,
+    progress_callback: bool = True
 ) -> str:
     """Set the log stream and file.
 
@@ -45,17 +48,18 @@ def set_logger(
 
     Parameters
     ----------
-    log_file_name : str
+    log_file_name : str, None
         The file name to where the log is written.
         Folders are automatically created if needed.
         This is relative to the current path. When an empty string is provided,
         a log is written to the AlphaTims "logs" folder with the name
         "log_yymmddhhmmss" (reversed timestamp year to seconds).
+        If None, no log file is saved.
         Default is "".
     stream : bool
-        If False, no log data is also sent to stream.
+        If False, no log data is sent to stream.
         If True, all logging can be tracked with stdout stream.
-        Default is True
+        Default is True.
     log_level : int
         The logging level. Usable values are defined in Python's "logging"
         module.
@@ -64,6 +68,10 @@ def set_logger(
         If True, overwrite the log_file if one exists.
         If False, append to this log file.
         Default is False.
+    progress_callback : bool
+        If True, continuous progress bars are enabled by default.
+        NOTE: If stream is False, progress bars are always disabled
+        Default is True.
 
     Returns
     -------
@@ -71,6 +79,7 @@ def set_logger(
         The file name to where the log is written.
     """
     import time
+    global PROGRESS_CALLBACK_STYLE
     root = logging.getLogger()
     formatter = logging.Formatter(
         '%(asctime)s> %(message)s', "%Y-%m-%d %H:%M:%S"
@@ -115,6 +124,10 @@ def set_logger(
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
+    if progress_callback and stream:
+        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
+    else:
+        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_NONE
     return log_file_name
 
 
@@ -130,7 +143,7 @@ def show_platform_info() -> None:
         - [timestamp]> machine    - [...]
         - [timestamp]> processor  - [...]
         - [timestamp]> cpu count  - [...]
-        - [timestamp]> ram memory - [...]/[...] Gb (available/total)
+        - [timestamp]> ram        - [...]/[...] Gb (available/total)
     """
     import platform
     import psutil
@@ -148,7 +161,7 @@ def show_platform_info() -> None:
         # f" ({100 - psutil.cpu_percent()}% unused)"
     )
     logging.info(
-        f"ram memory - "
+        f"ram        - "
         f"{psutil.virtual_memory().available/1024**3:.1f}/"
         f"{psutil.virtual_memory().total/1024**3:.1f} Gb "
         f"(available/total)"
@@ -516,7 +529,7 @@ def pjit(
         return parallel_compiled_func_inner(_func)
 
 
-def progress_callback(iterable, style: int = -1):
+def progress_callback(iterable, style: int = -1, total: int = -1):
     """Add tqdm progress callback to iterable.
 
     Parameters
@@ -531,6 +544,10 @@ def progress_callback(iterable, style: int = -1):
             - PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
             - PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
 
+        Default is -1.
+    total : int
+        The length of the iterable.
+        If -1, this will be read as len(iterable), if __len__ is implemented.
         Default is -1.
 
     Returns
@@ -549,7 +566,10 @@ def progress_callback(iterable, style: int = -1):
     if style == PROGRESS_CALLBACK_STYLE_NONE:
         return iterable
     elif style == PROGRESS_CALLBACK_STYLE_TEXT:
-        return tqdm.tqdm(iterable)
+        if total != -1:
+            return tqdm.tqdm(iterable, total=total)
+        else:
+            return tqdm.tqdm(iterable)
     elif style == PROGRESS_CALLBACK_STYLE_PLOT:
         # TODO: update?
         return tqdm.gui.tqdm(iterable)
@@ -564,6 +584,7 @@ def create_hdf_group_from_dict(
     overwrite: bool = False,
     compress: bool = False,
     recursed: bool = False,
+    chunked: bool = False
 ) -> None:
     """Save a dict to an open hdf group.
 
@@ -579,6 +600,8 @@ def create_hdf_group_from_dict(
             - np.array -> array
             - pd.dataframes -> subdicts with "is_pd_dataframe: True" attribute.
             - bool, int, float and str -> attrs.
+            - None values are skipped and not stored explicitly.
+
     overwrite : bool
         If True, existing subgroups, arrays and attrs are fully
         truncated/overwritten.
@@ -589,13 +612,17 @@ def create_hdf_group_from_dict(
         compression.
         If False, arrays are saved as provided.
         On average, compression halves file sizes,
-        at the cost of 2-6 time longer accession times.
+        at the cost of 2-10 time longer accession times.
         Default is False.
     recursed : bool
         If False, the default progress callback is added while itereating over
         the keys of the data_dict.
         If True, no callback is added, allowing subdicts to not trigger
         callback.
+        Default is False.
+    chunked : bool
+        If True, all arrays are chunked.
+        If False, arrays are saved as provided.
         Default is False.
 
     Raises
@@ -625,6 +652,7 @@ def create_hdf_group_from_dict(
                 overwrite=overwrite,
                 recursed=True,
                 compress=compress,
+                chunked=chunked,
             )
         elif isinstance(value, (np.ndarray, pd.core.series.Series)):
             if isinstance(value, (pd.core.series.Series)):
@@ -645,7 +673,9 @@ def create_hdf_group_from_dict(
                         key,
                         data=value,
                         compression="lzf" if compress else None,
+                        # compression="gzip" if compress else None, # TODO slower to make, faster to load?
                         shuffle=compress,
+                        chunks=True if chunked else None,
                     )
         elif isinstance(value, (bool, int, float, str)):
             if overwrite or (key not in hdf_group.attrs):
@@ -660,6 +690,8 @@ def create_hdf_group_from_dict(
                 recursed=True,
                 compress=compress,
             )
+        elif value is None:
+            continue
         else:
             raise ValueError(
                 f"The type of {key} is {type(value)}, which "
@@ -832,16 +864,10 @@ class Global_Stack(object):
     """A stack that holds multiple option stacks.
 
     The current value of each option stack can be retrieved by indexing,
-    i.e. option_value = self[option_key]
-
-    Attributes
-
-        - is_locked : bool
-            After each succesful update, undo or redo,
-            the stack is locked and cannot be modified unless explicitly unlocked.
+    i.e. option_value = self[option_key].
     """
 
-    def __init__(self, all_available_options: dict, is_locked: bool = True):
+    def __init__(self, all_available_options: dict):
         """Create a global stack.
 
         Parameters
@@ -849,10 +875,6 @@ class Global_Stack(object):
         all_available_options : dict
             A dictionary whose items are (str, type),
             which can be used to create an Option_Stack.
-        is_locked : bool
-            If True, this stack cannot be modified.
-            If False, the stack is modifiable
-            Default is True.
         """
         self._option_stacks = {
             option_key: Option_Stack(
@@ -863,7 +885,28 @@ class Global_Stack(object):
         self._number_of_options = len(all_available_options)
         self._stack_pointer = 0
         self._stack = [None]
-        self.is_locked = is_locked
+        self._is_locked = False
+        self._key = -1
+
+    @property
+    def is_locked(self):
+        """: bool : A flag to check if this stack is modifiable"""
+        return self._is_locked
+
+    @contextlib.contextmanager
+    def lock(self):
+        """A context manager to lock this stack and prevent modification."""
+        import random
+        key = random.random()
+        try:
+            if self._key == -1:
+                self._key = key
+            self._is_locked = True
+            yield self
+        finally:
+            if self._key == key:
+                self._is_locked = False
+                self._key = -1
 
     @property
     def current_values(self) -> dict:
@@ -910,7 +953,6 @@ class Global_Stack(object):
         self.trim()
         self._stack_pointer += 1
         self._stack.append(option_key)
-        self.is_locked = True
         return option_key, option_value
 
     def redo(self) -> tuple:
@@ -929,7 +971,6 @@ class Global_Stack(object):
             option_key = self._stack[self._stack_pointer]
             option_value = self._option_stacks[option_key].redo()
             if option_value is not None:
-                self.is_locked = True
                 return option_key, option_value
         return "", None
 
@@ -949,7 +990,6 @@ class Global_Stack(object):
             self._stack_pointer -= 1
             option_value = self._option_stacks[option_key].undo()
             if option_value is not None:
-                self.is_locked = True
                 return option_key, option_value
         return "", None
 
@@ -988,4 +1028,4 @@ class Global_Stack(object):
 
 
 set_threads(MAX_THREADS)
-set_logger(log_file_name="")
+set_logger(log_file_name=None)

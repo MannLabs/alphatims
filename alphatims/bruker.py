@@ -145,7 +145,7 @@ def read_bruker_sql(
     add_zeroth_frame: bool = True,
     drop_polarity: bool = True,
 ) -> tuple:
-    """Read metadata and (fragment) frames from a Bruker .d folder.
+    """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
 
     Parameters
     ----------
@@ -169,8 +169,10 @@ def read_bruker_sql(
     Returns
     -------
     : tuple
-        (str, dict, pd.DataFrame, pd.DataFrame).
-        The acquisition_mode, global_meta_data, frames and fragment_frames.
+        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame).
+        The acquisition_mode, global_meta_data, frames, fragment_frames
+        and precursors.
+        For diaPASEF, precursors is None.
 
     Raises
     ------
@@ -209,14 +211,19 @@ def read_bruker_sql(
                 columns={"WindowGroup": "Precursor"},
                 inplace=True
             )
+            precursors = None
         elif 8 in frames.MsMsType.values:
-            acquisition_mode = "PASEF"
+            acquisition_mode = "ddaPASEF"
             fragment_frames = pd.read_sql_query(
                 "SELECT * from PasefFrameMsMsInfo",
                 sql_database_connection
             )
+            precursors = pd.read_sql_query(
+                "SELECT * from Precursors",
+                sql_database_connection
+            )
         else:
-            raise ValueError("Scan mode is not PASEF or diaPASEF")
+            raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
         if add_zeroth_frame:
             frames = pd.concat(
                 [
@@ -243,6 +250,7 @@ def read_bruker_sql(
             global_meta_data,
             frames,
             fragment_frames,
+            precursors
         )
 
 
@@ -381,7 +389,7 @@ def read_bruker_binary(
     frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
     frame_indptr[0] = 0
     frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
-    max_scan_count = frames.NumScans.max()
+    max_scan_count = frames.NumScans.max() + 1
     scan_count = max_scan_count * frames.shape[0]
     scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
     intensities = np.empty(frame_indptr[-1], dtype=np.uint16)
@@ -390,7 +398,7 @@ def read_bruker_binary(
     tims_offset_values = frames.TimsId.values
     logging.info(
         f"Reading {frame_indptr.size - 2:,} frames with "
-        f"{frame_indptr[-1]:,} TOF arrivals for {bruker_d_folder_name}"
+        f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
     )
     process_frame(
         range(1, len(frames)),
@@ -447,9 +455,9 @@ class TimsTOF(object):
             are detected instead of fragments.
             Equally, this dimension allows to slice precursor indices.
             Precursor index 0 defaults to all precusors (i.e. quad mz values
-            equal to -1). In DDA, precursor indices > 0 point to PASEF
-            MSMS spectra.
-            In DIA, precursor indices > 0 point to windows,
+            equal to -1). In DDA, precursor indices larger than 0 point
+            to ddaPASEF MSMS spectra.
+            In DIA, precursor indices larger than 0 point to windows,
             i.e. all scans in a frame with equal quadrupole and collision
             settings that is repeated once per full cycle.
             Note that these values do not have a one-to-one relationship.
@@ -494,8 +502,8 @@ class TimsTOF(object):
             conversion need to be sorted in ascending order!
         - np.ndarray:
             Multiple slicing is supported by providing either a
-            np.int64[:, :, :] array, where each row is assumed to be a
-            (start, stop, step) tuple or np.float64[:, :] where each row
+            np.int64[:, 3] array, where each row is assumed to be a
+            (start, stop, step) tuple or np.float64[:, 2] where each row
             is assumed to be a (start, stop) tuple.
 
             **IMPORTANT NOTE:** These arrays need to be sorted,
@@ -503,8 +511,12 @@ class TimsTOF(object):
             (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0)
             = True).
 
+    Alternatively, a dictionary can be used to define filters for each
+    dimension (see examples).
+
     The result of such slicing is a pd.DataFrame with the following columns:
 
+        - raw_indices
         - frame_indices
         - scan_indices
         - precursor_indices
@@ -515,6 +527,9 @@ class TimsTOF(object):
         - quad_high_mz_values
         - mz_values
         - intensity_values
+
+    Instead of returning a pd.DataFrame, raw indices can be returned by
+    setting the last slice element to "raw".
 
     Examples
     --------
@@ -533,7 +548,7 @@ class TimsTOF(object):
 
     >>> data[[1, 8, 10], :, 0, 621.9: np.inf]
     # Return all datapoints from frames 1, 8 and 10, which are unfragmented
-    # and with 621.9 <= mz_values < np.inf
+    # (precursor_index = 0) and with 621.9 <= mz_values < np.inf
 
     >>> data[:, :, 999]
     # Return all datapoints from precursor 999
@@ -543,6 +558,19 @@ class TimsTOF(object):
     >>> data[:, scan_slices, :, :, :]
     # Return all datapoints with scan_indices in range(10, 20) or
     # range(100, 200, 10)
+
+    >>> df = data[
+    ...     {
+    ...         "frame_indices": [1, 191],
+    ...         "scan_indices": slice(300, 800, 10),
+    ...         "mz_values": slice(None, 400.5),
+    ...         "intensity_values": 50,
+    ...     }
+    ... ]
+    # Slice by using a dictionary
+
+    >>> data[:, :, 999, "raw"]
+    # Return the raw indices of datapoints from precursor 999
     """
 
     @property
@@ -593,7 +621,7 @@ class TimsTOF(object):
 
     @property
     def quad_mz_values(self):
-        """: np.ndarray : np.float64[:, :] : The (low, high) quad mz values."""
+        """: np.ndarray : np.float64[:, 2] : The (low, high) quad mz values."""
         return self._quad_mz_values
 
     @property
@@ -677,19 +705,29 @@ class TimsTOF(object):
         return self._fragment_frames
 
     @property
+    def precursors(self):
+        """: pd.DataFrame : The precursor table."""
+        return self._precursors
+
+    @property
     def tof_indices(self):
         """: np.ndarray : np.uint32[:] : The tof indices."""
         return self._tof_indices
 
     @property
-    def tof_indptr(self):
+    def push_indptr(self):
         """: np.ndarray : np.int64[:] : The tof indptr."""
-        return self._tof_indptr
+        return self._push_indptr
 
     @property
     def quad_indptr(self):
-        """: np.ndarray : np.int64[:] : The quad indptr."""
+        """: np.ndarray : np.int64[:] : The quad indptr (tof_indices)."""
         return self._quad_indptr
+
+    @property
+    def raw_quad_indptr(self):
+        """: np.ndarray : np.int64[:] : The raw quad indptr (push indices)."""
+        return self._raw_quad_indptr
 
     @property
     def precursor_indices(self):
@@ -749,6 +787,7 @@ class TimsTOF(object):
             self._version = "none"
         if self.version != alphatims.__version__:
             logging.info(
+                "WARNING: "
                 f"AlphaTims version {self.version} was used to initialize "
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
@@ -757,6 +796,9 @@ class TimsTOF(object):
         self.slice_as_dataframe = slice_as_dataframe
         # Precompile
         self[0, "raw"]
+
+    def __len__(self):
+        return len(self.intensity_values)
 
     def _import_data_from_d_folder(
         self,
@@ -770,21 +812,23 @@ class TimsTOF(object):
             global_meta_data,
             self._frames,
             self._fragment_frames,
+            self._precursors,
         ) = read_bruker_sql(bruker_d_folder_name)
         (
-            self._tof_indptr,
+            self._push_indptr,
             self._tof_indices,
             self._intensity_values,
         ) = read_bruker_binary(
             self.frames,
             bruker_d_folder_name,
         )
+        logging.info(f"Indexing {bruker_d_folder_name}...")
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
         self._frame_max_index = self.frames.shape[0]
-        self._scan_max_index = int(self.frames.NumScans.max())
-        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"])
+        self._scan_max_index = int(self.frames.NumScans.max()) + 1
+        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
         self._rt_values = self.frames.Time.values.astype(np.float64)
         self._mobility_min_value = float(
             self.meta_data["OneOverK0AcqRangeLower"]
@@ -953,6 +997,7 @@ class TimsTOF(object):
         return_quad_mz_values: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
+        raw_indices_sorted: bool = True,
     ) -> dict:
         """Convert selected indices to a dict.
 
@@ -1002,6 +1047,10 @@ class TimsTOF(object):
         return_intensity_values : bool
             If True, include "intensity_values" in the dict.
             Default is False.
+        raw_indices_sorted : bool
+            If True, raw_indices are assumed to be sorted,
+            resulting in a faster conversion.
+            Default is True.
 
         Returns
         -------
@@ -1020,10 +1069,17 @@ class TimsTOF(object):
                 return_precursor_indices
             ]
         ):
-            parsed_indices = indptr_lookup(
-                self.tof_indptr,
-                raw_indices,
-            )
+            if raw_indices_sorted:
+                parsed_indices = indptr_lookup(
+                    self.push_indptr,
+                    raw_indices,
+                )
+            else:
+                parsed_indices = np.searchsorted(
+                    self.push_indptr,
+                    raw_indices,
+                    "right"
+                ) - 1
         if (return_frame_indices or return_rt_values) and (
             frame_indices is None
         ):
@@ -1041,10 +1097,17 @@ class TimsTOF(object):
         ) and (
             quad_indices is None
         ):
-            quad_indices = indptr_lookup(
-                self.quad_indptr,
-                raw_indices,
-            )
+            if raw_indices_sorted:
+                quad_indices = indptr_lookup(
+                    self.quad_indptr,
+                    raw_indices,
+                )
+            else:
+                quad_indices = np.searchsorted(
+                    self.quad_indptr,
+                    raw_indices,
+                    "right"
+                ) - 1
         if (return_tof_indices or return_mz_values) and (tof_indices is None):
             tof_indices = self.tof_indices[raw_indices]
         if return_raw_indices:
@@ -1151,7 +1214,7 @@ class TimsTOF(object):
             if values == -np.inf:
                 return 0
             elif values == np.inf:
-                return self.precursor_max_index + 1
+                return self.precursor_max_index
         else:
             raise KeyError(f"return_type '{return_type}' is invalid")
 
@@ -1178,7 +1241,7 @@ class TimsTOF(object):
             intensity_slices=parsed_keys["intensity_values"],
             frame_max_index=self.frame_max_index,
             scan_max_index=self.scan_max_index,
-            tof_indptr=self.tof_indptr,
+            push_indptr=self.push_indptr,
             precursor_indices=self.precursor_indices,
             quad_mz_values=self.quad_mz_values,
             quad_indptr=self.quad_indptr,
@@ -1189,6 +1252,95 @@ class TimsTOF(object):
             return self.as_dataframe(raw_indices)
         else:
             return raw_indices
+
+    def estimate_strike_count(
+        self,
+        frame_slices: np.ndarray,
+        scan_slices: np.ndarray,
+        precursor_slices: np.ndarray,
+        tof_slices: np.ndarray,
+        quad_slices: np.ndarray,
+    ) -> int:
+        """Estimate the number of strike counts, given a set of slices.
+
+        Parameters
+        ----------
+        frame_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+        scan_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+        precursor_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0)
+            = True).
+        tof_slices : np.int64[:, 3]
+            Each row of the array is assumed to be a (start, stop, step) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
+        quad_slices : np.float64[:, 2]
+            Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+            This array is assumed to be sorted,
+            disjunct and strictly increasing
+            (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+
+        Returns
+        -------
+        int
+            The estimated number of strike counts given these slices.
+        """
+        frame_count = 0
+        for frame_start, frame_end, frame_stop in frame_slices:
+            frame_count += len(range(frame_start, frame_end, frame_stop))
+        scan_count = 0
+        for scan_start, scan_end, scan_stop in scan_slices:
+            scan_count += len(range(scan_start, scan_end, scan_stop))
+        tof_count = 0
+        for tof_start, tof_end, tof_stop in tof_slices:
+            tof_count += len(range(tof_start, tof_end, tof_stop))
+        precursor_count = 0
+        precursor_index_included = False
+        for precursor_start, precursor_end, precursor_stop in precursor_slices:
+            precursor_count += len(
+                range(precursor_start, precursor_end, precursor_stop)
+            )
+            if 0 in range(precursor_start, precursor_end, precursor_stop):
+                precursor_index_included = True
+        quad_count = 0
+        precursor_quad_included = False
+        for quad_start, quad_end in quad_slices:
+            if quad_start < 0:
+                precursor_quad_included = True
+            if quad_start < self.quad_mz_min_value:
+                quad_start = self.quad_mz_min_value
+            if quad_end > self.quad_mz_max_value:
+                quad_end = self.quad_mz_max_value
+            if quad_start < quad_end:
+                quad_count += quad_end - quad_start
+        estimated_count = len(self)
+        estimated_count *= frame_count / self.frame_max_index
+        estimated_count *= scan_count / self.scan_max_index
+        estimated_count *= tof_count / self.tof_max_index
+        fragment_multiplier = 0.5 * min(
+            precursor_count / (self.precursor_max_index),
+            quad_count / (
+                self.quad_mz_max_value - self.quad_mz_min_value
+            )
+        )
+        if fragment_multiplier < 0:
+            fragment_multiplier = 0
+        if precursor_index_included and precursor_quad_included:
+            fragment_multiplier += 0.5
+        estimated_count *= fragment_multiplier
+        return int(estimated_count)
 
     def bin_intensities(self, indices: np.ndarray, axis: tuple):
         """Sum and project the intensities of the indices along 1 or 2 axis.
@@ -1204,7 +1356,7 @@ class TimsTOF(object):
 
         Returns
         -------
-        np.float64[:], np.float64[:, :]
+        np.float64[:], np.float64[:, 2]
             An array or heatmap that express the summed intensity along
             the selected axis.
         """
@@ -1252,7 +1404,8 @@ class TimsTOF(object):
         mobility_values: bool = True,
         quad_mz_values: bool = True,
         mz_values: bool = True,
-        intensity_values: bool = True
+        intensity_values: bool = True,
+        raw_indices_sorted: bool = True,
     ):
         """Convert raw indices to a pd.DataFrame.
 
@@ -1294,6 +1447,10 @@ class TimsTOF(object):
         intensity_values : bool
             If True, include "intensity_values" in the dataframe.
             Default is True.
+        raw_indices_sorted : bool
+            If True, raw_indices are assumed to be sorted,
+            resulting in a faster conversion.
+            Default is True.
 
         Returns
         -------
@@ -1314,6 +1471,7 @@ class TimsTOF(object):
                 return_quad_mz_values=quad_mz_values,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
+                raw_indices_sorted=raw_indices_sorted,
             )
         )
 
@@ -1365,15 +1523,323 @@ class TimsTOF(object):
             precursor_indices.append(0)
         self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
         self._precursor_indices = np.array(precursor_indices)
-        self._quad_indptr = self.tof_indptr[quad_indptr]
+        self._raw_quad_indptr = np.array(quad_indptr)
+        self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
         self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
-        self._quad_min_mz_value = np.min(self.quad_mz_values[:, 0])
-        self._precursor_max_index = int(np.max(self.precursor_indices))
+        self._quad_min_mz_value = np.min(
+            self.quad_mz_values[
+                self.quad_mz_values[:, 0] >= 0,
+                0
+            ]
+        )
+        self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
+
+    def index_precursors(
+        self,
+        centroid_algorithm: str = "",
+    ) -> tuple:
+        """Retrieve all MS2 spectra acquired with DDA.
+
+        IMPORTANT NOTE: This function is intended for DDA samples.
+        While it in theory works for DIA sample too, this probably has little
+        value.
+
+        Parameters
+        ----------
+        centroid_algorithm : str
+            The centroiding algorithm to use.
+            Options are: ""
+            If this is an empty string, no centroiding is performed.
+            Default is ""
+
+        Returns
+        -------
+        : tuple (np.int64[:], np.uint32[:], np.uint32[:])
+            The spectrum_indptr array, spectrum_tof_indices array and
+            spectrum_intensity_values array.
+        """
+        precursor_order = np.argsort(self.precursor_indices)
+        precursor_offsets = np.empty(
+            self.precursor_max_index + 1,
+            dtype=np.int64
+        )
+        precursor_offsets[0] = 0
+        precursor_offsets[1:-1] = np.flatnonzero(
+            np.diff(self.precursor_indices[precursor_order]) > 0) + 1
+        precursor_offsets[-1] = len(precursor_order)
+        offset = precursor_offsets[1]
+        offsets = precursor_order[offset:]
+        counts = np.empty(len(offsets) + 1, dtype=np.int)
+        counts[0] = 0
+        counts[1:] = np.cumsum(
+            self.quad_indptr[offsets + 1] - self.quad_indptr[offsets]
+        )
+        spectrum_indptr = np.empty(
+            self.precursor_max_index + 1,
+            dtype=np.int64
+        )
+        spectrum_indptr[1:] = counts[
+            precursor_offsets[1:] - precursor_offsets[1]
+        ]
+        spectrum_indptr[0] = 0
+        new_spectrum_indptr = np.zeros_like(spectrum_indptr)
+        spectrum_tof_indices = np.empty(spectrum_indptr[-1], dtype=np.uint32)
+        spectrum_intensity_values = np.empty_like(spectrum_tof_indices)
+        set_precursor(
+            range(1, self.precursor_max_index),
+            precursor_order,
+            precursor_offsets,
+            self.quad_indptr,
+            self.tof_indices,
+            self.intensity_values,
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+            spectrum_indptr,
+            new_spectrum_indptr,
+        )
+        new_spectrum_indptr[1:] = np.cumsum(new_spectrum_indptr[:-1])
+        new_spectrum_indptr[0] = 0
+        trimmed_spectrum_tof_indices = np.empty(
+            new_spectrum_indptr[-1],
+            dtype=np.uint32
+        )
+        trimmed_spectrum_intensity_values = np.empty_like(
+            trimmed_spectrum_tof_indices
+        )
+        spectrum_intensity_values
+        trim_spectra(
+            range(1, self.precursor_max_index),
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+            spectrum_indptr,
+            trimmed_spectrum_tof_indices,
+            trimmed_spectrum_intensity_values,
+            new_spectrum_indptr,
+        )
+        if centroid_algorithm != "":
+            pass
+            # TODO: implement centroiding algorithm
+        return (
+            new_spectrum_indptr,
+            trimmed_spectrum_tof_indices,
+            trimmed_spectrum_intensity_values
+        )
+
+    def save_as_mgf(
+        self,
+        directory: str,
+        file_name: str,
+        overwrite: bool = False,
+        # centroid: bool = False # TODO
+    ):
+        """Save profile spectra from this TimsTOF object as an mgf file.
+
+        Parameters
+        ----------
+        directory : str
+            The directory where to save the mgf file.
+        file_name : str
+            The file name of the  mgf file.
+        overwrite : bool
+            If True, an existing file is truncated.
+            If False, nothing happens if a file already exists.
+            Default is False.
+
+        Returns
+        -------
+        str
+            The full file name of the mgf file.
+        """
+        full_file_name = os.path.join(
+            directory,
+            file_name
+        )
+        if self.acquisition_mode != "ddaPASEF":
+            logging.info(
+                f"File {self.bruker_d_folder_name} is not "
+                "a ddaPASEF file, nothing to do."
+            )
+            return full_file_name
+        if os.path.exists(full_file_name):
+            if not overwrite:
+                logging.info(
+                    f"File {full_file_name} already exists, nothing to do."
+                )
+                return full_file_name
+        logging.info(f"Indexing spectra of {self.bruker_d_folder_name}...")
+        (
+            spectrum_indptr,
+            spectrum_tof_indices,
+            spectrum_intensity_values,
+        ) = self.index_precursors()
+        pepmasses = self.precursors.MonoisotopicMz.values
+        charges = self.precursors.Charge.values
+        rtinseconds = self.rt_values[self.precursors.Parent.values]
+        intensities = self.precursors.Intensity.values
+        mobilities = self.mobility_values[
+            self.precursors.ScanNumber.values.astype(np.int64)
+        ]
+        with open(full_file_name, "w") as infile:
+            logging.info(f"Exporting profile spectra to {full_file_name}...")
+            for index in alphatims.utils.progress_callback(
+                range(1, self.precursor_max_index)
+            ):
+                start = spectrum_indptr[index]
+                end = spectrum_indptr[index + 1]
+                title = (
+                    f"index: {index}, "
+                    f"intensity: {intensities[index - 1]:.1f}, "
+                    f"mobility: {mobilities[index - 1]:.3f}"
+                )
+                infile.write("BEGIN IONS\n")
+                infile.write(f'TITLE="{title}"\n')
+                infile.write(f"PEPMASS={pepmasses[index - 1]:.6f}\n")
+                infile.write(f"CHARGE={charges[index - 1]}\n")
+                infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
+                for mz, intensity in zip(
+                    self.mz_values[spectrum_tof_indices[start: end]],
+                    spectrum_intensity_values[start: end],
+                ):
+                    infile.write(f"{mz:.6f} {intensity}\n")
+                infile.write("END IONS\n")
+        logging.info(
+            f"Succesfully wrote {self.precursor_max_index - 1} "
+            f"spectra to {full_file_name}."
+        )
+        return full_file_name
 
 
 class PrecursorFloatError(TypeError):
     """Used to indicate that a precursor value is not an int but a float."""
     pass
+
+
+@alphatims.utils.pjit(
+    signature_or_function="void(i8,i8[:],i8[:],i8[:],u4[:],u2[:],u4[:],u4[:],i8[:],i8[:])"
+)
+def set_precursor(
+    precursor_index: int,
+    offset_order: np.ndarray,
+    precursor_offsets: np.ndarray,
+    quad_indptr: np.ndarray,
+    tof_indices: np.ndarray,
+    intensities: np.ndarray,
+    spectrum_tof_indices: np.ndarray,
+    spectrum_intensity_values: np.ndarray,
+    spectrum_indptr: np.ndarray,
+    spectrum_counts: np.ndarray,
+) -> None:
+    """Sum the intensities of all pushes belonging to a single precursor.
+
+    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    precursor_index : int
+        The precursor index indicating which MS2 spectrum to determine.
+    offset_order : np.int64[:]
+        The order of self.precursor_indices, obtained with np.argsort.
+    precursor_offsets : np.int64[:]
+        An index pointer array for precursor offsets.
+    quad_indptr : np.int64[:]
+        The self.quad_indptr array of a TimsTOF object.
+    tof_indices : np.uint32[:]
+        The self.tof_indices array of a TimsTOF object.
+    intensities : np.uint16[:]
+        The self.intensity_values array of a TimsTOF object.
+    spectrum_tof_indices : np.uint32[:]
+        A buffer array to store tof indices of the new spectrum.
+    spectrum_intensity_values : np.uint32[:]
+        A buffer array to store intensity values of the new spectrum.
+    spectrum_indptr : np.int64[:]
+        An index pointer array defining the original spectrum boundaries.
+    spectrum_counts :  np. int64[:]
+        An buffer array defining how many distinct tof indices the new
+        spectrum has.
+    """
+    offset = spectrum_indptr[precursor_index]
+    precursor_offset_lower = precursor_offsets[precursor_index]
+    precursor_offset_upper = precursor_offsets[precursor_index + 1]
+    selected_offsets = offset_order[
+        precursor_offset_lower: precursor_offset_upper
+    ]
+    starts = quad_indptr[selected_offsets]
+    ends = quad_indptr[selected_offsets + 1]
+    offset_index = offset
+    for start, end in zip(starts, ends):
+        spectrum_tof_indices[
+            offset_index: offset_index + end - start
+        ] = tof_indices[start: end]
+        spectrum_intensity_values[
+            offset_index: offset_index + end - start
+            ] = intensities[start: end]
+        offset_index += end - start
+    offset_end = spectrum_indptr[precursor_index + 1]
+    order = np.argsort(spectrum_tof_indices[offset: offset_end])
+    current_index = offset - 1
+    previous_tof_index = -1
+    for tof_index, intensity in zip(
+        spectrum_tof_indices[offset: offset_end][order],
+        spectrum_intensity_values[offset: offset_end][order],
+    ):
+        if tof_index != previous_tof_index:
+            current_index += 1
+            spectrum_tof_indices[current_index] = tof_index
+            spectrum_intensity_values[current_index] = intensity
+            previous_tof_index = tof_index
+        else:
+            spectrum_intensity_values[current_index] += intensity
+    spectrum_tof_indices[current_index + 1: offset_end] = 0
+    spectrum_intensity_values[current_index + 1: offset_end] = 0
+    spectrum_counts[precursor_index] = current_index + 1 - offset
+
+
+@alphatims.utils.pjit
+def trim_spectra(
+    index: int,
+    spectrum_tof_indices: np.ndarray,
+    spectrum_intensity_values: np.ndarray,
+    spectrum_indptr: np.ndarray,
+    trimmed_spectrum_tof_indices: np.ndarray,
+    trimmed_spectrum_intensity_values: np.ndarray,
+    new_spectrum_indptr: np.ndarray,
+) -> None:
+    """Trim remaining bytes after merging of multiple pushes.
+
+    IMPORTANT NOTE: This function is decorate with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    index : int
+        The push index whose intensity_values and tof_indices will be trimmed.
+    spectrum_tof_indices : np.uint32[:]
+        The original array containing tof indices.
+    spectrum_intensity_values : np.uint32[:]
+        The original array containing intensity values.
+    spectrum_indptr : np.int64[:]
+        An index pointer array defining the original spectrum boundaries.
+    trimmed_spectrum_tof_indices : np.uint32[:]
+        A buffer array to store new tof indices.
+    trimmed_spectrum_intensity_values : np.uint32[:]
+        A buffer array to store new intensity values.
+    new_spectrum_indptr : np.int64[:]
+        An index pointer array defining the trimmed spectrum boundaries.
+    """
+    start = spectrum_indptr[index]
+    new_start = new_spectrum_indptr[index]
+    new_end = new_spectrum_indptr[index + 1]
+    trimmed_spectrum_tof_indices[new_start: new_end] = spectrum_tof_indices[
+        start: start + new_end - new_start
+    ]
+    trimmed_spectrum_intensity_values[
+        new_start: new_end
+    ] = spectrum_intensity_values[
+        start: start + new_end - new_start
+    ]
 
 
 def parse_keys(data: TimsTOF, keys) -> dict:
@@ -1396,12 +1862,12 @@ def parse_keys(data: TimsTOF, keys) -> dict:
     -------
     : dict
         The resulting dict always has the following items:
-            - "frame_indices": np.int64[:, :, :]
-            - "scan_indices": np.int64[:, :, :]
-            - "tof_indices": np.int64[:, :, :]
-            - "precursor_indices": np.int64[:, :, :]
-            - "quad_values": np.float64[:, :]
-            - "intensity_values": np.float64[:, :]
+            - "frame_indices": np.int64[:, 3]
+            - "scan_indices": np.int64[:, 3]
+            - "tof_indices": np.int64[:, 3]
+            - "precursor_indices": np.int64[:, 3]
+            - "quad_values": np.float64[:, 2]
+            - "intensity_values": np.float64[:, 2]
     """
     dimensions = [
         "frame_indices",
@@ -1419,9 +1885,17 @@ def parse_keys(data: TimsTOF, keys) -> dict:
         )
     if isinstance(keys[0], dict):
         new_keys = []
-        for dimension in dimensions:
-            if dimension in keys[0]:
-                new_keys.append(keys[0][dimension])
+        dimension_translations = {
+            "frame_indices": "rt_values",
+            "scan_indices": "mobility_values",
+            "precursor_indices": "quad_mz_values",
+            "tof_indices": "mz_values",
+        }
+        for indices, values in dimension_translations.items():
+            if indices in keys[0]:
+                new_keys.append(keys[0][indices])
+            elif values in keys[0]:
+                new_keys.append(keys[0][values])
             else:
                 new_keys.append(slice(None))
         if "intensity_values" in keys[0]:
@@ -1446,36 +1920,33 @@ def parse_keys(data: TimsTOF, keys) -> dict:
             )
             dimension_slices[
                 "quad_values"
-            ] = convert_slice_key_to_float_array(data, keys[i])
+            ] = convert_slice_key_to_float_array(keys[i])
     dimension_slices[
         "intensity_values"
     ] = convert_slice_key_to_float_array(
-        data,
         keys[-1] if (len(keys) > len(dimensions)) else slice(None)
     )
     if "quad_values" not in dimension_slices:
         dimension_slices["quad_values"] = np.array(
             [[-np.inf, np.inf]],
-            dtype=np.float
+            dtype=np.float64
         )
     return dimension_slices
 
 
-def convert_slice_key_to_float_array(data: TimsTOF, key):
-    """Convert a key of a data object to a slice float array.
+def convert_slice_key_to_float_array(key):
+    """Convert a key to a slice float array.
 
     NOTE: This function should only be used for QUAD or DETECTOR dimensions.
 
     Parameters
     ----------
-    data : alphatims.bruker.TimsTOF
-        The TimsTOF objext for which to get slices.
     key : slice, int, float, None, iterable
         The key that needs to be converted.
 
     Returns
     -------
-    : np.float64[:, :]
+    : np.float64[:, 2]
         Each row represent a a (start, stop) slice.
 
     Raises
@@ -1498,13 +1969,13 @@ def convert_slice_key_to_float_array(data: TimsTOF, key):
         else:
             start = key
             stop = key
-        return np.array([[start, stop]], dtype=np.float)
+        return np.array([[start, stop]], dtype=np.float64)
     else:
         if not isinstance(key, np.ndarray):
-            key = np.array(key, dtype=np.float)
-        key = key.astype(np.float)
+            key = np.array(key, dtype=np.float64)
+        key = key.astype(np.float64)
         if len(key.shape) == 1:
-            return np.array([[key, key]]).T
+            return np.array([key, key]).T
         elif len(key.shape) == 2:
             if key.shape[1] != 2:
                 raise ValueError
@@ -1527,7 +1998,7 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
 
     Returns
     -------
-    : np.int64[:, :, :]
+    : np.int64[:, 3]
         Each row represent a a (start, stop, step) slice.
 
     Raises
@@ -1537,16 +2008,24 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
     PrecursorFloatError
         When trying to convert a quad float to precursor index.
     """
+    result = np.empty((0, 3), dtype=np.int64)
+    inverse_of_scans = False
     try:
         iter(key)
     except TypeError:
         if key is None:
             key = slice(None)
         if isinstance(key, slice):
+            if dimension == "scan_indices":
+                if isinstance(key.start, (np.inexact, float)) or isinstance(key.stop, (np.inexact, float)):
+                    key = slice(key.stop, key.start, key.step)
             start = key.start
             if not isinstance(start, (np.integer, int)):
                 if start is None:
-                    start = -np.inf
+                    if dimension == "scan_indices":
+                        start = np.inf
+                    else:
+                        start = -np.inf
                 if not isinstance(start, (np.inexact, float)):
                     raise ValueError
                 start = data.convert_to_indices(
@@ -1556,7 +2035,10 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
             stop = key.stop
             if not isinstance(stop, (np.integer, int)):
                 if stop is None:
-                    stop = np.inf
+                    if dimension == "scan_indices":
+                        stop = -np.inf
+                    else:
+                        stop = np.inf
                 if not isinstance(stop, (np.inexact, float)):
                     raise ValueError
                 stop = data.convert_to_indices(
@@ -1568,16 +2050,15 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
                 if step is not None:
                     raise ValueError
                 step = 1
-            if (dimension == "scan_indices") and (start > stop):
-                start, stop = stop, start
-            return np.array([[start, stop, step]])
+            result = np.array([[start, stop, step]])
         elif isinstance(key, (np.integer, int)):
-            return np.array([[key, key + 1, 1]])
+            result = np.array([[key, key + 1, 1]])
         elif isinstance(key, (np.inexact, float)):
             key = data.convert_to_indices(key, return_type=dimension)
-            if (dimension == "scan_indices"):
-                return np.array([[key - 1, key, 1]])
-            return np.array([[key, key + 1, 1]])
+            if dimension == "scan_indices":
+                result = np.array([[key - 1, key, 1]])
+            else:
+                result = np.array([[key, key + 1, 1]])
         else:
             raise ValueError
     else:
@@ -1586,14 +2067,20 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
         step = 1
         if not isinstance(key.ravel()[0], np.integer):
             key = data.convert_to_indices(key, return_type=dimension)
+            if dimension == "scan_indices":
+                key -= 1
         if len(key.shape) == 1:
-            return np.array([key, key + 1, np.repeat(step, key.size)]).T
+            result = np.array([key, key + 1, np.repeat(step, key.size)]).T
         elif len(key.shape) == 2:
             if key.shape[1] != 3:
                 raise ValueError
-            return key
+            result = key
         else:
             raise ValueError
+    if inverse_of_scans:
+        return result[:, [1, 0, 2]]
+    else:
+        return result
 
 
 @alphatims.utils.njit
@@ -1613,7 +2100,7 @@ def valid_quad_mz_values(
         The lower mz value of the current quad selection.
     high_mz_value : float
         The upper mz value of the current quad selection.
-    quad_slices : np.float64[:, :]
+    quad_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
@@ -1647,7 +2134,7 @@ def valid_precursor_index(
     ----------
     precursor_index : int
         The precursor index to validate.
-    precursor_slices : np.int64[:, :, :]
+    precursor_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
@@ -1682,7 +2169,7 @@ def filter_indices(
     intensity_slices: np.ndarray,
     frame_max_index: int,
     scan_max_index: int,
-    tof_indptr: np.ndarray,
+    push_indptr: np.ndarray,
     precursor_indices: np.ndarray,
     quad_mz_values: np.ndarray,
     quad_indptr: np.ndarray,
@@ -1693,27 +2180,27 @@ def filter_indices(
 
     Parameters
     ----------
-    frame_slices : np.int64[:, :, :]
+    frame_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
-    scan_slices : np.int64[:, :, :]
+    scan_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
-    precursor_slices : np.int64[:, :, :]
+    precursor_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
-    tof_slices : np.int64[:, :, :]
+    tof_slices : np.int64[:, 3]
         Each row of the array is assumed to be a (start, stop, step) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
-    quad_slices : np.float64[:, :]
+    quad_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
-    intensity_slices : np.float64[:, :]
+    intensity_slices : np.float64[:, 2]
         Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
         This array is assumed to be sorted, disjunct and strictly increasing
         (i.e. np.all(np.diff(intensity_slices.ravel()) >= 0) = True).
@@ -1721,11 +2208,11 @@ def filter_indices(
         The maximum frame index of a TimsTOF object.
     scan_max_index : int
         The maximum scan index of a TimsTOF object.
-    tof_indptr : np.int64[:]
-        The self.tof_indptr array of a TimsTOF object.
+    push_indptr : np.int64[:]
+        The self.push_indptr array of a TimsTOF object.
     precursor_indices : np.int64[:]
         The self.precursor_indices array of a TimsTOF object.
-    quad_mz_values : np.float64[:, :]
+    quad_mz_values : np.float64[:, 2]
         The self.quad_mz_values array of a TimsTOF object.
     quad_indptr : np.int64[:]
         The self.quad_indptr array of a TimsTOF object.
@@ -1744,11 +2231,11 @@ def filter_indices(
     new_quad_index = -1
     quad_end = -1
     is_valid_quad_index = True
-    starts = tof_indptr[:-1].reshape(
+    starts = push_indptr[:-1].reshape(
         frame_max_index,
         scan_max_index
     )
-    ends = tof_indptr[1:].reshape(
+    ends = push_indptr[1:].reshape(
         frame_max_index,
         scan_max_index
     )
@@ -1811,7 +2298,7 @@ def filter_indices(
     return np.array(result)
 
 
-# TODO: Overhead of using multiple threads is slower
+# Overhead of using more than 1 threads is actually slower
 @alphatims.utils.pjit(thread_count=1)
 def add_intensity_to_bin(
     query_index: int,

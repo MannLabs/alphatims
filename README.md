@@ -3,7 +3,7 @@
 ---
 # AlphaTims
 
-An open-source Python package for efficient accession and analysis of Bruker TimsTOF raw data from the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
+AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -11,7 +11,7 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
   * [**Installation**](#installation)
      * [**One-click GUI**](#one-click-gui)
      * [**Pip installer**](#pip)
-     * [**Full installer**](#full)
+     * [**Developer installer**](#developer)
      * [**Installation issues**](#installation-issues)
   * [**Test data**](#test-data)
     * [**Test sample**](#test-sample)
@@ -22,7 +22,11 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
     * [**GUI**](#gui)
     * [**CLI**](#cli)
     * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
+    * [**Other tools**](#other-tools)
   * [**Performance**](#performance)
+    * [**Speed**](#speed)
+    * [**RAM**](#ram)
+  * [**Troubleshooting**](#troubleshooting)
   * [**How it works**](#how-it-works)
     * [**Bruker raw data**](#bruker-raw-data)
     * [**TimsTOF objects in Python**](#timstof-objects-in-python)
@@ -33,139 +37,107 @@ An open-source Python package for efficient accession and analysis of Bruker Tim
 ---
 ## About
 
-With the introduction of the [Bruker TimsTOF](bruker.com/products/mass-spectrometry-and-separations/lc-ms/o-tof/timstof-pro.html) and [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900), the inclusion of trapped ion mobility separation (TIMS) between liquid chromatography (LC) and tandem mass spectrometry (MSMS) instruments has gained popularity for both [DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [DIA](https://www.nature.com/articles/s41592-020-00998-0). However, detection of such five dimensional points (chromatographic retention time (rt), ion mobility, quadrupole mass to charge (m/z), time-of-flight (TOF) m/z and intensity) at GHz results in an increased amount of data and complexity. Efficient accession, analysis and visualisation of Bruker TimsTOF data are therefore imperative. AlphaTims is an open-source Python package that allows such efficient access. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a module directly within Python.
+High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available and open-source. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
 
 ---
 ## License
 
-AlphaTims was developed at the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is available with an [Apache License](LICENSE.txt). Since AlphaTims is dependent on Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages, additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages (available in the [requirements](requirements) folder), additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
 
 ---
 ## Installation
 
-Three types of installation are possible:
+AlphaTims can be installed and used on all major operating systems (Windows, MacOS and Linux).
+There are three different types of installation possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
-* [**Pip installer:**](#pip) Choose this installation if you only want to use AlphaTims as a Python module in an already existing Python 3.8 environment such as a Jupyter notebook.
-* [**Full installer:**](#full) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features and modifiable AlphaTims source code. Specific extensions (GUI, CLI and notebooks) can be included in this installation as well that generally outperform the precompiled versions.
+* [**Pip installer:**](#pip) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
+* [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
 
-***Since this software is dependent on [Bruker libraries](alphatims/ext), reading raw data is only compatible with Windows and Linux. This is true for all installation types. All other functionality is platform independent.***
+***IMPORTANT: While AlphaTims is mostly platform independent, some calibration functions require [Bruker libraries](alphatims/ext) which are only available on Windows and Linux.***
 
 ### One-click GUI
 
-* **Windows:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe) and follow the installation instructions. Note the following for Windows:
-  * File download or launching might be disabled by your virus scanner.
-  * Running with Internet Explorer might not update results properly. If so, copy-paste the `localhost:...` url to an alternative browser (Google Chrome has been verified to work) and continue working from there.
-  * If you install AlphaTims for all users, you might need admin privileges to run it (right click AlphaTims logo and "run as admin").
-* **Linux:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims). No installation is needed, just download the file to the desired location. To run it, drag-and-drop it in a terminal and the GUI will open as a tab in your default browser. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)*** Note the following for Linux:
-  * If permissions are wrong, run `chmod +x alphatims` in a terminal (at the right location).
-* **MacOS:** [Download the latest release](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims.app.zip). No installation is needed, just unzip it and move it to your applications folder. ***By using the AlphaTims application you agree with the [license](LICENSE.txt) and [third-party licenses](LICENSE-THIRD-PARTY.txt)***. Also note the following for MacOS:
-  * The AlphaTims application takes a long time to load upon first opening, this should be significantly faster the second time.
-  * Reading of raw data is not possible due to availability of Bruker libraries, we advise to export raw data as .hdf files on Windows or Linux and use those directly.
-  * If nothing happens when you launch AlphaTims, you might need to grant it permissions by going to the MacOS menu "System Preferences | Security & Privacy | General". If the problem still persists, it is possible that MacOS already quarantined the AlphaTims app. It can be removed from quarantine by running `xattr -dr com.apple.quarantine alphatims.app` in a terminal (in the applications folder where `alphatims.app` is located).
+The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
-IMPORTANT WARNING! If you just close the browser tab and do not press the "Quit" button, AlphaTims will keep running in the background (potentially using a significant amount of RAM memory). This is especially important for MacOS, which does not explicitly open a terminal window when running the GUI.
+* [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe)
+* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_macos.pkg)
+* [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_linux.deb)
 
-Older releases are available on the [release page](https://github.com/MannLabs/alphatims/releases). Note that the one-click GUI is only compiled periodically and therefore even the latest release might be behind the latest [pip](#pip) and [full](#full) installers.
+***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
+
+Older releases remain available on the [release page](https://github.com/MannLabs/alphatims/releases), but no backwards compatibility is guaranteed.
 
 ### Pip
 
-In an existing Python 3.8 environment AlphaTims can be installed with the command:
+AlphaTims can be installed in an existing Python 3.8 environment with a single `bash` command. *This `bash` command can also be run directly from within a Jupyter notebook by prepending it with a `!`*. The lightweight version of AlphaTims that purely focuses on data accession (no plotting without additional packages) can be installed with:
 
 ```bash
 pip install git+https://github.com/MannLabs/alphatims.git
 ```
 
-This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command:
-
+Alternatively, some basic plotting functions and the complete GUI can be installed with the command:
 ```bash
-conda install git -y
+pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[plotting]'
 ```
 
-Upgrading to a newer version is possible with the command:
+This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command `conda install git -y`. When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
+<!-- TODO update once on pypi -->
 
 ```bash
 pip install git+https://github.com/MannLabs/alphatims.git --upgrade
 ```
 
-These commands can also be run directly in a Jupyter notebook by prepending them with a `!`:
+### Developer
 
-```
-!conda install git -y
-!pip install git+https://github.com/MannLabs/alphatims.git
-# !pip install git+https://github.com/MannLabs/alphatims.git --upgrade
-```
-
-### Full
-
-It is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/) to install AlphaTims. Install AlphaTims and all its [core dependancy requirements](requirements/requirements.txt) (extra options include [cli](requirements/requirements_cli.txt), [gui](requirements/requirements_gui.txt) and [nbs](requirements/requirements_nbs.txt) dependancies) with the following commands in a terminal (copy-paste per individual line):
+AlphaTims can also be installed in developer mode with a few `bash` commands. This allows to fully customize the software and modify the source code to your specific needs. For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). Once conda is downloaded and installed, an AlphaTims environment can be created and activated with:
 
 ```bash
-# # It is not advised to install alphatims in the home directory.
-# # Navigate to the folder where you want to install it
-# # An alphatims folder is created automatically,
-# # so a general software folder suffices
-# mkdir folder/where/to/install/downloaded/software
-# cd folder/where/to/install/downloaded/software
 conda create -n alphatims python=3.8 pip=20.2 -y
 conda activate alphatims
-# # If git is not installed, run the following command:
-# conda install git -y
+```
+
+When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first create a specific folder for AlphaTims and navigate to this folder:
+
+```bash
+mkdir ~/folder/where/to/install/software
+cd ~/folder/where/to/install/software
+```
+
+Next, download the AlphaTims repository from GitHub either directly or with the `git` command (installable with `conda install git -y`):
+
+```bash
 git clone https://github.com/MannLabs/alphatims.git
-# # While AlphaTims can be imported directly in other programs,
-# # a standalone version often requires additional packages for
-# # cli, gui and nbs usage. If not desired, they can be skipped.
-# # Note that no `cd alphatims` is required for the following
-pip install -e './alphatims[cli,gui,nbs]'
-conda deactivate
 ```
 
-By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.
-
-To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution can be added as an alias. On linux and MacOS, this can be done with e.g.:
+This creates a new AlphaTims subfolder in the current directory. *The following commands assume you did not perform an additional `cd alphatims` to change the current directory to this subfolder*. Next, AlphaTims and all [dependancies](requirements) need to be installed. To take advantage of all features and allow development, this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
-conda activate alphatims
-alphatims_bin="$(which alphatims)"
-# # With bash
-echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
-# # With zsh
-# echo "alias alphatims='"${alphatims_bin}"'" >> ~/.zshrc
-conda deactivate
+pip install -e './alphatims[plotting,develop]'
 ```
 
-On Windows, this can be done with e.g.:
+***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
 
-```bash
-conda activate alphatims
-where alphatims
-# # The result should be something like:
-# # C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
-# # This directory can then be permanently added to e.g. PATH with:
-# setx PATH=%PATH%;C:\Users\yourname\.conda\envs\alphatims\Scripts\alphatims.exe
-conda deactivate
-```
+The following steps are optional, but make working with AlphaTims slightly more convenient:
 
-Note that this binary still reflects all changes to the [source code folder](alphatims) if an editable version is installed with the `-e` flag.
-
-When using Jupyter notebooks and multiple conda environments, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available.
+* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used (this is optional), the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
+  ```bash
+  conda activate alphatims
+  alphatims_bin="$(which alphatims)"
+  echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
+  conda deactivate
+  ```
+  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to Windows' path variable.
+* When using Jupyter notebooks and multiple conda environments direcly from the terminal, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available, in addition to all other conda kernels in which the command `conda install ipykernel` was run.
 
 ### Installation issues
 
-Common issues include:
-
-* **Always make sure you have activated the alphatims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
-* **Wrong Python version.** AlphaTims is only compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve this issue.
-* **Alphatims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[gui, nbs]'`.
-* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
-* **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade Numpy with `pip install numpy==1.19.3`.
+See the general [troubleshooting](#troubleshooting) section.
 
 ---
 ## Test data
 
-AlphaTims is compatible with both ddaPASEF and diaPASEF. Initial investigation of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+AlphaTims is compatible with both [ddaPASEF](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932) and [diaPASEF](https://www.nature.com/articles/s41592-020-00998-0).
 
 ### Test sample
 
@@ -187,86 +159,97 @@ The same sample was also acquired with diaPASEF (1.96 Gb) and is also available 
 ---
 ## Usage
 
-There are three ways to use the software:
+There are three ways to use AlphaTims:
 
-* [**GUI:**](#gui) This is mostly used as a data browser.
-* [**CLI:**](#cli) This is mostly used to process data and can be incorporated in automated workflows.
-* [**Python:**](#python-and-jupyter-notebooks) This is mostly used as a Python package in other Python projects.
+* [**GUI:**](#gui) This allows to browse and visualize the data.
+* [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
+* [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
 
 ### GUI
 
-The GUI is accessible if you used the one-click GUI installer or through the following commands in a terminal:
+Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.
+
+If the GUI was not installed through a one-click GUI installer, it can be activate with the following `bash` command:
 
 ```bash
-conda activate alphatims
 alphatims gui
-conda deactivate
 ```
+
+Note that this needs to be prepended with a `!` when you want to run this from within a Jupyter notebook. When the command is run directly from the command-line, make sure you use the right environment (activate it with e.g. `conda activate alphatims` or set an alias to the binary executable).
 
 ### CLI
 
-The CLI can be run with the following commands in a terminal:
+The CLI can be run with the following command (after activating the `conda` environment with `conda activate alphatims` or if an alias was set to the alphatims executable):
 
 ```bash
-conda activate alphatims
-alphatims
-conda deactivate
+alphatims -h
 ```
 
-It is possible to get help about each function and their (required) parameters by using the `-h` flag. For instance,the command `alphatims export hdf -h` will produce the following output:
+It is possible to get help about each function and their (required) parameters by using the `-h` flag. For instance, the command `alphatims export hdf -h` will produce the following output:
 
 ```
 ************************
-* AlphaTims 0.0.201209 *
+* AlphaTims 0.0.210310 *
 ************************
 Usage: alphatims export hdf [OPTIONS] BRUKER_D_FOLDER
 
   Export BRUKER_D_FOLDER as hdf file.
 
 Options:
-  --output_folder DIRECTORY  A directory for all output (blank means
-                             `bruker_d_folder` root is used).
+  --disable_overwrite            Disable overwriting of existing files.
+  --enable_compression           Enable compression of hdf files. If set, this
+                                 roughly halves files sizes (on-disk), at the
+                                 cost of taking 2-10 longer accession times.
+  -o, --output_folder DIRECTORY  A directory for all output (blank means
+                                 `input_file` root is used).
 
-  --log_file PATH            Save all log data to a file (blank means
-                             'log_[date].txt' with date format yymmddhhmmss in
-                             'log' folder of AlphaTims directory).  [default:
-                             ]
-
-  --threads INTEGER          The number of threads to use (0 means all,
-                             negative means how many threads to leave
-                             available).  [default: -1]
-
-  --disable_log_stream       Disable streaming of log data.  [default: False]
-  --parameter_file FILE      A .json file with (non-required) parameters
-                             (blank means default parameters are used). This
-                             overrides all default and CLI parameters.
-
-  --compress                 Compression of hdf files. If set, this roughly
-                             halves files sizes (on-disk), at the cost of
-                             taking 3-6 longer accession times.  [default:
-                             False]
-
-  -h, --help                 Show this message and exit.
+  -l, --log_file PATH            Save all log data to a file (blank means
+                                 'log_[date].txt' with date format
+                                 yymmddhhmmss in 'log' folder of AlphaTims
+                                 directory).  [default: ]
+  -t, --threads INTEGER          The number of threads to use (0 means all,
+                                 negative means how many threads to leave
+                                 available).  [default: -1]
+  -s, --disable_log_stream       Disable streaming of log data.
+  -p, --parameter_file FILE      A .json file with (non-required) parameters
+                                 (blank means default parameters are used).
+                                 NOTE: Parameters defined herein override all
+                                 default and given CLI parameters.
+  -e, --export_parameters FILE   Save currently selected parameters to a
+                                 parameter file.
+  -h, --help                     Show this message and exit.
 ```
 
-### Python and jupyter notebooks
+For this particular command, the line `Usage: alphatims export hdf [OPTIONS] BRUKER_D_FOLDER` shows that you always need to provide a path to a `BRUKER_D_FOLDER` and that all other options are optional (indicated by the brackets in `[OPTIONS]`). Each option can be called with a double dash `--` followed by a long name, while common options also can be called with a single dash `-` followed by their short name. It is indicated what type of parameter is expected, e.g. a `DIRECTORY` for `--output_folder` or nothing for `enable/disable` flags. Defaults are also shown and all parameters will be saved in a log file. Alternatively, all used parameters can be exported with the `--export_parameters` option and the non-required ones can be reused with the `--parameter_file`.
 
-AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTIMS repository and open `docs/_build/html/index.html` in a local browser.)
+### Python and Jupyter notebooks
 
-A brief [tutorial jupyter notebook](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs). When running locally it provides interactive plot, which are not rendered on GitHub. Instead, they are available as individual html pages in the [nbs folder](nbs).
+AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTims repository and open `docs/_build/html/index.html` in a local browser.)
+<!-- TODO update once public -->
+
+A brief [Jupyter notebook tutorial](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs). When running locally it provides interactive plots, which are not rendered on GitHub. Instead, they are available as individual html pages in the [nbs folder](nbs).
+
+### Other tools
+
+* Initial exploration of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
+* [HDF files](https://www.hdfgroup.org/solutions/hdf5/) can be explored with [HDF Compass](https://support.hdfgroup.org/projects/compass/) or [HDFView](https://www.hdfgroup.org/downloads/hdfview/).
 
 ---
 ## Performance
 
-Typical performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
+Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 
-| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)          |
-|------|----------|---------------|-------------------|--------|--------------------------|
-| DDA  | 6 min    | 214,172,697   | 1.55 s / 536 ms    | 571 ms | 1.64 / 45.7 / 27.0 / 78.8 |
-| DIA  | 6 min    | 158,552,099   | 1.09 s / 381 ms    | 403 ms | 6.40 / 26.7 / 626 / 109     |
-| DDA  | 21 min   | 295,251,252   | 3.07 s / 913 ms    | 757 ms | 1.74 / 72.5 / 122 / 186      |
-| DIA  | 21 min   | 730,564,765   | 4.54 s / 2.20 s    | 1.85 s | 0.855 / 122 / 5040 / 404    |
-| DDA  | 120 min  | 2,074,019,899 | 24.1 s / 10.6 s    | 5.70 s  | 0.709 / 371 / 609 / 1200    |
+### Speed
+
+Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
+
+| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)         |
+|------|----------|---------------|-------------------|--------|----------------------------|
+| DDA  | 6 min    | 214,172,697   | 1.85 s / 537 ms   | 581 ms | 2.08 / 38.7 / 29.8 / 93.9  |
+| DIA  | 6 min    | 158,552,099   | 1.35 s / 397 ms   | 446 ms | 7.94 / 27.8 / 788 / 115    |
+| DDA  | 21 min   | 295,251,252   | 3.92 s / 939 ms   | 833 ms | 2.48 / 72.9 / 124 / 213    |
+| DIA  | 21 min   | 730,564,765   | 6.82 s / 2.35 s   | 1.87 s | 1.08 / 142 / 6210 / 484    |
+| DDA  | 120 min  | 2,074,019,899 | 25.7 s / 10.8 s   | 5.56 s | 0.874 / 422 / 706 / 1380   |
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
@@ -277,13 +260,31 @@ All slices were performed in a single dimension. Including more slices makes the
 
 All of these analyses were timed with `timeit` and are the average of at least 7 runs. They were obtained on the following system:
 
-* **MacBook Pro:** (13-inch, 2020, Four Thunderbolt 3 ports)
+* **MacBook Pro:** 13-inch, 2020, Four Thunderbolt 3 ports
 * **OS version:** macOS Catalina 10.15.7
 * **Processor:** 2.3 GHz Quad-Core Intel Core i7
 * **Memory:** 32 GB 3733 MHz LPDDR4X
 * **Startup Disk:** Macintosh HD
 
-Full details are available in the [perfomance notebook](nbs/performance.ipynb).
+Full details are available in the [performance notebook](nbs/performance.ipynb).
+
+### RAM
+
+On average, RAM usage is twice the size of a raw Bruker .d folder. Since most .d folders have file sizes of less than 10 Gb, a modern computer with 32 Gb RAM suffices to explore most datasets with ease.
+
+---
+## Troubleshooting
+
+Common installation/usage issues include:
+
+* **Always make sure you have activated the AlphaTims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
+* **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve dependancy conflicts.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,develop]'`.
+* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
+* **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
+* Exporting PNG images with the CLI or Python package might not work out-of-the-box. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
 
 ---
 ## How it works

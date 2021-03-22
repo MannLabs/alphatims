@@ -169,8 +169,9 @@
     <span class="n">selected_indices</span><span class="p">,</span>
     <span class="n">x_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
     <span class="n">remove_zeros</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">trim</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
 <span class="p">):</span>
@@ -188,16 +189,16 @@
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
+<span class="sd">            - mz</span>
 <span class="sd">    title : str</span>
 <span class="sd">        The title of this plot.</span>
 <span class="sd">        Will be prepended with &quot;Spectrum&quot;, &quot;Mobilogram&quot; or &quot;XIC&quot;.</span>
 <span class="sd">        Default is &quot;&quot;.</span>
 <span class="sd">    y_axis_label : str</span>
 <span class="sd">        Should not be set for a 1D line plot.</span>
-<span class="sd">        Default is &quot;Intensity&quot;.</span>
+<span class="sd">        Default is &quot;intensity&quot;.</span>
 <span class="sd">    remove_zeros : bool</span>
 <span class="sd">        If True, zeros are removed.</span>
 <span class="sd">        Note that a line plot connects consecutive points,</span>
@@ -205,6 +206,9 @@
 <span class="sd">        If False, use the full range of the appropriate dimension of</span>
 <span class="sd">        the timstof_data.</span>
 <span class="sd">        Default is False.</span>
+<span class="sd">    trim : bool</span>
+<span class="sd">        If True, zeros on the left and right are trimmed.</span>
+<span class="sd">        Default is True.</span>
 <span class="sd">    width : int</span>
 <span class="sd">        The width of this plot.</span>
 <span class="sd">        Default is 1000.</span>
@@ -217,6 +221,14 @@
 <span class="sd">    : hv.Curve</span>
 <span class="sd">        A curve plot that represents an XIC, mobilogram or spectrum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axis_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/z, Th&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rt&quot;</span><span class="p">:</span> <span class="s2">&quot;RT, min&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobility&quot;</span><span class="p">:</span> <span class="s2">&quot;Inversed IM, V·s·cm</span><span class="se">\u207B\u00B2</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;intensity&quot;</span><span class="p">:</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">x_axis_label</span><span class="p">]</span>
+    <span class="n">y_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">y_axis_label</span><span class="p">]</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;m/z, Th&#39;</span><span class="p">:</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">,</span>
         <span class="s1">&#39;RT, min&#39;</span><span class="p">:</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">,</span>
@@ -228,10 +240,11 @@
         <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
         <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span>
         <span class="s2">&quot;align&quot;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span>
-        <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hover&#39;</span><span class="p">],</span>
+        <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hover&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom_in&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom_out&#39;</span><span class="p">],</span>
         <span class="s2">&quot;line_width&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s2">&quot;yformatter&quot;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="s2">&quot;align&quot;</span><span class="p">:</span> <span class="s1">&#39;center&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;hooks&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_disable_logo</span><span class="p">],</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">x_dimension</span> <span class="o">==</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">:</span>
         <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">timstof_data</span><span class="o">.</span><span class="n">mz_values</span>
@@ -242,10 +255,20 @@
     <span class="k">elif</span> <span class="n">x_dimension</span> <span class="o">==</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">:</span>
         <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">timstof_data</span><span class="o">.</span><span class="n">rt_values</span> <span class="o">/</span> <span class="mi">60</span>
         <span class="n">plot_opts</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;XIC - </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">if</span> <span class="n">remove_zeros</span><span class="p">:</span>
-        <span class="n">non_zeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
-        <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">non_zeros</span><span class="p">]</span>
-        <span class="n">intensities</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">intensities</span><span class="p">]</span>
+    <span class="n">non_zeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">intensities</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_zeros</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">x_ticks</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">intensities</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">non_zeros</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">non_zeros</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">remove_zeros</span><span class="p">:</span>
+            <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">non_zeros</span><span class="p">]</span>
+            <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span><span class="p">[</span><span class="n">non_zeros</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">trim</span><span class="p">:</span>
+            <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
+            <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">()</span>
     <span class="n">plot</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span>
         <span class="p">(</span><span class="n">x_ticks</span><span class="p">,</span> <span class="n">intensities</span><span class="p">),</span>
         <span class="n">x_axis_label</span><span class="p">,</span>
@@ -260,9 +283,10 @@
     <span class="n">x_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">y_axis_label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">z_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="n">z_axis_label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;intensity&quot;</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="n">rescale_to_minutes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a scatterplot / heatmap for a dataframe.</span>
 
@@ -278,35 +302,48 @@
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the x-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - mz</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
 <span class="sd">    y_axis_label : str</span>
 <span class="sd">        A label that is used for projection</span>
 <span class="sd">        (i.e. intensities are summed) on the y-axis. Options are:</span>
 
-<span class="sd">            - &quot;m/z, Th&quot;</span>
-<span class="sd">            - &quot;RT, min&quot;</span>
-<span class="sd">            - &quot;Inversed IM, V·s·cm\u207B\u00B2&quot;</span>
+<span class="sd">            - mz</span>
+<span class="sd">            - rt</span>
+<span class="sd">            - mobility</span>
 <span class="sd">    title : str</span>
 <span class="sd">        The title of this plot.</span>
 <span class="sd">        Will be prepended with &quot;Heatmap&quot;.</span>
 <span class="sd">        Default is &quot;&quot;.</span>
 <span class="sd">    z_axis_label : str</span>
 <span class="sd">        Should not be set for a 2D scatterplot / heatmap.</span>
-<span class="sd">        Default is &quot;Intensity&quot;.</span>
+<span class="sd">        Default is &quot;intensity&quot;.</span>
 <span class="sd">    width : int</span>
 <span class="sd">        The width of this plot.</span>
 <span class="sd">        Default is 1000.</span>
 <span class="sd">    height : int</span>
 <span class="sd">        The height of this plot.</span>
 <span class="sd">        Default is 300.</span>
+<span class="sd">    rescale_to_minutes : bool</span>
+<span class="sd">        If True, the rt_values of the dataframe will be divided by 60.</span>
+<span class="sd">        WARNING: this updates the dataframe directly and is persistent!</span>
+<span class="sd">        Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    hv.Scatter</span>
 <span class="sd">        A scatter plot projected on the 2 dimensions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">axis_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mz&quot;</span><span class="p">:</span> <span class="s2">&quot;m/z, Th&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rt&quot;</span><span class="p">:</span> <span class="s2">&quot;RT, min&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobility&quot;</span><span class="p">:</span> <span class="s2">&quot;Inversed IM, V·s·cm</span><span class="se">\u207B\u00B2</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;intensity&quot;</span><span class="p">:</span> <span class="s2">&quot;Intensity&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">x_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">x_axis_label</span><span class="p">]</span>
+    <span class="n">y_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">y_axis_label</span><span class="p">]</span>
+    <span class="n">z_axis_label</span> <span class="o">=</span> <span class="n">axis_dict</span><span class="p">[</span><span class="n">z_axis_label</span><span class="p">]</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;m/z, Th&#39;</span><span class="p">:</span> <span class="s2">&quot;mz_values&quot;</span><span class="p">,</span>
         <span class="s1">&#39;RT, min&#39;</span><span class="p">:</span> <span class="s2">&quot;rt_values&quot;</span><span class="p">,</span>
@@ -323,7 +360,8 @@
     <span class="c1">#         (f&#39;{z_axis_label}&#39;, f&#39;@{z_dimension}&#39;),</span>
     <span class="c1">#     ]</span>
     <span class="c1"># )</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;rt_values&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">60</span>
+    <span class="k">if</span> <span class="n">rescale_to_minutes</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;rt_values&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">60</span>
     <span class="n">scatter</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">hvplot</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
         <span class="n">x</span><span class="o">=</span><span class="n">x_dimension</span><span class="p">,</span>
         <span class="n">y</span><span class="o">=</span><span class="n">y_dimension</span><span class="p">,</span>
@@ -340,15 +378,22 @@
         <span class="c1">#     df[x_dimension].max()</span>
         <span class="c1"># ),</span>
         <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Heatmap - </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">aggregator</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span>
         <span class="c1"># tools=[hover],</span>
         <span class="n">datashade</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">dynspread</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">colorcet</span><span class="o">.</span><span class="n">fire</span><span class="p">,</span>
-        <span class="n">nonselection_color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span>
-        <span class="n">selection_color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+        <span class="c1"># nonselection_color=&#39;green&#39;,</span>
+        <span class="c1"># selection_color=&#39;blue&#39;,</span>
+        <span class="c1"># color=&quot;white&quot;,</span>
         <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
         <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># df[&quot;rt_values&quot;] *= 60</span>
+    <span class="n">scatter</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
+        <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;zoom_in&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom_out&#39;</span><span class="p">],</span>
+        <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">_disable_logo</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">scatter</span></div>
 
@@ -393,7 +438,7 @@
         <span class="n">line_width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">yformatter</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="n">shared_axes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">hover</span><span class="p">]</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">hover</span><span class="p">,</span> <span class="s1">&#39;zoom_in&#39;</span><span class="p">,</span> <span class="s1">&#39;zoom_out&#39;</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">timstof_data</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;MsMsType == 0&#39;</span><span class="p">)[[</span>
         <span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="s1">&#39;SummedIntensities&#39;</span><span class="p">]</span>
@@ -406,10 +451,15 @@
     <span class="p">)</span><span class="o">.</span><span class="n">opts</span><span class="p">(</span>
         <span class="n">tic_opts</span><span class="p">,</span>
         <span class="n">opts</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;TIC - &quot;</span> <span class="o">+</span> <span class="n">title</span>
-        <span class="p">)</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;TIC - &quot;</span> <span class="o">+</span> <span class="n">title</span><span class="p">,</span>
+            <span class="n">hooks</span><span class="o">=</span><span class="p">[</span><span class="n">_disable_logo</span><span class="p">],</span>
+        <span class="p">),</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">tic</span></div>
+
+
+<span class="k">def</span> <span class="nf">_disable_logo</span><span class="p">(</span><span class="n">plot</span><span class="p">,</span> <span class="n">element</span><span class="p">):</span>
+    <span class="n">plot</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">logo</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 
            </div>
