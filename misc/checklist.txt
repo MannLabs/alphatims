@@ -1,21 +1,21 @@
-Tests passing?
-  python -m unittest tests.test_bruker
-
-Docs updated?
-  cd docs
-  make html
-
-Tutorial/manual/performance/README updated?
-
-No TODOs left?
-
 Versions updated
   alphatims/__init__.py
-  misc/one_click_windows/alphatims_innoinstaller.iss
   misc/one_click_linux/control
   misc/one_click_macos/distribution.xml
   misc/one_click_macos/Info.plist (2x)
   misc/one_click_macos/create_installer_macos.sh (2x)
+  misc/one_click_windows/alphatims_innoinstaller.iss
+
+No TODOs left?
+
+Tests passing?
+  python -m unittest tests.test_bruker
+
+Tutorial/manual/performance/README updated?
+
+Docs updated?
+  cd docs
+  make html
 
 Merged into master branch?
 
