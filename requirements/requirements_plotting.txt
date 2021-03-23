@@ -1,6 +1,6 @@
 bokeh==2.2.3
 datashader==0.11.1
-holoviews==1.13.5
+holoviews==1.14.2
 holoviz==0.11.6
 panel==0.10.3
 selenium==3.141.0
