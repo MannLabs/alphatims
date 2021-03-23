@@ -245,11 +245,11 @@ Typical time performance statistics on data in-/output and slicing of standard [
 
 | type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)         |
 |------|----------|---------------|-------------------|--------|----------------------------|
-| DDA  | 6 min    | 214,172,697   | 1.85 s / 537 ms   | 581 ms | 2.08 / 38.7 / 29.8 / 93.9  |
-| DIA  | 6 min    | 158,552,099   | 1.35 s / 397 ms   | 446 ms | 7.94 / 27.8 / 788 / 115    |
-| DDA  | 21 min   | 295,251,252   | 3.92 s / 939 ms   | 833 ms | 2.48 / 72.9 / 124 / 213    |
-| DIA  | 21 min   | 730,564,765   | 6.82 s / 2.35 s   | 1.87 s | 1.08 / 142 / 6210 / 484    |
-| DDA  | 120 min  | 2,074,019,899 | 25.7 s / 10.8 s   | 5.56 s | 0.874 / 422 / 706 / 1380   |
+| DDA  | 6 min    | 214,172,697   | 1.48 s / 445 ms   | 569 ms | 1.85 / 48 / 27.1 / 89.7  |
+| DIA  | 6 min    | 158,552,099   | 1.06 s / 295 ms   | 409 ms | 7.35 / 24.1 / 649 / 110    |
+| DDA  | 21 min   | 295,251,252   | 3.07 s / 755 ms   | 779 ms | 2.17 / 68.3 / 106 / 181    |
+| DIA  | 21 min   | 730,564,765   | 5.24 s / 1.90 s   | 1.79 s | 0.860 / 123 / 4910 / 392    |
+| DDA  | 120 min  | 2,074,019,899 | 23.2 s / 10.1 s   | 4.94 s | 0.671 / 338 / 557 / 1100   |
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
