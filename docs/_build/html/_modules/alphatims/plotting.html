@@ -260,15 +260,14 @@
         <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">x_ticks</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">intensities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">intensities</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">non_zeros</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">non_zeros</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
         <span class="k">if</span> <span class="n">remove_zeros</span><span class="p">:</span>
             <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">non_zeros</span><span class="p">]</span>
             <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span><span class="p">[</span><span class="n">non_zeros</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">trim</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">non_zeros</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">non_zeros</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span>
             <span class="n">x_ticks</span> <span class="o">=</span> <span class="n">x_ticks</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
             <span class="n">intensities</span> <span class="o">=</span> <span class="n">intensities</span><span class="p">[</span><span class="n">start</span><span class="p">:</span> <span class="n">end</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">()</span>
     <span class="n">plot</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span>
         <span class="p">(</span><span class="n">x_ticks</span><span class="p">,</span> <span class="n">intensities</span><span class="p">),</span>
         <span class="n">x_axis_label</span><span class="p">,</span>
