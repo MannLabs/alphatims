@@ -106,15 +106,14 @@ def line_plot(
         x_ticks = np.empty(0, dtype=x_ticks.dtype)
         intensities = np.empty(0, dtype=intensities.dtype)
     else:
-        start = max(0, non_zeros[0] - 1)
-        end = non_zeros[-1] + 2
         if remove_zeros:
             x_ticks = x_ticks[non_zeros]
             intensities = intensities[non_zeros]
         if trim:
+            start = max(0, non_zeros[0] - 1)
+            end = non_zeros[-1] + 2
             x_ticks = x_ticks[start: end]
             intensities = intensities[start: end]
-    print()
     plot = hv.Curve(
         (x_ticks, intensities),
         x_axis_label,
