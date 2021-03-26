@@ -35,7 +35,7 @@ setuptools.setup(
     project_urls=package2install.__urls__,
     keywords=package2install.__keywords__,
     classifiers=package2install.__classifiers__,
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=("tests",)),
     include_package_data=True,
     entry_points={
         "console_scripts": package2install.__console_scripts__,
