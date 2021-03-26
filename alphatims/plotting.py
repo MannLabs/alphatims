@@ -109,7 +109,7 @@ def line_plot(
         if remove_zeros:
             x_ticks = x_ticks[non_zeros]
             intensities = intensities[non_zeros]
-        if trim:
+        elif trim:
             start = max(0, non_zeros[0] - 1)
             end = non_zeros[-1] + 2
             x_ticks = x_ticks[start: end]
