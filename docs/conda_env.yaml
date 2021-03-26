@@ -1,0 +1,20 @@
+name: test
+channels:
+  - defaults
+dependencies:
+  - ca-certificates=2021.1.19=hecd8cb5_1
+  - certifi=2020.12.5=py38hecd8cb5_0
+  - libcxx=10.0.0=1
+  - libffi=3.3=hb1e8313_2
+  - ncurses=6.2=h0a44026_1
+  - openssl=1.1.1k=h9ed2024_0
+  - pip=20.2.4=py38hecd8cb5_0
+  - python=3.8.8=h88f2d9e_4
+  - readline=8.1=h9ed2024_0
+  - setuptools=52.0.0=py38hecd8cb5_0
+  - sqlite=3.35.2=hce871da_0
+  - tk=8.6.10=hb0a8c7a_0
+  - wheel=0.36.2=pyhd3eb1b0_0
+  - xz=5.2.5=h1de35cc_0
+  - zlib=1.2.11=h1de35cc_3
+prefix: /Users/swillems/miniconda3/envs/test
