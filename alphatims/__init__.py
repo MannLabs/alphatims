@@ -2,11 +2,11 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.1.210323"
+__version__ = "0.1.210326"
 __license__ = "Apache"
 __description__ = "A Python package for Bruker TimsTOF raw data accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
-__author_email__ = "willems@biochem.mpg.de"
+__author_email__ = "opensource@alphapept.com"
 __github__ = "https://github.com/MannLabs/alphatims"
 __keywords__ = [
     "ms",
