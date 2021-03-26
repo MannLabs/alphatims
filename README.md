@@ -113,7 +113,7 @@ git clone https://github.com/MannLabs/alphatims.git
 This creates a new AlphaTims subfolder in the current directory. *The following commands assume you did not perform an additional `cd alphatims` to change the current directory to this subfolder*. Next, AlphaTims and all [dependancies](requirements) need to be installed. To take advantage of all features and allow development, this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
-pip install -e './alphatims[plotting,develop]'
+pip install -e './alphatims[plotting,development]'
 ```
 
 ***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
