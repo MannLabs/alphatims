@@ -76,16 +76,16 @@ AlphaTims can be installed in an existing Python 3.8 environment with a single `
 pip install alphatims
 ```
 
-Alternatively, some basic plotting functions and the complete GUI can be installed with the command:
+Alternatively, some basic plotting functions and the complete GUI can be installed with the command (due to some dependancy conflicts, you might need to run `pip install pip==20.2` first):
+
 ```bash
 pip install alphatims[plotting]
 ```
 
-This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command `conda install git -y`. When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
-<!-- TODO update once on pypi -->
+When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
 
 ```bash
-pip install alphatims --upgrade
+pip install alphatims[plotting] --upgrade
 ```
 
 ### Developer
