@@ -2,19 +2,19 @@ name: test
 channels:
   - defaults
 dependencies:
-  - ca-certificates=2021.1.19
-  - certifi=2020.12.5
-  - libcxx=10.0.0
-  - libffi=3.3
-  - ncurses=6.2
-  - openssl=1.1.1k
-  - pip=20.2.4
-  - python=3.8.8
-  - readline=8.1
-  - setuptools=52.0.0
-  - sqlite=3.35.2
-  - tk=8.6.10
-  - wheel=0.36.2
-  - xz=5.2.5
-  - zlib=1.2.11
+  - ca-certificates
+  - certifi
+  - libcxx
+  - libffi
+  - ncurses
+  - openssl
+  - pip=20.2
+  - python
+  - readline
+  - setuptools
+  - sqlite
+  - tk
+  - wheel
+  - xz
+  - zlib
 prefix: /Users/swillems/miniconda3/envs/test
