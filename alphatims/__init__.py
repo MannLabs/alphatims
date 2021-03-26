@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.1.210317"
+__version__ = "0.1.210323"
 __license__ = "Apache"
 __description__ = "A Python package for Bruker TimsTOF raw data accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
@@ -18,7 +18,7 @@ __keywords__ = [
 ]
 __python_version__ = ">=3.8,<3.9"
 __classifiers__ = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",

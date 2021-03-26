@@ -133,7 +133,6 @@ dmypy.json
 alphatims/logs
 *sandbox*
 misc/releases/*
-!docs/_build
 misc/one_click_macos/alphatims.pkg
 misc/one_click_macos/resources/LICENSE.txt
 misc/one_click_macos/resources/alpha_logo.png

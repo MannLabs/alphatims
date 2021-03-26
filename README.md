@@ -3,7 +3,7 @@
 ---
 # AlphaTims
 
-AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann).
+AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann). To enable all hyperlinks in this document, please view it at [https://github.com/MannLabs/alphatims](https://github.com/MannLabs/alphatims).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -37,7 +37,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
 ---
 ## About
 
-High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available and open-source. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
+High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available, open-source and available on all major Operating Systems. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
 
 ---
 ## License
@@ -60,9 +60,9 @@ There are three different types of installation possible:
 
 The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
-* [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_windows.exe)
-* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_macos.pkg)
-* [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_installer_linux.deb)
+* [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_windows.exe)
+* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_macos.pkg)
+* [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_linux.deb)
 
 ***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
 
@@ -73,19 +73,19 @@ Older releases remain available on the [release page](https://github.com/MannLab
 AlphaTims can be installed in an existing Python 3.8 environment with a single `bash` command. *This `bash` command can also be run directly from within a Jupyter notebook by prepending it with a `!`*. The lightweight version of AlphaTims that purely focuses on data accession (no plotting without additional packages) can be installed with:
 
 ```bash
-pip install git+https://github.com/MannLabs/alphatims.git
+pip install alphatims
 ```
 
 Alternatively, some basic plotting functions and the complete GUI can be installed with the command:
 ```bash
-pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[plotting]'
+pip install alphatims[plotting]
 ```
 
 This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command `conda install git -y`. When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
 <!-- TODO update once on pypi -->
 
 ```bash
-pip install git+https://github.com/MannLabs/alphatims.git --upgrade
+pip install alphatims --upgrade
 ```
 
 ### Developer
@@ -150,11 +150,11 @@ Single-run LC-MS analysis was executed via an [Evosep One LC system (Evosep)](ht
 
 ### DDA
 
-A ddaPASEF dataset (803 Mb) is available for [download here](https://datashare.biochem.mpg.de/s/s7zuTMilCOkYb2K/download). Each topN acquisition cycle consisted of 10 PASEF MS/MS scans, and the accumulation and ramp times were set to 100 ms. Single-charged precursors were excluded using a polygon filter in the m/z-ion mobility plane. Furthermore, all precursors, which reached the target value of 20000, were excluded for 0.4 min from the acquisition. Precursors were isolated with a quadrupole window of 2 Th for m/z <700 and 3 Th for m/z >700.
+A ddaPASEF dataset is available for [download from the release page](https://github.com/MannLabs/alphatims/releases/download/0.1.210317/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d.zip). Each topN acquisition cycle consisted of 10 PASEF MS/MS scans, and the accumulation and ramp times were set to 100 ms. Single-charged precursors were excluded using a polygon filter in the m/z-ion mobility plane. Furthermore, all precursors, which reached the target value of 20000, were excluded for 0.4 min from the acquisition. Precursors were isolated with a quadrupole window of 2 Th for m/z <700 and 3 Th for m/z >700.
 
 ### DIA
 
-The same sample was also acquired with diaPASEF (1.96 Gb) and is also available for [download here](https://datashare.biochem.mpg.de/s/jHph7AmaKivDSZJ/download). The "high-speed" method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
+The same sample was also acquired with diaPASEF and is also available for [download from the release page](https://github.com/MannLabs/alphatims/releases/download/0.1.210317/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d.zip). The "high-speed" method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
 ---
 ## Usage
@@ -164,6 +164,8 @@ There are three ways to use AlphaTims:
 * [**GUI:**](#gui) This allows to browse and visualize the data.
 * [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
 * [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
+
+The first time you use a fresh installation of AlphaTims is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
 
@@ -224,8 +226,7 @@ For this particular command, the line `Usage: alphatims export hdf [OPTIONS] BRU
 
 ### Python and Jupyter notebooks
 
-AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [API](docs/_build/html/index.html). (NOTE: while the repo is private, html pages can not be safely rendered on e.g. GitHub pages or ReadTheDocs. For now it is best to download/clone/fork the AlphaTims repository and open `docs/_build/html/index.html` in a local browser.)
-<!-- TODO update once public -->
+AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [Read the Docs API](https://alphatims.readthedocs.io/en/latest/index.html).
 
 A brief [Jupyter notebook tutorial](nbs/tutorial.ipynb) on how to use the API is also present in the [nbs folder](nbs). When running locally it provides interactive plots, which are not rendered on GitHub. Instead, they are available as individual html pages in the [nbs folder](nbs).
 
@@ -245,11 +246,11 @@ Typical time performance statistics on data in-/output and slicing of standard [
 
 | type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)         |
 |------|----------|---------------|-------------------|--------|----------------------------|
-| DDA  | 6 min    | 214,172,697   | 1.85 s / 537 ms   | 581 ms | 2.08 / 38.7 / 29.8 / 93.9  |
-| DIA  | 6 min    | 158,552,099   | 1.35 s / 397 ms   | 446 ms | 7.94 / 27.8 / 788 / 115    |
-| DDA  | 21 min   | 295,251,252   | 3.92 s / 939 ms   | 833 ms | 2.48 / 72.9 / 124 / 213    |
-| DIA  | 21 min   | 730,564,765   | 6.82 s / 2.35 s   | 1.87 s | 1.08 / 142 / 6210 / 484    |
-| DDA  | 120 min  | 2,074,019,899 | 25.7 s / 10.8 s   | 5.56 s | 0.874 / 422 / 706 / 1380   |
+| DDA  | 6 min    | 214,172,697   | 1.48 s / 445 ms   | 569 ms | 1.85 / 48 / 27.1 / 89.7  |
+| DIA  | 6 min    | 158,552,099   | 1.06 s / 295 ms   | 409 ms | 7.35 / 24.1 / 649 / 110    |
+| DDA  | 21 min   | 295,251,252   | 3.07 s / 755 ms   | 779 ms | 2.17 / 68.3 / 106 / 181    |
+| DIA  | 21 min   | 730,564,765   | 5.24 s / 1.90 s   | 1.79 s | 0.860 / 123 / 4910 / 392    |
+| DDA  | 120 min  | 2,074,019,899 | 23.2 s / 10.1 s   | 4.94 s | 0.671 / 338 / 557 / 1100   |
 
 All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
 
@@ -280,11 +281,11 @@ Common installation/usage issues include:
 * **Always make sure you have activated the AlphaTims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install ./alphatims`) could solve dependancy conflicts.
-* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,develop]'`.
-* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e ./alphatims`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install alphatims`) could solve dependancy conflicts.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,development]'`.
+* **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
-* Exporting PNG images with the CLI or Python package might not work out-of-the-box. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
+* **Exporting PNG images with the CLI or Python package might not work out-of-the-box**. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
 
 ---
 ## How it works

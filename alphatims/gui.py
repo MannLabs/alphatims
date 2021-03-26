@@ -35,6 +35,7 @@ BROWSER = pn.Row(
     PLOTS,
     sizing_mode='stretch_width',
 )
+INTENSITY_THRESHOLD = 10**7
 
 # EXTENSIONS
 css = '''
@@ -921,7 +922,7 @@ strike_threshold = pn.widgets.IntInput(
     # name="Strike count upper limit",
     step=1,
     width=110,
-    value=10000000,
+    value=INTENSITY_THRESHOLD,
     margin=(0, 0, 0, 14)
 )
 strike_estimate = pn.widgets.IntInput(
@@ -1196,6 +1197,15 @@ def init_settings(*args):
     global STACK
     upload_data()
     if DATASET:
+        with STACK.lock():
+            select_ms1_precursors.value = True
+            if select_ms2_fragments.value:
+                select_ms2_fragments.value = False
+                update_toggle_fragments()
+            plot1_x_axis.value = 'm/z, Th'
+            plot1_y_axis.value = 'Inversed IM, V·s·cm\u207B\u00B2'
+            plot2_x_axis.value = 'm/z, Th'
+            strike_threshold.value = INTENSITY_THRESHOLD
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, int(DATASET.intensity_max_value)),
@@ -1207,8 +1217,8 @@ def init_settings(*args):
                 "show_fragments": select_ms2_fragments.value,
                 "show_precursors": select_ms1_precursors.value,
                 "plot_axis": (
+                    plot1_x_axis.value,
                     plot1_y_axis.value,
-                    plot2_x_axis.value,
                     plot2_x_axis.value,
                 ),
             }
@@ -1335,7 +1345,7 @@ def update_frame_with_player(*args):
     watch=True,
 )
 def update_plots_and_settings(*args):
-    if DATASET:
+    if DATASET and not STACK.is_locked:
         updated_option, updated_value = STACK.update(
             "show_fragments",
             select_ms2_fragments.value

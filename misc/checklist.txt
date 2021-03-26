@@ -1,40 +1,47 @@
-Tests passing?
-  python -m unittest tests.test_bruker
-
-Docs updated?
-  cd docs
-  make html
-
-Tutorial/manual/performance/README updated?
-
-No TODOs left?
-
 Versions updated
   alphatims/__init__.py
-  misc/one_click_windows/alphatims_innoinstaller.iss
   misc/one_click_linux/control
   misc/one_click_macos/distribution.xml
   misc/one_click_macos/Info.plist (2x)
   misc/one_click_macos/create_installer_macos.sh (2x)
+  misc/one_click_windows/alphatims_innoinstaller.iss
+
+No TODOs left?
+
+Tests passing?
+  python -m unittest tests.test_bruker
+
+Tutorial/manual/performance/README updated?
+
+Docs updated?
+  cd docs
+  make html
 
 Merged into master branch?
 
 ReadTheDocs up-to-date?
   https://docs.readthedocs.io/en/stable/
 
-PyPi up-to-date?
-  https://realpython.com/pypi-publish-python-package/
-
 Releases for all Windows, MacOS and Linux?
 
   cd misc/one_click_macos
   source create_installer_macos.sh
-  # mv dist/alphatims_installer_windows.pkg ../releases/VERSION
+  # mv dist/alphatims_gui_installer_windows.pkg ../releases/VERSION
 
   cd misc/one_click_LINUX
   source create_installer_linux.sh
-  # mv dist/alphatims_installer_windows.deb ../releases/VERSION
+  # mv dist/alphatims_gui_installer_windows.deb ../releases/VERSION
 
   cd misc/one_click_windows
   create_installer_windows.bat
-  # mv dist/alphatims_installer_windows.exe ../releases/VERSION
+  # mv dist/alphatims_gui_installer_windows.exe ../releases/VERSION
+
+PyPi up-to-date?
+  # https://realpython.com/pypi-publish-python-package/
+  python setup.py sdist bdist_wheel
+  twine check dist/*
+  twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+  conda create -n alphatims_pip_test python=3.8 pip=20.2 -y
+  conda activate alphatims_pip_test
+  pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'alphatims[plotting]'
+  twine upload dist/*

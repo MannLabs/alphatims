@@ -223,11 +223,12 @@ def check_github_version() -> str:
                     github_version = line.split()[2]
                     if github_version != alphatims.__version__:
                         logging.info(
-                            f"A newer version of AlphaTims is available at "
-                            f"GitHub: {github_version}. Update with `pip "
-                            "install "
-                            "git+https://github.com/MannLabs/alphatims.git "
-                            "--upgrade`"
+                            f"You are currently using AlphaTims version "
+                            f"{alphatims.__version__}. "
+                            f"However, the latest version of AlphaTims on "
+                            f"GitHub is {github_version}. Checkout "
+                            "https://github.com/MannLabs/alphatims.git "
+                            "for instructions on how to update AlphaTims..."
                         )
                         logging.info("")
                     else:
