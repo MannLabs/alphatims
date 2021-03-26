@@ -783,6 +783,7 @@ class TimsTOF(object):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
             )
+            self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         if not hasattr(self, "version"):
             self._version = "none"
         if self.version != alphatims.__version__:
