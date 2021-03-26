@@ -15,13 +15,13 @@ formats: all
 conda:
   environment: docs/conda_env.yaml
 
-# Optionally set the version of Python and requirements required to build your docs
-python:
-  version: 3.8
-  install:
-    - requirements: requirements/requirements.txt
-    - method: pip
-      path: .
-      extra_requirements:
-        - plotting
-        - development
+# # Optionally set the version of Python and requirements required to build your docs
+# python:
+#   version: 3.8
+#   install:
+#     - requirements: requirements/requirements.txt
+#     - method: pip
+#       path: .
+#       extra_requirements:
+#         - plotting
+#         - development
