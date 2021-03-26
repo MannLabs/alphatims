@@ -1,10 +1,9 @@
-name: test
+name: alphatims_docs
 channels:
   - defaults
 dependencies:
   - ca-certificates
   - certifi
-  - libcxx
   - libffi
   - ncurses
   - openssl
@@ -17,4 +16,3 @@ dependencies:
   - wheel
   - xz
   - zlib
-prefix: /Users/swillems/miniconda3/envs/test
