@@ -1,11 +1,13 @@
 Versions updated
   # https://pypi.org/project/bumpversion/
-  alphatims/__init__.py
-  misc/one_click_linux/control
-  misc/one_click_macos/distribution.xml
-  misc/one_click_macos/Info.plist (2x)
-  misc/one_click_macos/create_installer_macos.sh (2x)
-  misc/one_click_windows/alphatims_innoinstaller.iss
+  # alphatims/__init__.py
+  # misc/one_click_linux/control
+  # misc/one_click_macos/distribution.xml
+  # misc/one_click_macos/Info.plist (2x)
+  # misc/one_click_macos/create_installer_macos.sh (2x)
+  # misc/one_click_windows/alphatims_innoinstaller.iss
+  cd misc
+  bumpversion --new-version VERSION --config-file bumpversion.cfg
 
 No TODOs left?
 
