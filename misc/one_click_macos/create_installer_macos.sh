@@ -18,6 +18,6 @@ cp Info.plist dist/alphatims/Contents
 cp alphatims_terminal dist/alphatims/Contents/MacOS
 cp ../../LICENSE.txt Resources/LICENSE.txt
 cp ../alpha_logo.png Resources/alpha_logo.png
-pkgbuild --root dist/alphatims --identifier org.alphatims.0.1.210326 --version 0.1.210326 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg
+pkgbuild --root dist/alphatims --identifier org.alphatims.0.1.210330 --version 0.1.210330 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg
 productbuild --distribution distribution.xml --resources Resources --package-path alphatims.pkg dist/alphatims_gui_installer_macos.pkg
 # productsign --sign "Developer ID Installer: John Doe" dist/alphatims_gui_installer_macos.pkg dist/alphatims_gui_installer_macos_signed.pkg
