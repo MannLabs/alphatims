@@ -1,3 +1,4 @@
+#!bash
 rm -rf dist
 rm -rf build
 conda env remove -n alphatimsinstaller
