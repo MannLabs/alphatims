@@ -9,7 +9,7 @@ conda activate alphatimsinstaller
 # brew install freetype
 pip install '../../.[plotting]'
 pip install pyinstaller==4.2
-pyinstaller ../pyinstaller/alphatims.spec -y
+python -m pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 mkdir -p dist/alphatims/Contents/Resources
 cp ../alpha_logo.icns dist/alphatims/Contents/Resources
