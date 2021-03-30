@@ -14,14 +14,14 @@ Tests passing?
 
 Tutorial/manual/performance/README updated?
 
-Docs updated?
-  cd docs
-  make html
-
 Merged into master branch?
 
 ReadTheDocs up-to-date?
-  https://docs.readthedocs.io/en/stable/
+  Docs updated?
+    cd docs
+    make html
+  # https://docs.readthedocs.io/en/stable/
+  https://alphatims.readthedocs.io/en/latest/
 
 Releases for all Windows, MacOS and Linux?
 
