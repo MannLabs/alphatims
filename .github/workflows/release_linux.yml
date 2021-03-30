@@ -43,8 +43,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd misc/one_click_linux
-          chmod 777 create_installer_linux.sh
-          ./create_installer_linux.sh
+          bash create_installer_linux.sh
       - name: Upload Linux Installer
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
