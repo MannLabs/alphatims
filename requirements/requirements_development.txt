@@ -1,11 +1,7 @@
-ipykernel==5.5.0
-rise==5.7.1
 jupyter==1.0.0
-Sphinx==3.5.3
 pyinstaller==4.2
 autodocsumm==0.2.2
 sphinx-rtd-theme==0.5.1
-matplotlib==3.3.4
 plotly==4.12.0
 seaborn==0.11.0
 twine==3.4.1
