@@ -188,7 +188,13 @@ def show_python_info() -> None:
     }
     requirements = importlib.metadata.requires("alphatims")
     for requirement in requirements:
-        module_name = requirement.split()[0].split(";")[0].split("=")[0]
+        parts = requirement.split(";")
+        if len(parts) > 1:
+            if "development" in parts[1]:
+                continue
+            if "win32" in parts[1]:
+                continue
+        module_name = parts[0].split("=")[0]
         try:
             module_version = importlib.metadata.version(module_name)
         except importlib.metadata.PackageNotFoundError:
