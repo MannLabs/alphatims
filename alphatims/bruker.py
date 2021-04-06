@@ -955,7 +955,8 @@ class TimsTOF(object):
             f"Writing TimsTOF data to {full_file_name}."
         )
         self._compressed = compress
-        with h5py.File(full_file_name, hdf_mode, swmr=True) as hdf_root:
+        with h5py.File(full_file_name, hdf_mode) as hdf_root:
+            # hdf_root.swmr_mode = True
             alphatims.utils.create_hdf_group_from_dict(
                 hdf_root.create_group("raw"),
                 self.__dict__,
