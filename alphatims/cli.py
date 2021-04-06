@@ -266,6 +266,7 @@ def export_hdf(**kwargs):
 
 @export.command("mgf", help="Export BRUKER_D_FOLDER as (profile) mgf file.")
 @cli_option("bruker_d_folder", as_argument=True)
+@cli_option("centroiding_window")
 @cli_option("disable_overwrite")
 @cli_option("output_folder")
 @cli_option("log_file")
@@ -285,6 +286,7 @@ def export_mgf(**kwargs):
             overwrite=not parameters["disable_overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.mgf",
+            centroiding_window=parameters["centroiding_window"]
         )
 
 

@@ -371,6 +371,12 @@ save_mgf_overwrite = pn.widgets.Checkbox(
     width=80,
     margin=(10, 10, 0, 0)
 )
+save_mgf_centroid = pn.widgets.Checkbox(
+    name='centroid',
+    value=False,
+    width=80,
+    margin=(10, 10, 0, 0)
+)
 save_mgf_button = pn.widgets.Button(
     name='Save as MGF',
     button_type='default',
@@ -886,7 +892,7 @@ export_data_card = pn.Card(
         # TODO: weird spacing?
         pn.Column(
             save_mgf_overwrite,
-            None,
+            save_mgf_centroid,
             # align="center",
             margin=(0, 50, 0, -100),
         ),
@@ -1180,6 +1186,7 @@ def save_mgf(*args):
             overwrite=save_mgf_overwrite.value,
             directory=directory,
             file_name=os.path.basename(save_mgf_path.value),
+            centroiding_window=5 if save_mgf_centroid.value else 0
         )
         save_mgf_message.alert_type = 'success'
         save_mgf_message.object = '#### The MGF file is successfully saved.'
