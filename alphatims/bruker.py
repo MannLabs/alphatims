@@ -1538,6 +1538,7 @@ class TimsTOF(object):
     def index_precursors(
         self,
         centroiding_window: int = 0,
+        keep_n_most_abundant_peaks: int = -1,
     ) -> tuple:
         """Retrieve all MS2 spectra acquired with DDA.
 
@@ -1551,6 +1552,10 @@ class TimsTOF(object):
             The centroiding window to use.
             If 0, no centroiding is performed.
             Default is 0.
+        keep_n_most_abundant_peaks : int
+            Keep the n most abundant peaks.
+            If -1, all peaks are retained.
+            Default is -1.
 
         Returns
         -------
@@ -1609,6 +1614,15 @@ class TimsTOF(object):
                 spectrum_intensity_values,
                 centroiding_window,
             )
+        if keep_n_most_abundant_peaks > -1:
+            filter_spectra_by_abundant_peaks(
+                range(1, self.precursor_max_index),
+                spectrum_indptr,
+                spectrum_counts,
+                spectrum_tof_indices,
+                spectrum_intensity_values,
+                keep_n_most_abundant_peaks,
+            )
         new_spectrum_indptr = np.empty_like(spectrum_counts)
         new_spectrum_indptr[1:] = np.cumsum(spectrum_counts[:-1])
         new_spectrum_indptr[0] = 0
@@ -1642,6 +1656,7 @@ class TimsTOF(object):
         file_name: str,
         overwrite: bool = False,
         centroiding_window: int = 5,
+        keep_n_most_abundant_peaks: int = -1,
     ):
         """Save profile spectra from this TimsTOF object as an mgf file.
 
@@ -1659,6 +1674,10 @@ class TimsTOF(object):
             The centroiding window to use.
             If 0, no centroiding is performed.
             Default is 5.
+        keep_n_most_abundant_peaks : int
+            Keep the n most abundant peaks.
+            If -1, all peaks are retained.
+            Default is -1.
 
         Returns
         -------
@@ -1686,7 +1705,10 @@ class TimsTOF(object):
             spectrum_indptr,
             spectrum_tof_indices,
             spectrum_intensity_values,
-        ) = self.index_precursors(centroiding_window)
+        ) = self.index_precursors(
+            centroiding_window=centroiding_window,
+            keep_n_most_abundant_peaks=keep_n_most_abundant_peaks,
+        )
         pepmasses = self.precursors.MonoisotopicMz.values
         charges = self.precursors.Charge.values
         rtinseconds = self.rt_values[self.precursors.Parent.values]
@@ -1820,7 +1842,7 @@ def centroid_spectra(
     spectrum_intensity_values: np.ndarray,
     window_size: int,
 ):
-    """Smoothen and centroid profile spectra (inplace operation).
+    """Smoothen and centroid a profile spectrum (inplace operation).
 
     IMPORTANT NOTE: This function will overwrite all input arrays.
 
@@ -1886,6 +1908,55 @@ def centroid_spectra(
         dtype=spectrum_intensity_values.dtype
     )
     spectrum_counts[index] = len(maxima)
+
+
+@alphatims.utils.pjit
+def filter_spectra_by_abundant_peaks(
+    index: int,
+    spectrum_indptr: np.ndarray,
+    spectrum_counts: np.ndarray,
+    spectrum_tof_indices: np.ndarray,
+    spectrum_intensity_values: np.ndarray,
+    keep_n_most_abundant_peaks: int,
+):
+    """Filter a spectrum to retain only the most abundant peaks.
+
+    IMPORTANT NOTE: This function will overwrite all input arrays.
+
+    IMPORTANT NOTE: This function is decorated with alphatims.utils.pjit.
+    The first argument is thus expected to be provided as an iterable
+    containing ints instead of a single int.
+
+    Parameters
+    ----------
+    index : int
+        The push index whose intensity_values and tof_indices will be
+        centroided.
+    spectrum_indptr : np.int64[:]
+        An index pointer array defining the (untrimmed) spectrum boundaries.
+    spectrum_counts : np. int64[:]
+        The original array defining how many distinct tof indices each
+        spectrum has.
+    spectrum_tof_indices : np.uint32[:]
+        The original array containing tof indices.
+    spectrum_intensity_values : np.float64[:]
+        The original array containing intensity values.
+    keep_n_most_abundant_peaks : int
+        Keep only this many abundant peaks.
+    """
+    start = spectrum_indptr[index]
+    end = start + spectrum_counts[index]
+    if end - start <= keep_n_most_abundant_peaks:
+        return
+    mzs = spectrum_tof_indices[start: end]
+    ints = spectrum_intensity_values[start: end]
+    selected_indices = np.sort(
+        np.argsort(ints)[-keep_n_most_abundant_peaks:]
+    )
+    count = len(selected_indices)
+    spectrum_tof_indices[start: start + count] = mzs[selected_indices]
+    spectrum_intensity_values[start: start + count] = ints[selected_indices]
+    spectrum_counts[index] = count
 
 
 @alphatims.utils.pjit
