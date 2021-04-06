@@ -341,6 +341,11 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
   * fragment clusters (i.e. pseudo MSMS spectra)
 
 ---
+## Citing AlphaTims
+
+We are actively working on a manuscript for publication. Please check back here in a little while for updates!
+
+---
 ## How to contribute
 
 All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md)

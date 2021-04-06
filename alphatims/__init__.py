@@ -4,7 +4,7 @@
 __project__ = "alphatims"
 __version__ = "0.1.210330"
 __license__ = "Apache"
-__description__ = "A Python package for Bruker TimsTOF raw data accession and visualization"
+__description__ = "A Python package to index Bruker TimsTOF raw data for fast and easy accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
 __author_email__ = "opensource@alphapept.com"
 __github__ = "https://github.com/MannLabs/alphatims"
@@ -14,7 +14,8 @@ __keywords__ = [
     "bruker",
     "timsTOF",
     "proteomics",
-    "bioinformatics"
+    "bioinformatics",
+    "data indexing",
 ]
 __python_version__ = ">=3.8,<3.9"
 __classifiers__ = [
@@ -22,9 +23,7 @@ __classifiers__ = [
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 __console_scripts__ = [
@@ -32,7 +31,9 @@ __console_scripts__ = [
 ]
 __urls__ = {
     "Mann Labs at MPIB": "https://www.biochem.mpg.de/mann",
-    "GitHub:": __github__
+    "GitHub": __github__,
+    "ReadTheDocs": "https://alphatims.readthedocs.io/en/latest/",
+    "PyPi": "https://pypi.org/project/alphatims/",
 }
 __requirements__ = {
     "": "requirements/requirements.txt",

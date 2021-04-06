@@ -7,7 +7,7 @@ Versions updated
   # misc/one_click_macos/create_installer_macos.sh (2x)
   # misc/one_click_windows/alphatims_innoinstaller.iss
   cd misc
-  bumpversion --new-version VERSION --config-file bumpversion.cfg
+  bumpversion patch --new-version VERSION --config-file bumpversion.cfg
 
 No TODOs left?
 
@@ -31,7 +31,7 @@ Releases for all Windows, MacOS and Linux?
   source create_installer_macos.sh
   # mv dist/alphatims_gui_installer_macos.pkg ../releases/VERSION
 
-  cd misc/one_click_LINUX
+  cd misc/one_click_linux
   source create_installer_linux.sh
   # mv dist/alphatims_gui_installer_linux.deb ../releases/VERSION
 
