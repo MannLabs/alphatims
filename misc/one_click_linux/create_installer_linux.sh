@@ -1,3 +1,4 @@
+#!bash
 rm -rf dist
 rm -rf build
 conda env remove -n alphatimsinstaller
@@ -9,7 +10,7 @@ conda activate alphatimsinstaller
 # brew install freetype
 pip install '../../.[plotting]'
 pip install pyinstaller==4.2
-pyinstaller ../pyinstaller/alphatims.spec -y
+python -m pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 # mv dist/alphatims dist/AlphaTims
 mkdir -p dist/alphatims_gui_installer_linux/usr/local/bin

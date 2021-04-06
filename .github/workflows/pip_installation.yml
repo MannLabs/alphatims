@@ -5,8 +5,8 @@ name: Pip installation
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
+  # push:
+  #   branches: [ master ]
   pull_request:
     branches: [ master, develop ]
 
@@ -41,5 +41,5 @@ jobs:
         run: |
           conda create -n alphatims python=3.8 pip=20.2 -y
           conda activate alphatims
-          pip install -e '.[cli,gui,nbs]'
+          pip install -e '.[plotting,development]'
           alphatims
