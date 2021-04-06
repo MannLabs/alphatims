@@ -40,4 +40,4 @@ __requirements__ = {
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
 }
-__strict_requirements__ = True
+__requirements_style__ = None

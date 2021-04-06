@@ -76,16 +76,16 @@ AlphaTims can be installed in an existing Python 3.8 environment with a single `
 pip install alphatims
 ```
 
-Alternatively, some basic plotting functions and the complete GUI can be installed with the command (due to some dependancy conflicts, you might need to run `pip install pip==20.2` first):
+Alternatively, some basic plotting functions and the complete GUI can be installed with the command (due to potential dependancy conflicts, you might need to run `pip install pip==20.2` first. Also note the double quotes `"`):
 
 ```bash
-pip install alphatims[plotting]
+pip install "alphatims[plotting]"
 ```
 
 When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
 
 ```bash
-pip install alphatims[plotting] --upgrade
+pip install "alphatims[plotting]" --upgrade
 ```
 
 ### Developer
@@ -113,7 +113,7 @@ git clone https://github.com/MannLabs/alphatims.git
 This creates a new AlphaTims subfolder in the current directory. *The following commands assume you did not perform an additional `cd alphatims` to change the current directory to this subfolder*. Next, AlphaTims and all [dependancies](requirements) need to be installed. To take advantage of all features and allow development, this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
-pip install -e './alphatims[plotting,development]'
+pip install -e "./alphatims[plotting,development]"
 ```
 
 ***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
@@ -282,7 +282,7 @@ Common installation/usage issues include:
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install alphatims`) could solve dependancy conflicts.
-* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,development]'`.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting,development]"`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
 * **Exporting PNG images with the CLI or Python package might not work out-of-the-box**. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
