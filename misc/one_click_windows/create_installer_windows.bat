@@ -1,7 +1,7 @@
 call rmdir dist /s /q
 call rmdir build /s /q
 call conda env remove -n alphatimsinstaller
-call conda create -n alphatimsinstaller python=3.8 pip=20.2 -y
+call conda create -n alphatimsinstaller python=3.8 -y
 REM call conda create -n alphatimsinstaller python=3.8 -y
 call conda activate alphatimsinstaller
 REM call conda install git -y
