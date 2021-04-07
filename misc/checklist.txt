@@ -1,10 +1,14 @@
 Versions updated
-  alphatims/__init__.py
-  misc/one_click_linux/control
-  misc/one_click_macos/distribution.xml
-  misc/one_click_macos/Info.plist (2x)
-  misc/one_click_macos/create_installer_macos.sh (2x)
-  misc/one_click_windows/alphatims_innoinstaller.iss
+  # https://pypi.org/project/bumpversion/
+  # alphatims/__init__.py
+  # misc/one_click_linux/control
+  # misc/one_click_macos/distribution.xml
+  # misc/one_click_macos/Info.plist (2x)
+  # misc/one_click_macos/create_installer_macos.sh (2x)
+  # misc/one_click_windows/alphatims_innoinstaller.iss
+  cd misc
+  # bumpversion patch --new-version VERSION --config-file bumpversion.cfg
+  bumpversion patch --config-file bumpversion.cfg
 
 No TODOs left?
 
@@ -12,15 +16,16 @@ Tests passing?
   python -m unittest tests.test_bruker
 
 Tutorial/manual/performance/README updated?
-
-Docs updated?
-  cd docs
-  make html
+  jupyter nbconvert --execute --to notebook --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
 
 Merged into master branch?
 
 ReadTheDocs up-to-date?
-  https://docs.readthedocs.io/en/stable/
+  Docs updated?
+    cd docs
+    make html
+  # https://docs.readthedocs.io/en/stable/
+  https://alphatims.readthedocs.io/en/latest/
 
 Releases for all Windows, MacOS and Linux?
 
@@ -28,7 +33,7 @@ Releases for all Windows, MacOS and Linux?
   source create_installer_macos.sh
   # mv dist/alphatims_gui_installer_macos.pkg ../releases/VERSION
 
-  cd misc/one_click_LINUX
+  cd misc/one_click_linux
   source create_installer_linux.sh
   # mv dist/alphatims_gui_installer_linux.deb ../releases/VERSION
 
@@ -39,10 +44,13 @@ Releases for all Windows, MacOS and Linux?
 PyPi up-to-date?
   # https://realpython.com/pypi-publish-python-package/
   conda activate alphatims
+  rm -rf dist
+  rm -rf build
   python setup.py sdist bdist_wheel
   twine check dist/*
   twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-  conda create -n alphatims_pip_test python=3.8 pip=20.2 -y
+  conda create -n alphatims_pip_test python=3.8 -y
   conda activate alphatims_pip_test
-  pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'alphatims[plotting]'
+  # WARNING!!!!! Test on all OS
+  pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple "alphatims[plotting]"
   twine upload dist/*

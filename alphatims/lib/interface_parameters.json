@@ -56,6 +56,18 @@
     },
     "required": false
   },
+  "centroiding_window": {
+    "help": "The smoothing factor to centroid ddaPASEF spectra. A value of 0 means no smoothing/centroiding.",
+    "default": 5,
+    "type": "int",
+    "required": false
+  },
+  "keep_n_most_abundant_peaks": {
+    "help": "Keep only the n most abundant peaks of each spectrum. A value if -1 means to keep all peaks.",
+    "default": -1,
+    "type": "int",
+    "required": false
+  },
   "format": {
     "help": "The format of the exported selection. Multiple options can be selected by repeating the flag.",
     "type": {

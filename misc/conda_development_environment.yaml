@@ -1,0 +1,8 @@
+name: alphatims
+channels:
+  - defaults
+dependencies:
+  - pip=21.0.1
+  - python=3.8
+  - pip:
+    - -e ../.[plotting,development]

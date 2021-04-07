@@ -1,14 +1,21 @@
 call rmdir dist /s /q
 call rmdir build /s /q
 call conda env remove -n alphatimsinstaller
-call conda create -n alphatimsinstaller python=3.8 pip=20.2 -y
+call conda create -n alphatimsinstaller python=3.8 -y
 REM call conda create -n alphatimsinstaller python=3.8 -y
 call conda activate alphatimsinstaller
 REM call conda install git -y
 REM call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]'
 REM call conda install freetype
-call pip install ../../.[plotting]
-REM
+REM call pip install ../../.[plotting]
+REM call pip install pyinstaller==4.2
+REM call pyinstaller ../pyinstaller/alphatims.spec -y
+call cd ../..
+call rmdir dist /s /q
+call rmdir build /s /q
+call python setup.py sdist bdist_wheel
+call cd misc/one_click_windows
+call pip install "../../dist/alphatims-0.2.0-py3-none-any.whl[plotting]"
 call pip install pyinstaller==4.2
 call pyinstaller ../pyinstaller/alphatims.spec -y
 call conda deactivate

@@ -76,44 +76,48 @@ AlphaTims can be installed in an existing Python 3.8 environment with a single `
 pip install alphatims
 ```
 
-Alternatively, some basic plotting functions and the complete GUI can be installed with the command:
+Alternatively, some basic plotting functions and the complete GUI can be installed with the command (Due to potential dependancy conflicts, you might need to run `pip install pip==20.2` or `pip install pip==21.0` first. Also note the double quotes `"`):
+
 ```bash
-pip install alphatims[plotting]
+pip install "alphatims[plotting]"
 ```
 
-This assumes `git` is accessible to this environment. If this is not the case, it can often be installed in the environment with the command `conda install git -y`. When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
-<!-- TODO update once on pypi -->
+When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
 
 ```bash
-pip install alphatims --upgrade
+pip install "alphatims[plotting]" --upgrade
 ```
 
 ### Developer
 
-AlphaTims can also be installed in developer mode with a few `bash` commands. This allows to fully customize the software and modify the source code to your specific needs. For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). Once conda is downloaded and installed, an AlphaTims environment can be created and activated with:
-
-```bash
-conda create -n alphatims python=3.8 pip=20.2 -y
-conda activate alphatims
-```
-
-When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first create a specific folder for AlphaTims and navigate to this folder:
+AlphaTims can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
 
 ```bash
 mkdir ~/folder/where/to/install/software
 cd ~/folder/where/to/install/software
 ```
 
-Next, download the AlphaTims repository from GitHub either directly or with the `git` command (installable with `conda install git -y`):
+***The following commands assume you do not perform any additional `cd` commands anymore***.
+
+Next, download the AlphaTims repository from GitHub either directly or with a `git` command. This creates a new AlphaTims subfolder in your current directory.
 
 ```bash
 git clone https://github.com/MannLabs/alphatims.git
 ```
 
-This creates a new AlphaTims subfolder in the current directory. *The following commands assume you did not perform an additional `cd alphatims` to change the current directory to this subfolder*. Next, AlphaTims and all [dependancies](requirements) need to be installed. To take advantage of all features and allow development, this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). The best way to install an editable version of AlphaTims is to use AlphaTims' pre-built conda development environment (note that the `--force` flag overwrites an already existing AlphaTims environment):
 
 ```bash
-pip install -e './alphatims[plotting,development]'
+conda env create --force --name alphatims --file alphatims/misc/conda_development_environment.yaml
+conda activate alphatims
+```
+
+Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflict can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+
+```bash
+conda create -n alphatims python=3.8 -y
+conda activate alphatims
+pip install -e "./alphatims[plotting,development]"
 ```
 
 ***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
@@ -281,8 +285,8 @@ Common installation/usage issues include:
 * **Always make sure you have activated the AlphaTims environment with `conda activate alphatims`.** If this fails, make sure you have installed [conda](https://docs.conda.io/en/latest/) and have created an AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
-* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading pip to version 20.2 with `pip install pip==20.2` (before running `pip install alphatims`) could solve dependancy conflicts.
-* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install ./alphatims`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install './alphatims[plotting,development]'`.
+* **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading or upgrading pip to version 20.2 or 21.0 with `pip install pip==20.2` or `pip install pip==21.0` (before running `pip install alphatims`) could solve dependancy conflicts.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting,development]"`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
 * **Exporting PNG images with the CLI or Python package might not work out-of-the-box**. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
@@ -339,6 +343,11 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
   * precursor and fragment ions
   * isotopic envelopes (i.e. features)
   * fragment clusters (i.e. pseudo MSMS spectra)
+
+---
+## Citing AlphaTims
+
+We are actively working on a manuscript for publication. Please check back here in a little while for updates!
 
 ---
 ## How to contribute

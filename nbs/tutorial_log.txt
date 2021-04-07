@@ -1,47 +1,38 @@
-2021-03-23 13:47:23> Platform information:
-2021-03-23 13:47:23> system     - Darwin
-2021-03-23 13:47:23> release    - 19.6.0
-2021-03-23 13:47:23> version    - 10.15.7
-2021-03-23 13:47:23> machine    - x86_64
-2021-03-23 13:47:23> processor  - i386
-2021-03-23 13:47:23> cpu count  - 8
-2021-03-23 13:47:23> ram        - 27.6/32.0 Gb (available/total)
-2021-03-23 13:47:23> 
-2021-03-23 13:47:23> Python information:
-2021-03-23 13:47:23> Sphinx           - 3.5.1
-2021-03-23 13:47:23> alphatims        - 0.1.210323
-2021-03-23 13:47:23> autodocsumm      - 0.2.2
-2021-03-23 13:47:23> bokeh            - 2.2.3
-2021-03-23 13:47:23> click            - 7.1.2
-2021-03-23 13:47:23> datashader       - 0.11.1
-2021-03-23 13:47:23> h5py             - 3.2.1
-2021-03-23 13:47:23> holoviews        - 1.13.5
-2021-03-23 13:47:23> holoviz          - 0.11.6
-2021-03-23 13:47:23> ipykernel        - 5.5.0
-2021-03-23 13:47:23> jupyter          - 1.0.0
-2021-03-23 13:47:23> matplotlib       - 3.3.4
-2021-03-23 13:47:23> numba            - 0.53.0
-2021-03-23 13:47:23> numpy            - 1.20.1
-2021-03-23 13:47:23> pandas           - 1.2.3
-2021-03-23 13:47:23> panel            - 0.10.3
-2021-03-23 13:47:23> plotly           - 4.12.0
-2021-03-23 13:47:23> psutil           - 5.8.0
-2021-03-23 13:47:23> pyinstaller      - 4.2
-2021-03-23 13:47:23> python           - 3.8.8
-2021-03-23 13:47:23> pywin32          - 
-2021-03-23 13:47:23> pyzstd           - 0.14.3
-2021-03-23 13:47:23> rise             - 5.7.1
-2021-03-23 13:47:23> seaborn          - 0.11.0
-2021-03-23 13:47:23> selenium         - 3.141.0
-2021-03-23 13:47:23> sphinx-rtd-theme - 0.5.1
-2021-03-23 13:47:23> tqdm             - 4.59.0
-2021-03-23 13:47:23> 
-2021-03-23 13:47:24> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
-2021-03-23 13:47:24> 
-2021-03-23 13:47:26> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-03-23 13:47:26> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-03-23 13:47:28> Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-03-23 13:47:30> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
-2021-03-23 13:47:31> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-03-23 13:47:31> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
-2021-03-23 13:47:32> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2021-04-07 13:23:01> Platform information:
+2021-04-07 13:23:01> system     - Darwin
+2021-04-07 13:23:01> release    - 19.6.0
+2021-04-07 13:23:01> version    - 10.15.7
+2021-04-07 13:23:01> machine    - x86_64
+2021-04-07 13:23:01> processor  - i386
+2021-04-07 13:23:01> cpu count  - 8
+2021-04-07 13:23:01> ram        - 18.7/32.0 Gb (available/total)
+2021-04-07 13:23:01> 
+2021-04-07 13:23:01> Python information:
+2021-04-07 13:23:01> alphatims  - 0.2.0
+2021-04-07 13:23:01> bokeh      - 2.2.3
+2021-04-07 13:23:01> click      - 7.1.2
+2021-04-07 13:23:01> datashader - 0.12.1
+2021-04-07 13:23:01> h5py       - 3.2.1
+2021-04-07 13:23:01> hvplot     - 0.7.1
+2021-04-07 13:23:01> numba      - 0.53.1
+2021-04-07 13:23:01> pandas     - 1.2.3
+2021-04-07 13:23:01> psutil     - 5.8.0
+2021-04-07 13:23:01> python     - 3.8.8
+2021-04-07 13:23:01> pyzstd     - 0.14.4
+2021-04-07 13:23:01> selenium   - 3.141.0
+2021-04-07 13:23:01> tqdm       - 4.59.0
+2021-04-07 13:23:01> 
+2021-04-07 13:23:02> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-04-07 13:23:02> 
+2021-04-07 13:23:03> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-04-07 13:23:03> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-04-07 13:23:04> Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-04-07 13:23:07> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
+2021-04-07 13:23:07> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-04-07 13:23:07> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2021-04-07 13:23:08> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2021-04-07 13:24:31> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-04-07 13:24:31> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-04-07 13:24:31> Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-04-07 13:24:46> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
+2021-04-07 13:24:47> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
