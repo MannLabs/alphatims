@@ -18,7 +18,8 @@ name: Create Release
 jobs:
   Create Draft Release:
     steps:
-      - id: create_draft_release
+      - name: create_draft_release
+        id: create_draft_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
@@ -29,6 +30,7 @@ jobs:
           prerelease: ${{ github.event.inputs.prerelease }}
   Create Linux Release:
     runs-on: ubuntu-latest
+    needs: Create Draft Release
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -56,6 +58,7 @@ jobs:
           asset_content_type: application/octet-stream
   Create MacOS Release:
     runs-on: macos-latest
+    needs: Create Draft Release
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
