@@ -1035,4 +1035,4 @@ class Global_Stack(object):
 
 
 set_threads(MAX_THREADS)
-set_logger(log_file_name=None)
+# set_logger(log_file_name=None)
