@@ -85,7 +85,7 @@ jobs:
           asset_name: alphatims_gui_installer_macos.pkg
           asset_content_type: application/octet-stream
   Create_Windows_Release:
-    runs-on: macos-latest
+    runs-on: windows-latest
     needs: Create_Windows_Release
     steps:
       - name: Checkout code
