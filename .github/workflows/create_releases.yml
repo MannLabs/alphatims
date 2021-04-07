@@ -17,6 +17,7 @@ name: Create Release
 
 jobs:
   Create_Draft_Release:
+    steps:
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
