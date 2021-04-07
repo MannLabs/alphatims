@@ -19,7 +19,8 @@ def line_plot(
     remove_zeros: bool = False,
     trim: bool = True,
     width: int = 1000,
-    height: int = 300,
+    height: int = 320,
+    **kwargs,
 ):
     """Plot an XIC, mobilogram or spectrum as a lineplot.
 
@@ -60,7 +61,9 @@ def line_plot(
         Default is 1000.
     height : int
         The height of this plot.
-        Default is 300.
+        Default is 320.
+    **kwargs
+        Additional keyword arguments that will be passed to hv.Curve.
 
     Returns
     -------
@@ -118,6 +121,7 @@ def line_plot(
         (x_ticks, intensities),
         x_axis_label,
         y_axis_label,
+        **kwargs
     )
     plot.opts(**plot_opts)
     return plot
@@ -130,8 +134,9 @@ def heatmap(
     title: str = "",
     z_axis_label: str = "intensity",
     width: int = 1000,
-    height: int = 300,
+    height: int = 320,
     rescale_to_minutes: bool = True,
+    **kwargs,
 ):
     """Create a scatterplot / heatmap for a dataframe.
 
@@ -169,11 +174,13 @@ def heatmap(
         Default is 1000.
     height : int
         The height of this plot.
-        Default is 300.
+        Default is 320.
     rescale_to_minutes : bool
         If True, the rt_values of the dataframe will be divided by 60.
         WARNING: this updates the dataframe directly and is persistent!
         Default is True.
+    **kwargs
+        Additional keyword arguments that will be passed to hv.Scatter.
 
     Returns
     -------
@@ -233,6 +240,7 @@ def heatmap(
         # color="white",
         width=width,
         height=height,
+        **kwargs
     )
     # df["rt_values"] *= 60
     scatter.opts(
@@ -247,7 +255,8 @@ def tic_plot(
     timstof_data,
     title: str = "",
     width: int = 1000,
-    height: int = 310,
+    height: int = 320,
+    **kwargs,
 ):
     """Create a total ion chromatogram (TIC) for the data.
 
@@ -264,7 +273,9 @@ def tic_plot(
         Default is 1000.
     height : int
         The height of this plot.
-        Default is 310.
+        Default is 320.
+    **kwargs
+        Additional keyword arguments that will be passed to hv.Curve.
 
     Returns
     -------
@@ -292,7 +303,8 @@ def tic_plot(
     tic = hv.Curve(
         data=data,
         kdims=['RT'],
-        vdims=['SummedIntensities']
+        vdims=['SummedIntensities'],
+        **kwargs,
     ).opts(
         tic_opts,
         opts.Curve(
