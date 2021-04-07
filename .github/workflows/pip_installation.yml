@@ -39,7 +39,7 @@ jobs:
       - name: Test pip installation with all dependencies
         shell: bash -l {0}
         run: |
-          conda create -n alphatims python=3.8 pip=20.2 -y
+          conda create -n alphatims python=3.8 -y
           conda activate alphatims
           pip install -e '.[plotting,development]'
           alphatims
