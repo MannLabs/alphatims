@@ -16,7 +16,7 @@ on:
 name: Create Release
 
 jobs:
-  Create Draft Release:
+  Create_Draft_Release:
     steps:
       - name: create_draft_release
         id: create_draft_release
@@ -28,9 +28,9 @@ jobs:
           release_name: Release ${{ github.event.inputs.release_name }}
           draft: ${{ github.event.inputs.draft }}
           prerelease: ${{ github.event.inputs.prerelease }}
-  Create Linux Release:
+  Create_Linux_Release:
     runs-on: ubuntu-latest
-    needs: Create Draft Release
+    needs: Create_Draft_Release
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -56,9 +56,9 @@ jobs:
           asset_path: misc/one_click_linux/dist/alphatims_gui_installer_linux.deb
           asset_name: alphatims_gui_installer_linux.deb
           asset_content_type: application/octet-stream
-  Create MacOS Release:
+  Create_MacOS_Release:
     runs-on: macos-latest
-    needs: Create Draft Release
+    needs: Create_Draft_Release
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
