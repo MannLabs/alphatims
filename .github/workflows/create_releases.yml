@@ -87,7 +87,7 @@ jobs:
           asset_content_type: application/octet-stream
   Create_Windows_Release:
     runs-on: windows-latest
-    needs: Create_Windows_Release
+    needs: Create_Draft_Release
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
