@@ -15,6 +15,7 @@ Tests passing?
   python -m unittest tests.test_bruker
 
 Tutorial/manual/performance/README updated?
+  jupyter nbconvert --execute --to notebook --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
 
 Merged into master branch?
 
