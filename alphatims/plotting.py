@@ -1,5 +1,5 @@
 #!python
-"""This module provides basic LC-TIMS-MSMS plots."""
+"""This module provides basic LC-TIMS-Q-TOF plots."""
 
 # external
 import numpy as np
