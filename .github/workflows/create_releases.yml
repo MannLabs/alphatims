@@ -17,6 +17,7 @@ name: Create Release
 
 jobs:
   Create_Draft_Release:
+    runs-on: macos-latest
     steps:
       - name: Create Release
         id: create_release
@@ -112,3 +113,20 @@ jobs:
           asset_path: misc/one_click_windows/dist/alphatims_gui_installer_windows.exe
           asset_name: alphatims_gui_installer_windows.exe
           asset_content_type: application/octet-stream
+  Create_PyPi_Release:
+    runs-on: macos-latest
+    needs: [Create_Linux_Release, Create_MacOs_Release, Create_Windows_Release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+      - name: Conda info
+        shell: bash -l {0}
+        run: conda info
+      - name: Push release to PyPi
+        shell: bash -l {0}
+        run: |
+          cd misc/one_click_windows
