@@ -7,7 +7,8 @@ Versions updated
   # misc/one_click_macos/create_installer_macos.sh (2x)
   # misc/one_click_windows/alphatims_innoinstaller.iss
   cd misc
-  bumpversion patch --new-version VERSION --config-file bumpversion.cfg
+  # bumpversion patch --new-version VERSION --config-file bumpversion.cfg
+  bumpversion patch --config-file bumpversion.cfg
 
 No TODOs left?
 
