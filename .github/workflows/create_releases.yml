@@ -30,21 +30,21 @@ jobs:
   Create Linux Release:
     runs-on: ubuntu-latest
     steps:
-      name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v2
-      uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-      name: Conda info
+      - name: Conda info
         shell: bash -l {0}
         run: conda info
-      name: Creating installer for Linux
+      - name: Creating installer for Linux
         shell: bash -l {0}
         run: |
           cd misc/one_click_linux
           . ./create_installer_linux.sh
-      name: Upload Linux Installer
+      - name: Upload Linux Installer
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -57,21 +57,21 @@ jobs:
   Create MacOS Release:
     runs-on: macos-latest
     steps:
-      name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v2
-      uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-      name: Conda info
+      - name: Conda info
         shell: bash -l {0}
         run: conda info
-      name: Creating installer for MacOS
+      - name: Creating installer for MacOS
         shell: bash -l {0}
         run: |
           cd misc/one_click_macos
           . ./create_installer_macos.sh
-      name: Upload Linux Installer
+      - name: Upload Linux Installer
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
