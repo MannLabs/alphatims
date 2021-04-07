@@ -194,7 +194,7 @@ def show_python_info() -> None:
                 continue
             if "win32" in parts[1]:
                 continue
-        module_name = parts[0].split("=")[0]
+        module_name = parts[0].split("=")[0].split()[0]
         try:
             module_version = importlib.metadata.version(module_name)
         except importlib.metadata.PackageNotFoundError:

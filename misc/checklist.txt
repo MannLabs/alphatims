@@ -44,10 +44,12 @@ Releases for all Windows, MacOS and Linux?
 PyPi up-to-date?
   # https://realpython.com/pypi-publish-python-package/
   conda activate alphatims
+  rm -rf dist
+  rm -rf build
   python setup.py sdist bdist_wheel
   twine check dist/*
   twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-  conda create -n alphatims_pip_test python=3.8 pip=20.2 -y
+  conda create -n alphatims_pip_test python=3.8 -y
   conda activate alphatims_pip_test
   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'alphatims[plotting]'
   twine upload dist/*
