@@ -32,6 +32,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
     * [**TimsTOF objects in Python**](#timstof-objects-in-python)
     * [**Slicing TimsTOF objects**](#slicing-timstof-objects)
   * [**Future perspectives**](#future-perspectives)
+  * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
 
 ---
