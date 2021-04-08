@@ -170,7 +170,7 @@ There are three ways to use AlphaTims:
 * [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
 * [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
 
-The first time you use a fresh installation of AlphaTims is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
+NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
 
