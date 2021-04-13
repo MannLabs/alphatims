@@ -16,7 +16,7 @@ if __name__ == "__main__":
     logging.info(f"log_file_name - {log_file_name}")
     logging.info(f"threads       - {threads}")
     logging.info("")
-    logging.info("Loading GUI..")
+    logging.info("Loading GUI...")
     import alphatims.gui
     import multiprocessing
     multiprocessing.freeze_support()
