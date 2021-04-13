@@ -18,11 +18,18 @@ conda deactivate
 
 FILE="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 if test -f "$FILE"; then
+  echo "0"
   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
 else
   mkdir inno
-  is.exe /SILENT /DIR=./inno
+  echo "1"
+  is.exe //SILENT //DIR=inno
+  echo "2"
+  ls -lah
+  echo "2a"
+  ls -lah inno
   "inno/ISCC.exe" alphatims_innoinstaller.iss
+  echo "3"
 fi
 
 
