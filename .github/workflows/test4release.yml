@@ -17,7 +17,7 @@ name: Create all Release
 
 jobs:
   Create_Draft_Release:
-  id: create_draft_release
+    id: create_draft_release
     runs-on: macos-latest
     steps:
       - name: Create Release
