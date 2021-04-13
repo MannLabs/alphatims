@@ -16,13 +16,18 @@ pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 
-if false; then
-  REM call mkdir inno
-  REM call pip install wget
-  REM call python -m wget https://jrsoftware.org/download.php/is.exe
-  call is.exe /SILENT /DIR=.
-  call inno\ISCC.exe alphatims_innoinstaller.iss
+FILE="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+if test -f "$FILE"; then
+  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
 else
-  call "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
-  REM call iscc alphatims_innoinstaller.iss
+  is.exe /SILENT /DIR=.
+  inno\ISCC.exe alphatims_innoinstaller.iss
 fi
+
+
+# if false; then
+#   is.exe /SILENT /DIR=.
+#   inno\ISCC.exe alphatims_innoinstaller.iss
+# else
+#   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
+# fi
