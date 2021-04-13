@@ -132,4 +132,4 @@ jobs:
       - name: Push release to PyPi
         shell: bash -l {0}
         run: |
-          cd misc/one_click_windows
+          echo "TODO"
