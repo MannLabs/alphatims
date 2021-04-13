@@ -20,7 +20,8 @@ FILE="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 if test -f "$FILE"; then
   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
 else
-  is.exe /SILENT /DIR=inno
+  mkdir inno
+  is.exe /SILENT /DIR=./inno
   "inno/ISCC.exe" alphatims_innoinstaller.iss
 fi
 
