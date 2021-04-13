@@ -1,6 +1,9 @@
 rm -rf dist
 rm -rf build
-rm alphatims.pkg
+FILE=alphatims.pkg
+if test -f "$FILE"; then
+  rm alphatims.pkg
+fi
 conda env remove -n alphatimsinstaller
 conda create -n alphatimsinstaller python=3.8 -y
 # conda create -n alphatimsinstaller python=3.8
