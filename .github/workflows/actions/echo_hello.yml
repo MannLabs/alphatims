@@ -1,4 +1,0 @@
-name: Print hello
-with:
-  shell: bash -l {0}
-  run: echo "hello"

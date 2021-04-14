@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
 
-name: Test workflow
+name: Test new workflow
 
 jobs:
   Test workflow:
@@ -9,7 +9,3 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - uses: .github/workflows/actions/echo_hello.yml
-      - uses: .github/workflows/actions/echo_bye.yml
-      - uses: .github/workflows/actions/conda_setup.yml
-      - uses: .github/workflows/actions/conda_info.yml

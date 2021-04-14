@@ -1,4 +1,0 @@
-name: Print bye
-with:
-  shell: bash -l {0}
-  run: echo "bye"
