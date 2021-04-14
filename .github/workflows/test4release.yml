@@ -7,13 +7,13 @@ on:
       prerelease:
         description: 'Pre-Release?'
         required: true
-        default: true
+        default: false
       draft:
         description: 'Draft?'
         required: true
-        default: true
+        default: false
 
-name: Create all GUI and PyPi releases
+name: Create all GUI releases and publish on PyPi
 
 jobs:
   Create_Draft_On_GitHub:
@@ -55,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }}
           asset_path: misc/one_click_linux/dist/alphatims_gui_installer_linux.deb
           asset_name: alphatims_gui_installer_linux.deb
           asset_content_type: application/octet-stream
@@ -83,7 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }}
           asset_path: misc/one_click_macos/dist/alphatims_gui_installer_macos.pkg
           asset_name: alphatims_gui_installer_macos.pkg
           asset_content_type: application/octet-stream
@@ -112,12 +112,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ needs.Create_Draft_On_GitHub.outputs.upload_url }}
           asset_path: misc/one_click_windows/dist/alphatims_gui_installer_windows.exe
           asset_name: alphatims_gui_installer_windows.exe
           asset_content_type: application/octet-stream
   Create_PyPi_Release:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: [Create_Linux_Release, Create_MacOs_Release, Create_Windows_Release]
     steps:
       - name: Checkout code
@@ -129,7 +129,7 @@ jobs:
       - name: Conda info
         shell: bash -l {0}
         run: conda info
-      - name: Push release to PyPi
+      - name: Prepare distribution
         shell: bash -l {0}
         run: |
           conda env create --force --name alphatims --file misc/conda_development_environment.yaml
@@ -138,3 +138,18 @@ jobs:
           rm -rf build
           python setup.py sdist bdist_wheel
           twine check dist/*
+          conda deactivate
+      # - name: Publish to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     user: __token__
+      #     password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Publish distribution to Test PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

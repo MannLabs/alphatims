@@ -16,22 +16,13 @@ pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 
-echo "start weird stuff"
 FILE="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 if test -f "$FILE"; then
-  echo "0"
   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
-  echo "0a"
 else
   mkdir inno
-  echo "1"
   is.exe //SILENT //DIR=inno
-  echo "2"
-  ls -lah
-  echo "2a"
-  ls -lah inno
   "inno/ISCC.exe" alphatims_innoinstaller.iss
-  echo "3"
 fi
 
 
