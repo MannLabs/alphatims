@@ -10,16 +10,18 @@ cd ../..
 rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
-cd misc/one_click_linux
+cd misc/one_click_windows
 pip install "../../dist/alphatims-0.2.2-py3-none-any.whl[plotting]"
 pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 
+echo "start weird stuff"
 FILE="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 if test -f "$FILE"; then
   echo "0"
   "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" alphatims_innoinstaller.iss
+  echo "0a"
 else
   mkdir inno
   echo "1"
