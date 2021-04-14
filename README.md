@@ -159,7 +159,7 @@ A ddaPASEF dataset is available for [download from the release page](https://git
 
 ### DIA
 
-The same sample was also acquired with diaPASEF and is also available for [download from the release page](https://github.com/MannLabs/alphatims/releases/download/0.1.210317/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d.zip). The "high-speed" method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
+The same sample was acquired with diaPASEF and is also available for [download from the release page](https://github.com/MannLabs/alphatims/releases/download/0.1.210317/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d.zip). The "high-speed" method (mass range: m/z 400 to 1000, 1/K0: 0.6 – 1.6 Vs cm- 2, diaPASEF windows: 8 x 25 Th) was used, as described in [Meier et al](https://www.nature.com/articles/s41592-020-00998-0).
 
 ---
 ## Usage
@@ -170,7 +170,7 @@ There are three ways to use AlphaTims:
 * [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
 * [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
 
-The first time you use a fresh installation of AlphaTims is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
+NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
 

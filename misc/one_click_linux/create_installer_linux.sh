@@ -1,7 +1,6 @@
 #!bash
 rm -rf dist
 rm -rf build
-conda env remove -n alphatimsinstaller
 conda create -n alphatimsinstaller python=3.8 -y
 # conda create -n alphatimsinstaller python=3.8
 conda activate alphatimsinstaller
@@ -13,7 +12,7 @@ rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_linux
-pip install "../../dist/alphatims-0.2.0-py3-none-any.whl[plotting]"
+pip install "../../dist/alphatims-0.2.2-py3-none-any.whl[plotting]"
 pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
