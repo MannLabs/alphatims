@@ -12,7 +12,7 @@ rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_linux
-pip install "../../dist/alphatims-0.2.2-py3-none-any.whl[plotting]"
+pip install "../../dist/alphatims-0.2.3-py3-none-any.whl[plotting]"
 pip install pyinstaller==4.2
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
