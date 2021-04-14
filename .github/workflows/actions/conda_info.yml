@@ -1,0 +1,3 @@
+name: Conda info
+shell: bash -l {0}
+run: conda info
