@@ -1,4 +1,4 @@
-![Pip installation](https://github.com/MannLabs/alphatims/workflows/Pip%20installation/badge.svg)
+![Pip installation](https://github.com/MannLabs/alphatims/workflows/Default%20installation%20and%20tests/badge.svg)
 ![GUI and PyPi releases](https://github.com/MannLabs/alphatims/workflows/Create%20all%20GUI%20releases%20and%20publish%20on%20PyPi/badge.svg)
 
 ---

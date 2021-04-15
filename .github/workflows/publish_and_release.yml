@@ -10,11 +10,11 @@ on:
       prerelease:
         description: 'Pre-Release?'
         required: true
-        default: false
+        default: true
       draft:
         description: 'Draft?'
-        required: true
-        default: true
+        required: false
+        default: false
 
 name: Create all GUI releases and publish on PyPi
 
