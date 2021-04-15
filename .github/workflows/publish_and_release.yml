@@ -122,7 +122,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd misc/one_click_windows/dist/
-          ./alphatims_gui_installer_windows.exe //VERYSILENT //LOG=log.txt
+          ./alphatims_gui_installer_windows.exe //verysilent //log=log.txt //noicons //tasks= //portable=1
           # log_closed=$(tail -n 5 log.txt | grep "Log closed.")
           # while [[ "$log_closed" == "" ]]; do
           #     sleep 10
