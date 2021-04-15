@@ -23,7 +23,7 @@ jobs:
         shell: bash -l {0}
         run: |
           if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
-            "GUI manual was not updated"
+            echo "GUI manual was not updated"
             exit 1
           fi
       - name: Tutorial notebook updated
