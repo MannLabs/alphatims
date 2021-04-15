@@ -9,6 +9,10 @@ import pkg_resources
 import importlib.metadata
 import alphatims
 
+if sys.platform[:6] == "windows":
+datas.append("libcrypto-1_1-x64.dll")
+datas.append("libssl-1_1-x64.dll")
+
 
 ##################### User definitions
 exe_name = 'alphatims_gui'
@@ -74,9 +78,6 @@ else:
 
 hidden_imports = [h for h in hidden_imports if "__pycache__" not in h]
 datas = [d for d in datas if "__pycache__" not in d[0]]
-
-datas.append("libcrypto-1_1-x64.dll")
-datas.append("libssl-1_1-x64.dll")
 
 a = Analysis(
 	[script_name],
