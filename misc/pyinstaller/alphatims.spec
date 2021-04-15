@@ -75,6 +75,8 @@ else:
 hidden_imports = [h for h in hidden_imports if "__pycache__" not in h]
 datas = [d for d in datas if "__pycache__" not in d[0]]
 
+datas.append("libcrypto-1_1-x64.dll")
+datas.append("libssl-1_1-x64.dll")
 
 a = Analysis(
 	[script_name],
