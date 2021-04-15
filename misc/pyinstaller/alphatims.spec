@@ -77,7 +77,7 @@ datas = [d for d in datas if "__pycache__" not in d[0]]
 
 if sys.platform[:5] == "win32":
 	base_path = os.path.dirname(sys.executable)
-	library_path = os.path.join(base_path, "Library\bin")
+	library_path = os.path.join(base_path, "Library", "bin")
 	dll_path = os.path.join(base_path, "DLLs")
 	libcrypto_dll_path = os.path.join(dll_path, "libcrypto-1_1-x64.dll")
 	libssl_dll_path = os.path.join(dll_path, "libssl-1_1-x64.dll")
