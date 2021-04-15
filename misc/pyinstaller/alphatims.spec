@@ -84,9 +84,9 @@ if sys.platform[:5] == "win32":
 	libcrypto_lib_path = os.path.join(library_path, "libcrypto-1_1-x64.dll")
 	libssl_lib_path = os.path.join(library_path, "libssl-1_1-x64.dll")
 	if not os.path.exists(libcrypto_dll_path):
-		datas.append((libcrypto_lib_path, "libcrypto-1_1-x64.dll"))
+		datas.append((libcrypto_lib_path, ""))
 	if not os.path.exists(libssl_dll_path):
-		datas.append((libssl_lib_path, "libssl-1_1-x64.dll"))
+		datas.append((libssl_lib_path, ""))
 
 a = Analysis(
 	[script_name],
