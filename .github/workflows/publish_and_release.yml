@@ -122,12 +122,12 @@ jobs:
         shell: bash -l {0}
         run: |
           cd misc/one_click_windows/dist/
-          ./alphatims_gui_installer_windows.exe /VERYSILENT /LOG=log.txt
-          log_closed=$(tail -n 5 log.txt | grep "Log closed.")
-          while [[ "$log_closed" == "" ]]; do
-              sleep 10
-              log_closed=$(tail -n 5 log.txt | grep "Log closed.")
-          done
+          ./alphatims_gui_installer_windows.exe //VERYSILENT //LOG=log.txt
+          # log_closed=$(tail -n 5 log.txt | grep "Log closed.")
+          # while [[ "$log_closed" == "" ]]; do
+          #     sleep 10
+          #     log_closed=$(tail -n 5 log.txt | grep "Log closed.")
+          # done
           cat log.txt
       - name: Upload Windows Installer
         id: upload-release-asset
