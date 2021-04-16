@@ -7,11 +7,20 @@ import os
 import logging
 import time
 import copy
+import json
+
 # external
 import click
+
 # local
 import alphatims
 import alphatims.utils
+
+with open(
+    os.path.join(alphatims.utils.LIB_PATH, "interface_parameters.json"),
+    "r"
+) as in_file:
+    INTERFACE_PARAMETERS = json.load(in_file)
 
 
 @contextlib.contextmanager
@@ -60,20 +69,20 @@ def parse_cli_settings(command_name: str, **kwargs):
             )
             kwargs.update(parameters)
         if "threads" not in kwargs:
-            kwargs["threads"] = alphatims.utils.INTERFACE_PARAMETERS[
+            kwargs["threads"] = INTERFACE_PARAMETERS[
                 "threads"
             ]["default"]
         kwargs["threads"] = alphatims.utils.set_threads(
             kwargs["threads"]
         )
         if "log_file" not in kwargs:
-            kwargs["log_file"] = alphatims.utils.INTERFACE_PARAMETERS[
+            kwargs["log_file"] = INTERFACE_PARAMETERS[
                 "log_file"
             ]["default"]
         if "disable_log_stream" not in kwargs:
             kwargs[
                 "disable_log_stream"
-            ] = alphatims.utils.INTERFACE_PARAMETERS[
+            ] = INTERFACE_PARAMETERS[
                 "disable_log_stream"
             ]["default"]
         kwargs["log_file"] = alphatims.utils.set_logger(
@@ -144,7 +153,7 @@ def cli_option(
         A click.option or click.argument decorator.
     """
     parameters = copy.deepcopy(
-        alphatims.utils.INTERFACE_PARAMETERS[parameter_name]
+        INTERFACE_PARAMETERS[parameter_name]
     )
     parameters.update(kwargs)
     if "type" in parameters:

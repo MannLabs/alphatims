@@ -289,7 +289,7 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
     return scan_indices, tof_indices, intensities
 
 
-@alphatims.utils.threadpool(progress_callback=True)
+@alphatims.utils.threadpool
 def process_frame(
     frame_id: int,
     tdf_bin_file_name: str,

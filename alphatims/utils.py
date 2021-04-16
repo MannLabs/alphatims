@@ -24,15 +24,9 @@ IMG_PATH = os.path.join(BASE_PATH, "img")
 LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(BASE_PATH, "logs")
 DOC_PATH = os.path.join(BASE_PATH, "docs")
-with open(os.path.join(LIB_PATH, "interface_parameters.json"), "r") as in_file:
-    INTERFACE_PARAMETERS = json.load(in_file)
-MAX_THREADS = INTERFACE_PARAMETERS["threads"]["default"]
-PROGRESS_CALLBACK_STYLE_NONE = 0
-PROGRESS_CALLBACK_STYLE_TEXT = 1
-PROGRESS_CALLBACK_STYLE_PLOT = 2
-PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
+MAX_THREADS = 1
 LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py"
-PBAR = None
+PROGRESS_CALLBACK = True
 
 
 def set_logger(
@@ -41,7 +35,6 @@ def set_logger(
     stream: bool = True,
     log_level: int = logging.INFO,
     overwrite: bool = False,
-    progress_callback: bool = True
 ) -> str:
     """Set the log stream and file.
 
@@ -69,10 +62,6 @@ def set_logger(
         If True, overwrite the log_file if one exists.
         If False, append to this log file.
         Default is False.
-    progress_callback : bool
-        If True, continuous progress bars are enabled by default.
-        NOTE: If stream is False, progress bars are always disabled
-        Default is True.
 
     Returns
     -------
@@ -80,7 +69,7 @@ def set_logger(
         The file name to where the log is written.
     """
     import time
-    global PROGRESS_CALLBACK_STYLE
+    global PROGRESS_CALLBACK
     root = logging.getLogger()
     formatter = logging.Formatter(
         '%(asctime)s> %(message)s', "%Y-%m-%d %H:%M:%S"
@@ -125,10 +114,8 @@ def set_logger(
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
-    if progress_callback and stream:
-        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
-    else:
-        PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_NONE
+    if not stream:
+        PROGRESS_CALLBACK = None
     return log_file_name
 
 
@@ -338,7 +325,7 @@ def threadpool(
     _func=None,
     *,
     thread_count=None,
-    progress_callback: bool = False,
+    include_progress_callback: bool = True,
 ) -> None:
     """A decorator that parallelizes a function with threads and callback.
 
@@ -358,11 +345,11 @@ def threadpool(
         Not possible as positional arguments,
         it always needs to be an explicit keyword argument.
         Default is None.
-    progress_callback : bool
+    include_progress_callback : bool
         If True, the default progress callback will be used as callback.
         (See "progress_callback" function.)
         If False, no callback is added.
-        Default is False.
+        Default is True.
 
     Returns
     -------
@@ -378,6 +365,7 @@ def threadpool(
             def starfunc(iterable):
                 return func(iterable, *args, **kwargs)
 
+            global PROGRESS_CALLBACK
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
@@ -385,31 +373,34 @@ def threadpool(
                     thread_count,
                     set_global=False
                 )
-            if progress_callback:
-                progress_callback_style = PROGRESS_CALLBACK_STYLE
+            if include_progress_callback:
+                progress_callback_style = PROGRESS_CALLBACK
             else:
-                progress_callback_style = PROGRESS_CALLBACK_STYLE_NONE
+                progress_callback_style = None
             with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
-                if progress_callback_style == PROGRESS_CALLBACK_STYLE_NONE:
+                if progress_callback_style is None:
                     for i in pool.imap_unordered(starfunc, iterable):
                         pass
-                elif progress_callback_style == PROGRESS_CALLBACK_STYLE_TEXT:
+                elif isinstance(
+                    progress_callback_style,
+                    bool
+                ) and progress_callback_style:
                     with tqdm.tqdm(total=len(iterable)) as pbar:
                         for i in pool.imap_unordered(starfunc, iterable):
                             pbar.update()
-                elif progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
-                    global PBAR
-                    PBAR.max = len(iterable)
-                    PBAR.value = 0
+                else:
+                    try:
+                        PROGRESS_CALLBACK.max = len(iterable)
+                        PROGRESS_CALLBACK.value = 0
+                    except AttributeError:
+                        raise ValueError("Not a valid progress callback style")
                     progress = 0
-                    steps = PBAR.max / 1000
+                    steps = PROGRESS_CALLBACK.max / 1000
                     for i in pool.imap_unordered(starfunc, iterable):
                         progress += 1
                         if progress % steps < 1:
-                            PBAR.value = progress
-                    PBAR.value = PBAR.max
-                else:
-                    raise ValueError("Not a valid progress callback style")
+                            PROGRESS_CALLBACK.value = progress
+                    PROGRESS_CALLBACK.value = PROGRESS_CALLBACK.max
         return functools.wraps(func)(wrapper)
     if _func is None:
         return parallel_func_inner
@@ -551,22 +542,21 @@ def pjit(
         return parallel_compiled_func_inner(_func)
 
 
-def progress_callback(iterable, style: int = -1, total: int = -1):
-    """Add tqdm progress callback to iterable.
+def progress_callback(
+    iterable,
+    include_progress_callback: bool = True,
+    total: int = -1
+):
+    """A generator that adds progress callback to an iterable.
 
     Parameters
     ----------
     iterable
-        An iterable that implements __len__.
-    style : int
-        The callback style. Options are:
-
-            - -1 means to use the global PROGRESS_CALLBACK_STYLE variable.
-            - PROGRESS_CALLBACK_STYLE_NONE = 0 means no callback.
-            - PROGRESS_CALLBACK_STYLE_TEXT = 1 means textual callback.
-            - PROGRESS_CALLBACK_STYLE_PLOT = 2 means gui callback.
-
-        Default is -1.
+        An iterable.
+    include_progress_callback : bool
+        If True, the default progress callback will be used as callback.
+        If False, no callback is added.
+        Default is True.
     total : int
         The length of the iterable.
         If -1, this will be read as len(iterable), if __len__ is implemented.
@@ -575,33 +565,46 @@ def progress_callback(iterable, style: int = -1, total: int = -1):
     Returns
     -------
     : iterable
-        The iterable with tqdm callback.
+        A generator over the iterable with added callback.
 
     Raises
     ------
     ValueError
         If no valid style (-1, 0, 1, 2) is provided.
     """
-    import tqdm
-    if style == -1:
-        style = PROGRESS_CALLBACK_STYLE
-    if style == PROGRESS_CALLBACK_STYLE_NONE:
-        return iterable
-    elif style == PROGRESS_CALLBACK_STYLE_TEXT:
-        if total != -1:
-            return tqdm.tqdm(iterable, total=total)
-        else:
-            return tqdm.tqdm(iterable)
-    elif style == PROGRESS_CALLBACK_STYLE_PLOT:
-        # global PBAR
-        # PBAR.max = len(iterable)
-        # PBAR.value = 0
-        # TODO
-        # for i in pool.imap_unordered(starfunc, iterable):
-        #     PBAR.value += 1
-        return tqdm.gui.tqdm(iterable)
+    global PROGRESS_CALLBACK
+    if include_progress_callback:
+        progress_callback_style = PROGRESS_CALLBACK
     else:
-        raise ValueError("Not a valid progress callback style")
+        progress_callback_style = None
+    if progress_callback_style is None:
+        for element in iterable:
+            yield element
+    elif isinstance(progress_callback_style, bool) and progress_callback_style:
+        import tqdm
+        if total == -1:
+            total = len(iterable)
+        with tqdm.tqdm(total=total) as pbar:
+            for element in iterable:
+                yield element
+                pbar.update()
+    else:
+        try:
+            if total != -1:
+                PROGRESS_CALLBACK.max = total
+            else:
+                PROGRESS_CALLBACK.max = len(iterable)
+            PROGRESS_CALLBACK.value = 0
+        except AttributeError:
+            raise ValueError("Not a valid progress callback style")
+        steps = PROGRESS_CALLBACK.max / 1000
+        progress = 0
+        for element in iterable:
+            progress += 1
+            if progress % steps < 1:
+                PROGRESS_CALLBACK.value = progress
+            yield element
+        PROGRESS_CALLBACK.value = PROGRESS_CALLBACK.max
 
 
 def create_hdf_group_from_dict(
@@ -1052,7 +1055,3 @@ class Global_Stack(object):
                 str(self._stack)
             ]
         )
-
-
-set_threads(MAX_THREADS)
-# set_logger(log_file_name=None)

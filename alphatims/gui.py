@@ -1154,16 +1154,16 @@ def upload_data(*args):
             DATASET.bruker_d_folder_name
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
-                alphatims.utils.PROGRESS_CALLBACK_STYLE = alphatims.utils.PROGRESS_CALLBACK_STYLE_PLOT
-                alphatims.utils.PBAR = upload_progress
-                upload_spinner.value = True
                 DATASET = None
                 DATAFRAME = None
                 SELECTED_INDICES = None
+                alphatims.utils.PROGRESS_CALLBACK = upload_progress
+                upload_spinner.value = True
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
                 )
+                alphatims.utils.PROGRESS_CALLBACK = True
                 mode = ''
                 if 'DDA' in upload_file.value:
                     mode = 'dda-'
