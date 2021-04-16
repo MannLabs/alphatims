@@ -7,13 +7,9 @@ Versions updated
 
 No TODOs left?
 
-Tests passing?
-  python -m unittest tests.test_bruker
-
 Tutorial/manual/performance/README updated?
   jupyter nbconvert --execute --to notebook --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
 
-Merged into master branch?
 
 
 
@@ -23,6 +19,11 @@ Merged into master branch?
 
 
 ######## AUTOMATED BY NOW ########
+
+Merged into master branch?
+
+Tests passing?
+  python -m unittest tests.test_bruker
 
 ReadTheDocs up-to-date?
   Docs updated?

@@ -36,4 +36,6 @@ jobs:
         run: |
           conda activate alphatims
           python -m unittest tests.test_bruker
+          python -m unittest tests.test_utils
+          # python -m unittest tests.test_plotting
           conda deactivate

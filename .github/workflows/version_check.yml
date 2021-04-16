@@ -16,14 +16,7 @@ jobs:
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
           github_version=$(curl "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py" | grep "__version__" | cut -f3 -d ' ')
           if [ "$current_version" = "$github_version" ]; then
-            echo "Version is not updated"
-            exit 1
-          fi
-      - name: GUI_manual.pdf updated
-        shell: bash -l {0}
-        run: |
-          if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
-            echo "GUI manual was not updated"
+            echo "Version is not updated
             exit 1
           fi
       - name: Tutorial notebook updated
@@ -33,6 +26,7 @@ jobs:
           tutorial_version=(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$tutorial_version" ]; then
             echo "Version is not updated"
+            echo "current: $current_version new: $tutorial_version"
             exit 1
           fi
       - name: Performance notebook updated
@@ -42,9 +36,18 @@ jobs:
           performance_version=(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$performance_version" ]; then
             echo "Version is not updated"
+            echo "current: $current_version new: $performance_version"
             exit 1
           fi
       - name: Readme performance updated
         shell: bash -l {0}
         run: |
           echo "TODO check if readme performance equals performance notebook"
+      - name: GUI_manual.pdf updated
+        shell: bash -l {0}
+        run: |
+          # TODO git does not preserve timestamps, so following is impossible
+          if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
+            echo "GUI manual was not updated"
+            exit 1
+          fi
