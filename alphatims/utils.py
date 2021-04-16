@@ -580,6 +580,23 @@ def progress_callback(
         current_progress_callback.value = total
 
 
+def set_progress_callback(progress_callback):
+    """Set the global progress callback.
+
+    Parameters
+    ----------
+    progress_callback :
+        The new global progress callback.
+        Options are:
+
+            - None, no progress callback will be used
+            - True, a textual progress callback (tqdm) will be enabled
+            - Any object that supports a `max` and `value` variable.
+    """
+    global PROGRESS_CALLBACK
+    PROGRESS_CALLBACK = progress_callback
+
+
 def create_hdf_group_from_dict(
     hdf_group,
     data_dict: dict,

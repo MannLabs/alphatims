@@ -1157,14 +1157,14 @@ def upload_data(*args):
                 DATASET = None
                 DATAFRAME = None
                 SELECTED_INDICES = None
-                alphatims.utils.PROGRESS_CALLBACK = upload_progress
+                alphatims.utils.set_progress_callback(upload_progress)
                 upload_progress.value = 0
                 upload_spinner.value = True
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
                 )
-                alphatims.utils.PROGRESS_CALLBACK = True
+                alphatims.utils.set_progress_callback(True)
                 mode = ''
                 if 'DDA' in upload_file.value:
                     mode = 'dda-'
