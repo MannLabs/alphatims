@@ -215,7 +215,7 @@ upload_error = pn.pane.Alert(
     align='center',
     margin=(-15, 0, -5, 0),
 )
-exit_button = pn.widgets.Button(
+quit_button = pn.widgets.Button(
     name='Quit',
     button_type='default',
     height=31,
@@ -241,7 +241,7 @@ main_part = pn.Column(
         upload_file,
         upload_button,
         upload_spinner,
-        exit_button,
+        # quit_button,
         align='center',
         sizing_mode='stretch_width',
     ),
@@ -1526,10 +1526,10 @@ def run():
 
 
 @pn.depends(
-    exit_button.param.clicks,
+    quit_button.param.clicks,
     watch=True
 )
-def exit_button_event(*args):
+def quit_button_event(*args):
     quit_server()
 
 
@@ -1553,8 +1553,8 @@ def close_browser_tab(func):
 
 
 def quit_server():
-    exit_button.name = "Server closed"
-    exit_button.button_type = "danger"
+    quit_button.name = "Server closed"
+    quit_button.button_type = "danger"
     logging.info("Quitting server...")
     SERVER.stop()
 
