@@ -25,7 +25,10 @@ LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(BASE_PATH, "logs")
 DOC_PATH = os.path.join(BASE_PATH, "docs")
 MAX_THREADS = 1
-LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py"
+LATEST_GITHUB_INIT_FILE = (
+    "https://raw.githubusercontent.com/MannLabs/alphatims/"
+    "master/alphatims/__init__.py"
+)
 PROGRESS_CALLBACK = True
 
 

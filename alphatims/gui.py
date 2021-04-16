@@ -1158,6 +1158,7 @@ def upload_data(*args):
                 DATAFRAME = None
                 SELECTED_INDICES = None
                 alphatims.utils.PROGRESS_CALLBACK = upload_progress
+                upload_progress.value = 0
                 upload_spinner.value = True
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
