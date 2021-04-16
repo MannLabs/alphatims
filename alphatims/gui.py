@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore')
 
 # GLOBAL VARIABLES
 DATASET = None
-PLOTS = pn.Column(None, None, None, sizing_mode='stretch_width',)
+PLOTS = pn.Column(None, None, None, None, sizing_mode='stretch_width',)
 WHOLE_TITLE = str()
 SELECTED_INDICES = np.array([])
 DATAFRAME = pd.DataFrame()
@@ -626,6 +626,17 @@ redo_button = pn.widgets.Button(
     margin=(-3, 0, 0, 5),
     align="center"
 )
+show_data_title = pn.pane.Markdown(
+    'Show table',
+    align='center',
+    margin=(-18, 10, 0, 0)
+)
+show_data_checkbox = pn.widgets.Checkbox(
+    value=False,
+    width=10,
+    margin=(10, 10, 0, 0),
+    align='center',
+)
 
 
 # player
@@ -975,8 +986,13 @@ settings = pn.Column(
             ),
             align="center"
         ),
+        pn.Column(
+            show_data_title,
+            show_data_checkbox,
+            align="center"
+        ),
         align="center",
-        margin=(0, 0, 20, 0)
+        margin=(0, 0, 20, 0),
     ),
     pn.Spacer(sizing_mode='stretch_height'),
     width=460,
@@ -1068,6 +1084,19 @@ def visualize_1d_plot():
     # Thus, the XIC is always equal to the whole plot,
     # making the stream/ dmap redundant...
     return line_plot
+
+
+def show_df():
+    if show_data_checkbox.value:
+        return pn.widgets.DataFrame(
+            DATAFRAME,
+            show_index=False,
+            disabled=True,
+            height=400,
+            sizing_mode='stretch_width'
+        )
+    else:
+        return None
 
 
 def upload_data(*args):
@@ -1213,6 +1242,7 @@ def init_settings(*args):
             plot1_y_axis.value = 'Inversed IM, V·s·cm\u207B\u00B2'
             plot2_x_axis.value = 'm/z, Th'
             strike_threshold.value = INTENSITY_THRESHOLD
+            show_data_checkbox.value = False
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, int(DATASET.intensity_max_value)),
@@ -1389,6 +1419,14 @@ def update_plots_and_settings(*args):
 
 
 @pn.depends(
+    show_data_checkbox.param.value,
+    watch=True,
+)
+def enable_show_df(*args):
+    update_global_selection("plot_axis", "df")
+
+
+@pn.depends(
     redo_button.param.clicks,
     watch=True,
 )
@@ -1523,7 +1561,7 @@ def quit_server():
 
 def update_global_selection(updated_option, updated_value):
     if updated_value is not None:
-        if updated_value != "plot_axis":
+        if updated_option != "plot_axis":
             logging.info(
                 f"Updating selection of '{updated_option}' "
                 f"with {updated_value}"
@@ -1535,6 +1573,7 @@ def update_global_selection(updated_option, updated_value):
             PLOTS[0] = visualize_tic()
             PLOTS[1] = visualize_scatter()
             PLOTS[2] = visualize_1d_plot()
+            PLOTS[3] = show_df()
 
 
 def update_widgets(updated_option):

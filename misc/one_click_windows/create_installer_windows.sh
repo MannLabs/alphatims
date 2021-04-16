@@ -1,18 +1,15 @@
 rm -rf dist
 rm -rf build
 conda create -n alphatimsinstaller python=3.8 -y
-# conda create -n alphatimsinstaller python=3.8
 conda activate alphatimsinstaller
-# call conda install git -y
-# call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]' --use-feature=2020-resolver
-# brew install freetype
 cd ../..
 rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_windows
-pip install "../../dist/alphatims-0.2.2-py3-none-any.whl[plotting]"
+pip install "../../dist/alphatims-0.2.3-py3-none-any.whl[plotting]"
 pip install pyinstaller==4.2
+# TODO https://stackoverflow.com/questions/54175042/python-3-7-anaconda-environment-import-ssl-dll-load-fail-error/60405693#60405693
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
 
