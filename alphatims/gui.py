@@ -184,14 +184,16 @@ project_description = pn.pane.Markdown(
 )
 
 divider_descr = pn.pane.HTML(
-    '<hr style="height: 6px; border:none; background-color: #045082; width: 1140px">',
+    '<hr style="height: 6px; border:none; background-color: #045082">',
     sizing_mode='stretch_width',
     align='center'
 )
 upload_file = pn.widgets.TextInput(
     name='Specify an experimental file:',
     placeholder='Enter the whole path to Bruker .d folder or .hdf file',
-    width=800,
+    align="center",
+    # width=800,
+    sizing_mode="stretch_width",
     margin=(15, 15, 0, 15)
 )
 upload_button = pn.widgets.Button(
@@ -209,8 +211,19 @@ upload_spinner = pn.indicators.LoadingSpinner(
     width=40,
     height=40
 )
+upload_progress = pn.widgets.Progress(
+    margin=(40, 15, 0, 15),
+    sizing_mode="stretch_width",
+    # width=100,
+    # height=40,
+    max=1,
+    value=1,
+    active=True,
+    bar_color='secondary'
+)
 upload_error = pn.pane.Alert(
-    width=800,
+    # width=800,
+    sizing_mode="stretch_width",
     alert_type="danger",
     align='center',
     margin=(-15, 0, -5, 0),
@@ -260,6 +273,7 @@ main_part = pn.Column(
     ),
     pn.Row(
         upload_button,
+        upload_progress,
         upload_spinner,
         gui_manual,
         download_new_version_button,
@@ -1140,6 +1154,8 @@ def upload_data(*args):
             DATASET.bruker_d_folder_name
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
+                alphatims.utils.PROGRESS_CALLBACK_STYLE = alphatims.utils.PROGRESS_CALLBACK_STYLE_PLOT
+                alphatims.utils.PBAR = upload_progress
                 upload_spinner.value = True
                 DATASET = None
                 DATAFRAME = None

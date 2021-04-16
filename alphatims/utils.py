@@ -32,6 +32,7 @@ PROGRESS_CALLBACK_STYLE_TEXT = 1
 PROGRESS_CALLBACK_STYLE_PLOT = 2
 PROGRESS_CALLBACK_STYLE = PROGRESS_CALLBACK_STYLE_TEXT
 LATEST_GITHUB_INIT_FILE = "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py"
+PBAR = None
 
 
 def set_logger(
@@ -397,10 +398,16 @@ def threadpool(
                         for i in pool.imap_unordered(starfunc, iterable):
                             pbar.update()
                 elif progress_callback_style == PROGRESS_CALLBACK_STYLE_PLOT:
-                    # TODO: update?
-                    with tqdm.gui(total=len(iterable)) as pbar:
-                        for i in pool.imap_unordered(starfunc, iterable):
-                            pbar.update()
+                    global PBAR
+                    PBAR.max = len(iterable)
+                    PBAR.value = 0
+                    progress = 0
+                    steps = PBAR.max / 1000
+                    for i in pool.imap_unordered(starfunc, iterable):
+                        progress += 1
+                        if progress % steps < 1:
+                            PBAR.value = progress
+                    PBAR.value = PBAR.max
                 else:
                     raise ValueError("Not a valid progress callback style")
         return functools.wraps(func)(wrapper)
@@ -586,7 +593,12 @@ def progress_callback(iterable, style: int = -1, total: int = -1):
         else:
             return tqdm.tqdm(iterable)
     elif style == PROGRESS_CALLBACK_STYLE_PLOT:
-        # TODO: update?
+        # global PBAR
+        # PBAR.max = len(iterable)
+        # PBAR.value = 0
+        # TODO
+        # for i in pool.imap_unordered(starfunc, iterable):
+        #     PBAR.value += 1
         return tqdm.gui.tqdm(iterable)
     else:
         raise ValueError("Not a valid progress callback style")
