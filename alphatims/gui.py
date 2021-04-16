@@ -139,7 +139,7 @@ gui_manual_path = os.path.join(
 
 # HEADER
 header_titel = pn.pane.Markdown(
-    '# AlphaTims',
+    f'# AlphaTims {alphatims.__version__}',
     sizing_mode='stretch_width',
 )
 mpi_biochem_logo = pn.pane.PNG(
@@ -232,28 +232,50 @@ gui_manual = pn.widgets.FileDownload(
     margin=(34, 20, 0, 20)
 )
 
+github_version = alphatims.utils.check_github_version(silent=True)
+if github_version == alphatims.__version__:
+    download_new_version_button = None
+else:
+    download_new_version_button = pn.widgets.Button(
+        name=f"Download AlphaTims version {github_version}",
+        button_type='primary',
+        height=31,
+        # width=100,
+        margin=(34, 20, 0, 0),
+        # disabled=True,
+        # link_url='https://github.com/MannLabs/alphatims',
+    )
+    download_new_version_button.js_on_click(
+        code="""window.open("https://github.com/MannLabs/alphatims#installation")"""
+    )
+
 
 main_part = pn.Column(
     project_description,
     divider_descr,
     pn.Row(
-        gui_manual,
         upload_file,
-        upload_button,
-        upload_spinner,
-        # quit_button,
         align='center',
         sizing_mode='stretch_width',
     ),
     pn.Row(
+        upload_button,
+        upload_spinner,
+        gui_manual,
+        download_new_version_button,
+        # quit_button,
+        align='center',
+        # sizing_mode='stretch_width',
+    ),
+    pn.Row(
         upload_error,
         align='center',
-        width=870,
+        width=800,
         margin=(-15, 0, 0, 0)
     ),
     background='#eaeaea',
     sizing_mode='stretch_width',
-    height=352,
+    height=360,
     margin=(5, 0, 10, 0)
 )
 

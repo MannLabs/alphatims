@@ -207,12 +207,18 @@ def show_python_info() -> None:
     logging.info("")
 
 
-def check_github_version() -> str:
+def check_github_version(silent=False) -> str:
     """Checks and logs the current version of AlphaTims.
 
     Check if the local version equals the AlphaTims GitHub master branch.
     This is only possible with an active internet connection and
     if no credentials are required for GitHub.
+
+    Parameters
+    ----------
+    silent : str
+        Use the logger to display the obtained conclusion.
+        Default is False.
 
     Returns
     -------
@@ -227,22 +233,24 @@ def check_github_version() -> str:
             for line in version_file.read().decode('utf-8').split("\n"):
                 if line.startswith("__version__"):
                     github_version = line.split()[2][1:-1]
-                    if github_version != alphatims.__version__:
-                        logging.info(
-                            f"You are currently using AlphaTims version "
-                            f"{alphatims.__version__}. "
-                            f"However, the latest version of AlphaTims on "
-                            f"GitHub is {github_version}. Checkout "
-                            "https://github.com/MannLabs/alphatims.git "
-                            "for instructions on how to update AlphaTims..."
-                        )
-                        logging.info("")
-                    else:
-                        logging.info(
-                            "Current AlphaTims version is up-to-date "
-                            "with GitHub."
-                        )
-                        logging.info("")
+                    if not silent:
+                        if github_version != alphatims.__version__:
+                            logging.info(
+                                f"You are currently using AlphaTims version "
+                                f"{alphatims.__version__}. "
+                                f"However, the latest version of AlphaTims on "
+                                f"GitHub is {github_version}. Checkout "
+                                "https://github.com/MannLabs/alphatims.git "
+                                "for instructions on how to update AlphaTims"
+                                "..."
+                            )
+                            logging.info("")
+                        else:
+                            logging.info(
+                                "Current AlphaTims version is up-to-date "
+                                "with GitHub."
+                            )
+                            logging.info("")
                     return github_version
     except IndexError:
         logging.info(
