@@ -357,7 +357,6 @@ def threadpool(
         A parallelized decorated function.
     """
     import multiprocessing.pool
-    import tqdm
     import functools
 
     def parallel_func_inner(func):
@@ -373,34 +372,12 @@ def threadpool(
                     thread_count,
                     set_global=False
                 )
-            if include_progress_callback:
-                progress_callback_style = PROGRESS_CALLBACK
-            else:
-                progress_callback_style = None
             with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
-                if progress_callback_style is None:
-                    for i in pool.imap_unordered(starfunc, iterable):
-                        pass
-                elif isinstance(
-                    progress_callback_style,
-                    bool
-                ) and progress_callback_style:
-                    with tqdm.tqdm(total=len(iterable)) as pbar:
-                        for i in pool.imap_unordered(starfunc, iterable):
-                            pbar.update()
-                else:
-                    try:
-                        PROGRESS_CALLBACK.max = len(iterable)
-                        PROGRESS_CALLBACK.value = 0
-                    except AttributeError:
-                        raise ValueError("Not a valid progress callback style")
-                    progress = 0
-                    steps = PROGRESS_CALLBACK.max / 1000
-                    for i in pool.imap_unordered(starfunc, iterable):
-                        progress += 1
-                        if progress % steps < 1:
-                            PROGRESS_CALLBACK.value = progress
-                    PROGRESS_CALLBACK.value = PROGRESS_CALLBACK.max
+                for i in progress_callback(
+                    pool.imap_unordered(starfunc, iterable),
+                    total=len(iterable)
+                ):
+                    pass
         return functools.wraps(func)(wrapper)
     if _func is None:
         return parallel_func_inner
@@ -566,45 +543,40 @@ def progress_callback(
     -------
     : iterable
         A generator over the iterable with added callback.
-
-    Raises
-    ------
-    ValueError
-        If no valid style (-1, 0, 1, 2) is provided.
     """
     global PROGRESS_CALLBACK
     if include_progress_callback:
-        progress_callback_style = PROGRESS_CALLBACK
+        current_progress_callback = PROGRESS_CALLBACK
     else:
-        progress_callback_style = None
-    if progress_callback_style is None:
+        current_progress_callback = None
+    if current_progress_callback is None:
         for element in iterable:
             yield element
-    elif isinstance(progress_callback_style, bool) and progress_callback_style:
+    elif isinstance(current_progress_callback, bool) and current_progress_callback:
         import tqdm
         if total == -1:
             total = len(iterable)
-        with tqdm.tqdm(total=total) as pbar:
+        with tqdm.tqdm(total=total) as progress_bar:
             for element in iterable:
                 yield element
-                pbar.update()
+                progress_bar.update()
     else:
         try:
             if total != -1:
-                PROGRESS_CALLBACK.max = total
+                current_progress_callback.max = total
             else:
-                PROGRESS_CALLBACK.max = len(iterable)
-            PROGRESS_CALLBACK.value = 0
+                current_progress_callback.max = len(iterable)
+            current_progress_callback.value = 0
         except AttributeError:
-            raise ValueError("Not a valid progress callback style")
-        steps = PROGRESS_CALLBACK.max / 1000
+            raise ValueError("Not a valid progress callback")
+        steps = current_progress_callback.max / 1000
         progress = 0
         for element in iterable:
             progress += 1
             if progress % steps < 1:
-                PROGRESS_CALLBACK.value = progress
+                current_progress_callback.value = progress
             yield element
-        PROGRESS_CALLBACK.value = PROGRESS_CALLBACK.max
+        current_progress_callback.value = total
 
 
 def create_hdf_group_from_dict(
