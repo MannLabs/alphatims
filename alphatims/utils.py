@@ -550,23 +550,23 @@ def progress_callback(
         current_progress_callback = PROGRESS_CALLBACK
     else:
         current_progress_callback = None
+    if total == -1:
+        total = len(iterable)
     if current_progress_callback is None:
         for element in iterable:
             yield element
-    elif isinstance(current_progress_callback, bool) and current_progress_callback:
+    elif isinstance(
+        current_progress_callback,
+        bool
+    ) and current_progress_callback:
         import tqdm
-        if total == -1:
-            total = len(iterable)
         with tqdm.tqdm(total=total) as progress_bar:
             for element in iterable:
                 yield element
                 progress_bar.update()
     else:
         try:
-            if total != -1:
-                current_progress_callback.max = total
-            else:
-                current_progress_callback.max = len(iterable)
+            current_progress_callback.max = total
             current_progress_callback.value = 0
         except AttributeError:
             raise ValueError("Not a valid progress callback")
