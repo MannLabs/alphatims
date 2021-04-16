@@ -117,8 +117,6 @@ def set_logger(
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
         root.addHandler(file_handler)
-    if not stream:
-        PROGRESS_CALLBACK = None
     return log_file_name
 
 
