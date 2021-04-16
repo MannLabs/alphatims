@@ -16,9 +16,11 @@ class TestLogging(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @classmethod
     def setUpClass(cls):
         pass
 
+    @classmethod
     def tearDownClass(cls):
         pass
 
