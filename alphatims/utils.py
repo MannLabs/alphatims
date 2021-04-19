@@ -350,6 +350,7 @@ def threadpool(
         If True, the default progress callback will be used as callback.
         (See "progress_callback" function.)
         If False, no callback is added.
+        See `set_progress_callback` for callback styles.
         Default is True.
 
     Returns
@@ -365,7 +366,6 @@ def threadpool(
             def starfunc(iterable):
                 return func(iterable, *args, **kwargs)
 
-            global PROGRESS_CALLBACK
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
@@ -376,7 +376,8 @@ def threadpool(
             with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
                 for i in progress_callback(
                     pool.imap_unordered(starfunc, iterable),
-                    total=len(iterable)
+                    total=len(iterable),
+                    include_progress_callback=include_progress_callback
                 ):
                     pass
         return functools.wraps(func)(wrapper)
@@ -534,6 +535,7 @@ def progress_callback(
     include_progress_callback : bool
         If True, the default progress callback will be used as callback.
         If False, no callback is added.
+        See `set_progress_callback` for callback styles.
         Default is True.
     total : int
         The length of the iterable.
