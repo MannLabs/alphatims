@@ -3,43 +3,54 @@
 
 # builtin
 import unittest
+import logging
+import os
 
 # external
 import numpy as np
 
 # local
-import os
 import alphatims.utils
-BASE_PATH = os.path.dirname(__file__)
-alphatims.utils.set_logger(
-    stream=None,
-    log_file_name=os.path.join(
-        BASE_PATH,
-        "sandbox_data",
-    )
-)
 import alphatims.bruker
+BASE_PATH = os.path.dirname(__file__)
+# alphatims.utils.set_logger(
+#     stream=None,
+#     log_file_name=os.path.join(
+#         BASE_PATH,
+#         "sandbox_data",
+#     )
+# )
+SAMPLE_NAME = "20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d"
+FILE_NAME = os.path.join(
+    BASE_PATH,
+    "sandbox_data",
+    f"{SAMPLE_NAME}"
+)
+GITHUB_FILE_NAME = (
+    "https://github.com/MannLabs/alphatims/releases/"
+    f"download/0.1.210317/{SAMPLE_NAME}.zip"
+)
 
 
 class TestSlicing(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        sample = "20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717"
-        file_name = os.path.join(
-            BASE_PATH,
-            "sandbox_data",
-            f"{sample}.hdf"
-        )
-        if not os.path.exists(file_name):
-            file_name = os.path.join(
-                BASE_PATH,
-                "sandbox_data",
-                f"{sample}.d"
-            )
-        if os.path.exists(file_name):
+        if not os.path.exists(FILE_NAME):
+            logging.info("Downloading sample...")
+            import urllib.request
+            import urllib.error
+            import zipfile
+            import io
+            with urllib.request.urlopen(GITHUB_FILE_NAME) as sample_file:
+                sample_byte_stream = io.BytesIO(sample_file.read())
+                with zipfile.ZipFile(sample_byte_stream, 'r') as zip_ref:
+                    zip_ref.extractall(
+                        os.path.dirname(FILE_NAME)
+                    )
+        if os.path.exists(FILE_NAME):
             try:
-                cls.data = alphatims.bruker.TimsTOF(file_name)
+                cls.data = alphatims.bruker.TimsTOF(FILE_NAME)
             except:
                 assert False, "Test data set is invalid..."
         else:

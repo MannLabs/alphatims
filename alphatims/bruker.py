@@ -289,7 +289,7 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
     return scan_indices, tof_indices, intensities
 
 
-@alphatims.utils.threadpool(progress_callback=True)
+@alphatims.utils.threadpool
 def process_frame(
     frame_id: int,
     tdf_bin_file_name: str,
@@ -1741,7 +1741,7 @@ class TimsTOF(object):
                     infile.write(f"{mz:.6f} {intensity}\n")
                 infile.write("END IONS\n")
         logging.info(
-            f"Succesfully wrote {self.precursor_max_index - 1} "
+            f"Succesfully wrote {self.precursor_max_index - 1:,} "
             f"spectra to {full_file_name}."
         )
         return full_file_name

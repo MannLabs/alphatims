@@ -16,7 +16,7 @@ on:
         required: false
         default: false
 
-name: Create all GUI releases and publish on PyPi
+name: Publish on PyPi and release on GitHub
 
 jobs:
   Create_Draft_On_GitHub:
@@ -118,17 +118,13 @@ jobs:
           cd misc/one_click_windows
           # . ./create_installer_windows.bat
           . ./create_installer_windows.sh
-      # - name: Test installer for Windows
-      #   shell: bash -l {0}
-      #   run: |
-      #     cd misc/one_click_windows/dist/
-      #     ./alphatims_gui_installer_windows.exe //verysilent //log=log.txt //noicons //tasks= //portable=1
-      #     # log_closed=$(tail -n 5 log.txt | grep "Log closed.")
-      #     # while [[ "$log_closed" == "" ]]; do
-      #     #     sleep 10
-      #     #     log_closed=$(tail -n 5 log.txt | grep "Log closed.")
-      #     # done
-      #     cat log.txt
+      - name: Test installer for Windows
+        shell: bash -l {0}
+        run: |
+          cd misc/one_click_windows/dist/
+          echo "TODO, this test seems to freeze the runner..."
+          # ./alphatims_gui_installer_windows.exe //verysilent //log=log.txt //noicons //tasks= //portable=1
+          # cat log.txt
       - name: Upload Windows Installer
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -180,7 +176,7 @@ jobs:
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
   Test_PyPi_Release:
-    name: Test on ${{ matrix.os }}
+    name: Test_PyPi_version_on_${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: Create_PyPi_Release
     strategy:

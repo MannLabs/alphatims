@@ -139,7 +139,7 @@ gui_manual_path = os.path.join(
 
 # HEADER
 header_titel = pn.pane.Markdown(
-    '# AlphaTims',
+    f'# AlphaTims {alphatims.__version__}',
     sizing_mode='stretch_width',
 )
 mpi_biochem_logo = pn.pane.PNG(
@@ -184,14 +184,16 @@ project_description = pn.pane.Markdown(
 )
 
 divider_descr = pn.pane.HTML(
-    '<hr style="height: 6px; border:none; background-color: #045082; width: 1140px">',
+    '<hr style="height: 6px; border:none; background-color: #045082">',
     sizing_mode='stretch_width',
     align='center'
 )
 upload_file = pn.widgets.TextInput(
     name='Specify an experimental file:',
     placeholder='Enter the whole path to Bruker .d folder or .hdf file',
-    width=800,
+    align="center",
+    # width=800,
+    sizing_mode="stretch_width",
     margin=(15, 15, 0, 15)
 )
 upload_button = pn.widgets.Button(
@@ -209,13 +211,24 @@ upload_spinner = pn.indicators.LoadingSpinner(
     width=40,
     height=40
 )
+upload_progress = pn.widgets.Progress(
+    margin=(40, 15, 0, 15),
+    sizing_mode="stretch_width",
+    # width=100,
+    # height=40,
+    max=1,
+    value=1,
+    active=True,
+    bar_color='secondary'
+)
 upload_error = pn.pane.Alert(
-    width=800,
+    # width=800,
+    sizing_mode="stretch_width",
     alert_type="danger",
     align='center',
     margin=(-15, 0, -5, 0),
 )
-exit_button = pn.widgets.Button(
+quit_button = pn.widgets.Button(
     name='Quit',
     button_type='default',
     height=31,
@@ -232,28 +245,51 @@ gui_manual = pn.widgets.FileDownload(
     margin=(34, 20, 0, 20)
 )
 
+github_version = alphatims.utils.check_github_version(silent=True)
+if github_version == alphatims.__version__:
+    download_new_version_button = None
+else:
+    download_new_version_button = pn.widgets.Button(
+        name=f"Download AlphaTims version {github_version}",
+        button_type='primary',
+        height=31,
+        # width=100,
+        margin=(34, 20, 0, 0),
+        # disabled=True,
+        # link_url='https://github.com/MannLabs/alphatims',
+    )
+    download_new_version_button.js_on_click(
+        code="""window.open("https://github.com/MannLabs/alphatims#installation")"""
+    )
+
 
 main_part = pn.Column(
     project_description,
     divider_descr,
     pn.Row(
-        gui_manual,
         upload_file,
-        upload_button,
-        upload_spinner,
-        exit_button,
         align='center',
         sizing_mode='stretch_width',
     ),
     pn.Row(
+        upload_button,
+        upload_progress,
+        upload_spinner,
+        gui_manual,
+        download_new_version_button,
+        # quit_button,
+        align='center',
+        # sizing_mode='stretch_width',
+    ),
+    pn.Row(
         upload_error,
         align='center',
-        width=870,
+        width=800,
         margin=(-15, 0, 0, 0)
     ),
     background='#eaeaea',
     sizing_mode='stretch_width',
-    height=352,
+    height=360,
     margin=(5, 0, 10, 0)
 )
 
@@ -1118,14 +1154,17 @@ def upload_data(*args):
             DATASET.bruker_d_folder_name
         ).split('.')[0] != os.path.basename(upload_file.value).split('.')[0]:
             try:
-                upload_spinner.value = True
                 DATASET = None
                 DATAFRAME = None
                 SELECTED_INDICES = None
+                alphatims.utils.set_progress_callback(upload_progress)
+                upload_progress.value = 0
+                upload_spinner.value = True
                 DATASET = alphatims.bruker.TimsTOF(
                     upload_file.value,
                     slice_as_dataframe=False
                 )
+                alphatims.utils.set_progress_callback(True)
                 mode = ''
                 if 'DDA' in upload_file.value:
                     mode = 'dda-'
@@ -1526,10 +1565,10 @@ def run():
 
 
 @pn.depends(
-    exit_button.param.clicks,
+    quit_button.param.clicks,
     watch=True
 )
-def exit_button_event(*args):
+def quit_button_event(*args):
     quit_server()
 
 
@@ -1553,8 +1592,8 @@ def close_browser_tab(func):
 
 
 def quit_server():
-    exit_button.name = "Server closed"
-    exit_button.button_type = "danger"
+    quit_button.name = "Server closed"
+    quit_button.button_type = "danger"
     logging.info("Quitting server...")
     SERVER.stop()
 
