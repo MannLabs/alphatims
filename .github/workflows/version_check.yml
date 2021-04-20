@@ -16,7 +16,7 @@ jobs:
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
           github_version=$(curl "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py" | grep "__version__" | cut -f3 -d ' ')
           if [ "$current_version" = "$github_version" ]; then
-            echo "Version is not updated
+            echo "Version is not updated"
             exit 1
           fi
       - name: Tutorial notebook updated
