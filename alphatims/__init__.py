@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 __license__ = "Apache"
 __description__ = "A Python package to index Bruker TimsTOF raw data for fast and easy accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
