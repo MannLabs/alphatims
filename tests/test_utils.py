@@ -6,6 +6,7 @@ import unittest
 
 # local
 import alphatims.utils
+alphatims.utils.set_progress_callback(None)
 
 
 class TestLogging(unittest.TestCase):

@@ -13,13 +13,6 @@ import numpy as np
 import alphatims.utils
 import alphatims.bruker
 BASE_PATH = os.path.dirname(__file__)
-# alphatims.utils.set_logger(
-#     stream=None,
-#     log_file_name=os.path.join(
-#         BASE_PATH,
-#         "sandbox_data",
-#     )
-# )
 SAMPLE_NAME = "20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d"
 FILE_NAME = os.path.join(
     BASE_PATH,
@@ -30,6 +23,8 @@ GITHUB_FILE_NAME = (
     "https://github.com/MannLabs/alphatims/releases/"
     f"download/0.1.210317/{SAMPLE_NAME}.zip"
 )
+
+alphatims.utils.set_progress_callback(None)
 
 
 class TestSlicing(unittest.TestCase):
