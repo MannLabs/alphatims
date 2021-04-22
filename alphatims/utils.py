@@ -126,13 +126,14 @@ def show_platform_info() -> None:
     This is done in the following format:
 
         - [timestamp]> Platform information:
-        - [timestamp]> system     - [...]
-        - [timestamp]> release    - [...]
-        - [timestamp]> version    - [...]
-        - [timestamp]> machine    - [...]
-        - [timestamp]> processor  - [...]
-        - [timestamp]> cpu count  - [...]
-        - [timestamp]> ram        - [...]/[...] Gb (available/total)
+        - [timestamp]> system         - [...]
+        - [timestamp]> release        - [...]
+        - [timestamp]> version        - [...]
+        - [timestamp]> machine        - [...]
+        - [timestamp]> processor      - [...]
+        - [timestamp]> cpu count      - [...]
+        - [timestamp]> cpu frequency  - [...]
+        - [timestamp]> ram            - [...]/[...] Gb (available/total)
     """
     import platform
     import psutil
