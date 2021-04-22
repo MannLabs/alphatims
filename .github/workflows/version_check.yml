@@ -39,15 +39,16 @@ jobs:
             echo "current: $current_version new: $performance_version"
             exit 1
           fi
-      - name: Readme performance updated
+      - name: Readme updated
         shell: bash -l {0}
         run: |
-          echo "TODO check if readme performance equals performance notebook"
+          echo "Make sure the readme is updated"
       - name: GUI_manual.pdf updated
         shell: bash -l {0}
         run: |
+          echo "make sure the GUI_manual.pdf is updated"
           # TODO git does not preserve timestamps, so following is impossible
-          if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
-            echo "GUI manual was not updated"
-            exit 1
-          fi
+          # if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
+          #   echo "GUI manual was not updated"
+          #   exit 1
+          # fi
