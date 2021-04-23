@@ -23,7 +23,7 @@ jobs:
         shell: bash -l {0}
         run: |
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
-          tutorial_version=(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
+          tutorial_version=$(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$tutorial_version" ]; then
             echo "Version is not updated"
             echo "current: $current_version new: $tutorial_version"
@@ -33,7 +33,7 @@ jobs:
         shell: bash -l {0}
         run: |
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
-          performance_version=(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
+          performance_version=$(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$performance_version" ]; then
             echo "Version is not updated"
             echo "current: $current_version new: $performance_version"
