@@ -13,7 +13,7 @@ jobs:
       - name: Master version bumped
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           github_version=$(curl "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py" | grep "__version__" | cut -f3 -d ' ')
           if [ "$current_version" = "$github_version" ]; then
             echo "Version is not updated"
@@ -22,7 +22,7 @@ jobs:
       - name: Tutorial notebook updated
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           tutorial_version=$(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$tutorial_version" ]; then
             echo "Version is not updated"
