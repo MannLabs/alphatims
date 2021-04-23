@@ -114,7 +114,7 @@ conda env create --force --name alphatims --file alphatims/misc/conda_developmen
 conda activate alphatims
 ```
 
-Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflict can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflicts can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
 conda create -n alphatims python=3.8 -y
