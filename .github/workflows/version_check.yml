@@ -32,7 +32,7 @@ jobs:
       - name: Performance notebook updated
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           performance_version=$(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$performance_version" ]; then
             echo "Version is not updated"
