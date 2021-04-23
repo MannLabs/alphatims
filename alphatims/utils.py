@@ -126,31 +126,33 @@ def show_platform_info() -> None:
     This is done in the following format:
 
         - [timestamp]> Platform information:
-        - [timestamp]> system     - [...]
-        - [timestamp]> release    - [...]
-        - [timestamp]> version    - [...]
-        - [timestamp]> machine    - [...]
-        - [timestamp]> processor  - [...]
-        - [timestamp]> cpu count  - [...]
-        - [timestamp]> ram        - [...]/[...] Gb (available/total)
+        - [timestamp]> system         - [...]
+        - [timestamp]> release        - [...]
+        - [timestamp]> version        - [...]
+        - [timestamp]> machine        - [...]
+        - [timestamp]> processor      - [...]
+        - [timestamp]> cpu count      - [...]
+        - [timestamp]> cpu frequency  - [...]
+        - [timestamp]> ram            - [...]/[...] Gb (available/total)
     """
     import platform
     import psutil
     logging.info("Platform information:")
-    logging.info(f"system     - {platform.system()}")
-    logging.info(f"release    - {platform.release()}")
+    logging.info(f"system        - {platform.system()}")
+    logging.info(f"release       - {platform.release()}")
     if platform.system() == "Darwin":
-        logging.info(f"version    - {platform.mac_ver()[0]}")
+        logging.info(f"version       - {platform.mac_ver()[0]}")
     else:
-        logging.info(f"version    - {platform.version()}")
-    logging.info(f"machine    - {platform.machine()}")
-    logging.info(f"processor  - {platform.processor()}")
+        logging.info(f"version       - {platform.version()}")
+    logging.info(f"machine       - {platform.machine()}")
+    logging.info(f"processor     - {platform.processor()}")
     logging.info(
-        f"cpu count  - {psutil.cpu_count()}"
+        f"cpu count     - {psutil.cpu_count()}"
         # f" ({100 - psutil.cpu_percent()}% unused)"
     )
+    logging.info(f"cpu frequency - {psutil.cpu_freq().current:.2f} Mhz")
     logging.info(
-        f"ram        - "
+        f"ram           - "
         f"{psutil.virtual_memory().available/1024**3:.1f}/"
         f"{psutil.virtual_memory().total/1024**3:.1f} Gb "
         f"(available/total)"

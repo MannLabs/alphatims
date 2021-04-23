@@ -13,7 +13,7 @@ jobs:
       - name: Master version bumped
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           github_version=$(curl "https://raw.githubusercontent.com/MannLabs/alphatims/master/alphatims/__init__.py" | grep "__version__" | cut -f3 -d ' ')
           if [ "$current_version" = "$github_version" ]; then
             echo "Version is not updated"
@@ -22,8 +22,8 @@ jobs:
       - name: Tutorial notebook updated
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
-          tutorial_version=(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
+          tutorial_version=$(grep "alphatims" nbs/tutorial_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$tutorial_version" ]; then
             echo "Version is not updated"
             echo "current: $current_version new: $tutorial_version"
@@ -32,22 +32,23 @@ jobs:
       - name: Performance notebook updated
         shell: bash -l {0}
         run: |
-          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ')
-          performance_version=(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
+          current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
+          performance_version=$(grep "alphatims" nbs/performance_log.txt | head -n 1 | tr -s ' ' | cut -d ' ' -f5)
           if [ "$current_version" != "$performance_version" ]; then
             echo "Version is not updated"
             echo "current: $current_version new: $performance_version"
             exit 1
           fi
-      - name: Readme performance updated
+      - name: Readme updated
         shell: bash -l {0}
         run: |
-          echo "TODO check if readme performance equals performance notebook"
+          echo "Make sure the readme is updated"
       - name: GUI_manual.pdf updated
         shell: bash -l {0}
         run: |
+          echo "make sure the GUI_manual.pdf is updated"
           # TODO git does not preserve timestamps, so following is impossible
-          if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
-            echo "GUI manual was not updated"
-            exit 1
-          fi
+          # if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
+          #   echo "GUI manual was not updated"
+          #   exit 1
+          # fi

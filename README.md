@@ -1,5 +1,5 @@
 ![Pip installation](https://github.com/MannLabs/alphatims/workflows/Default%20installation%20and%20tests/badge.svg)
-![GUI and PyPi releases](https://github.com/MannLabs/alphatims/workflows/Create%20all%20GUI%20releases%20and%20publish%20on%20PyPi/badge.svg)
+![GUI and PyPi releases](https://github.com/MannLabs/alphatims/workflows/Publish%20on%20PyPi%20and%20release%20on%20GitHub/badge.svg)
 
 ---
 # AlphaTims
@@ -248,32 +248,7 @@ Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 
 ### Speed
 
-Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) include:
-
-| type | gradient | datapoints    | reading (raw/HDF) | export HDF| slicing (in ms)         |
-|------|----------|---------------|-------------------|--------|----------------------------|
-| DDA  | 6 min    | 214,172,697   | 1.48 s / 445 ms   | 569 ms | 1.85 / 48 / 27.1 / 89.7  |
-| DIA  | 6 min    | 158,552,099   | 1.06 s / 295 ms   | 409 ms | 7.35 / 24.1 / 649 / 110    |
-| DDA  | 21 min   | 295,251,252   | 3.07 s / 755 ms   | 779 ms | 2.17 / 68.3 / 106 / 181    |
-| DIA  | 21 min   | 730,564,765   | 5.24 s / 1.90 s   | 1.79 s | 0.860 / 123 / 4910 / 392    |
-| DDA  | 120 min  | 2,074,019,899 | 23.2 s / 10.1 s   | 4.94 s | 0.671 / 338 / 557 / 1100   |
-
-All slices were performed in a single dimension. Including more slices makes the analysis more stringent and hence faster. The considered dimensions were:
-
-* **LC:** 100.0 <= retention_time < 100.5
-* **TIMS:** scan_index = 450
-* **Quadrupole:** 700.0 <= quad_mz_values < 710.0
-* **TOF:** 621.9 <= tof_mz_values < 622.1
-
-All of these analyses were timed with `timeit` and are the average of at least 7 runs. They were obtained on the following system:
-
-* **MacBook Pro:** 13-inch, 2020, Four Thunderbolt 3 ports
-* **OS version:** macOS Catalina 10.15.7
-* **Processor:** 2.3 GHz Quad-Core Intel Core i7
-* **Memory:** 32 GB 3733 MHz LPDDR4X
-* **Startup Disk:** Macintosh HD
-
-Full details are available in the [performance notebook](nbs/performance.ipynb).
+Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) are available in the [performance notebook](nbs/performance.ipynb).
 
 ### RAM
 

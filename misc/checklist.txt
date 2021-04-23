@@ -1,16 +1,26 @@
 ######## ALWAYS TODO ########
 
 Versions updated
+  conda activate alphatims
   cd misc
-  # bumpversion patch --new-version VERSION --config-file bumpversion.cfg
   bumpversion patch --config-file bumpversion.cfg
+  conda deactivate
+  # bumpversion patch --new-version VERSION --config-file bumpversion.cfg
 
 No TODOs left?
 
-Tutorial/manual/performance/README updated?
-  jupyter nbconvert --execute --to notebook --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
+README updated?
 
+Manual updated?
+  if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
+   echo "GUI manual was not updated"
+  fi
 
+Tutorial and performance?
+  conda activate alphatims
+  jupyter nbconvert --execute --inplace --to notebook --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
+  jupyter nbconvert --to html --NotebookClient.kernel_name="python" nbs/tutorial.ipynb nbs/performance.ipynb
+  conda deactivate
 
 
 
