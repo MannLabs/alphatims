@@ -167,11 +167,11 @@ The same sample was acquired with diaPASEF and is also available for [download f
 
 There are three ways to use AlphaTims:
 
-* [**GUI:**](#gui) This allows to browse and visualize the data.
+* [**GUI:**](#gui) This allows to interactively browse, visualize and export the data.
 * [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
-* [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
+* [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively with custom code.
 
-NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
+NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on your local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
 
@@ -210,7 +210,6 @@ Options:
                                  cost of taking 2-10 longer accession times.
   -o, --output_folder DIRECTORY  A directory for all output (blank means
                                  `input_file` root is used).
-
   -l, --log_file PATH            Save all log data to a file (blank means
                                  'log_[date].txt' with date format
                                  yymmddhhmmss in 'log' folder of AlphaTims
