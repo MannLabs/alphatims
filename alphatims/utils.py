@@ -509,7 +509,8 @@ def pjit(
                         stop,
                         step,
                         *args
-                    )
+                    ),
+                    daemon=True
                 )
                 thread.start()
                 threads.append(thread)
