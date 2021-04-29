@@ -1711,7 +1711,7 @@ class TimsTOF(object):
             keep_n_most_abundant_peaks=keep_n_most_abundant_peaks,
         )
         pepmasses = self.precursors.MonoisotopicMz.values
-        charges = self.precursors.Charge.values
+        charges = self.precursors.Charge.values.astype(np.int64)
         rtinseconds = self.rt_values[self.precursors.Parent.values]
         intensities = self.precursors.Intensity.values
         mobilities = self.mobility_values[
