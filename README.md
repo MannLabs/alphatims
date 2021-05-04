@@ -126,7 +126,7 @@ pip install -e "./alphatims[plotting,development]"
 
 The following steps are optional, but make working with AlphaTims slightly more convenient:
 
-* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used (this is optional), the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
+* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
   ```bash
   conda activate alphatims
   alphatims_bin="$(which alphatims)"
