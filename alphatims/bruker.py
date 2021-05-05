@@ -173,12 +173,6 @@ def read_bruker_sql(
         The acquisition_mode, global_meta_data, frames, fragment_frames
         and precursors.
         For diaPASEF, precursors is None.
-
-    Raises
-    ------
-    ValueError
-        When table "MsMsType" is not 8 or 9.
-        In this case it is unclear if it is ddaPASEF or diaPASEF.
     """
     import sqlite3
     logging.info(f"Reading frame metadata for {bruker_d_folder_name}")
