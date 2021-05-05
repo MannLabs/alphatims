@@ -37,3 +37,36 @@
 2021-05-03 16:48:51> Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
 2021-05-03 16:49:07> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
 2021-05-03 16:49:07> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-05-04 16:19:44> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:19:44> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:19:59> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-05-04 16:19:59> 
+2021-05-04 16:19:59> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:19:59> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:21:18> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-05-04 16:21:18> 
+2021-05-04 16:21:20> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:21:20> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:21:20> Reading 170 frames with 21,287,769 detector strikes for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 16:21:21> Indexing /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d...
+2021-05-04 19:30:23> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-05-04 19:30:23> 
+2021-05-04 19:30:23> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:30:23> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:30:52> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-05-04 19:30:52> 
+2021-05-04 19:30:53> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:30:53> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:30:53> Reading 170 frames with 21,287,769 detector strikes for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:30:53> Indexing /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d...
+2021-05-04 19:30:53> Succesfully imported data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:31:25> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-04 19:31:25> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-04 19:31:26> Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-04 19:31:31> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
+2021-05-04 19:31:31> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-04 19:34:20> Importing data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:34:20> Reading frame metadata for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:34:20> Reading 170 frames with 21,287,769 detector strikes for /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
+2021-05-04 19:34:20> Indexing /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d...
+2021-05-04 19:34:20> Succesfully imported data from /Users/swillems/Downloads/2021_03_09_D2-Plrn2_03_percent_01.d
