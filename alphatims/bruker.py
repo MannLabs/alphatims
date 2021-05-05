@@ -223,7 +223,19 @@ def read_bruker_sql(
                 sql_database_connection
             )
         else:
-            raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
+            acquisition_mode = "noPASEF"
+            fragment_frames = pd.DataFrame(
+                {
+                    "Frame": np.array([0]),
+                    "ScanNumBegin": np.array([0]),
+                    "ScanNumEnd": np.array([0]),
+                    "IsolationWidth": np.array([0]),
+                    "IsolationMz": np.array([0]),
+                    "Precursor": np.array([0]),
+                }
+            )
+            precursors = None
+            # raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
         if add_zeroth_frame:
             frames = pd.concat(
                 [
@@ -997,6 +1009,7 @@ class TimsTOF(object):
         return_rt_values: bool = False,
         return_mobility_values: bool = False,
         return_quad_mz_values: bool = False,
+        return_push_indices: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
         raw_indices_sorted: bool = True,
@@ -1043,6 +1056,9 @@ class TimsTOF(object):
             If True, include "quad_low_mz_values" and
             "quad_high_mz_values" in the dict.
             Default is False.
+        return_push_indices : bool
+            If True, include "push_indices" in the dict.
+            Default is False.
         return_mz_values : bool
             If True, include "mz_values" in the dict.
             Default is False.
@@ -1068,16 +1084,17 @@ class TimsTOF(object):
                 return_rt_values,
                 return_mobility_values,
                 return_quad_mz_values,
-                return_precursor_indices
+                return_precursor_indices,
+                return_push_indices,
             ]
         ):
             if raw_indices_sorted:
-                parsed_indices = indptr_lookup(
+                push_indices = indptr_lookup(
                     self.push_indptr,
                     raw_indices,
                 )
             else:
-                parsed_indices = np.searchsorted(
+                push_indices = np.searchsorted(
                     self.push_indptr,
                     raw_indices,
                     "right"
@@ -1085,11 +1102,11 @@ class TimsTOF(object):
         if (return_frame_indices or return_rt_values) and (
             frame_indices is None
         ):
-            frame_indices = parsed_indices // self.scan_max_index
+            frame_indices = push_indices // self.scan_max_index
         if (return_scan_indices or return_mobility_values) and (
             scan_indices is None
         ):
-            scan_indices = parsed_indices % self.scan_max_index
+            scan_indices = push_indices % self.scan_max_index
         if any(
             [
                 return_quad_indices,
@@ -1122,6 +1139,8 @@ class TimsTOF(object):
             result["quad_indices"] = quad_indices
         if return_precursor_indices:
             result["precursor_indices"] = self.precursor_indices[quad_indices]
+        if return_push_indices:
+            result["push_indices"] = push_indices
         if return_tof_indices:
             result["tof_indices"] = tof_indices
         if return_rt_values:
@@ -1405,6 +1424,7 @@ class TimsTOF(object):
         rt_values: bool = True,
         mobility_values: bool = True,
         quad_mz_values: bool = True,
+        push_indices: bool = True,
         mz_values: bool = True,
         intensity_values: bool = True,
         raw_indices_sorted: bool = True,
@@ -1443,6 +1463,9 @@ class TimsTOF(object):
             If True, include "quad_low_mz_values" and
             "quad_high_mz_values" in the dict.
             Default is True.
+        push_indices : bool
+            If True, include "push_indices" in the dataframe.
+            Default is True.
         mz_values : bool
             If True, include "mz_values" in the dataframe.
             Default is True.
@@ -1471,6 +1494,7 @@ class TimsTOF(object):
                 return_rt_values=rt_values,
                 return_mobility_values=mobility_values,
                 return_quad_mz_values=quad_mz_values,
+                return_push_indices=push_indices,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
                 raw_indices_sorted=raw_indices_sorted,
