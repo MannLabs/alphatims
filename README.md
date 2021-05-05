@@ -114,7 +114,7 @@ conda env create --force --name alphatims --file alphatims/misc/conda_developmen
 conda activate alphatims
 ```
 
-Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflict can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflicts can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
 
 ```bash
 conda create -n alphatims python=3.8 -y
@@ -126,7 +126,7 @@ pip install -e "./alphatims[plotting,development]"
 
 The following steps are optional, but make working with AlphaTims slightly more convenient:
 
-* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used (this is optional), the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
+* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
   ```bash
   conda activate alphatims
   alphatims_bin="$(which alphatims)"
@@ -167,11 +167,11 @@ The same sample was acquired with diaPASEF and is also available for [download f
 
 There are three ways to use AlphaTims:
 
-* [**GUI:**](#gui) This allows to browse and visualize the data.
+* [**GUI:**](#gui) This allows to interactively browse, visualize and export the data.
 * [**CLI:**](#cli) This allows to incorporate AlphaTims in automated workflows.
-* [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively.
+* [**Python:**](#python-and-jupyter-notebooks) This allows to access data and explore it interactively with custom code.
 
-NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on you local operating system and architecture. Subsequent use should be a lot faster.
+NOTE: The first time you use a fresh installation of AlphaTims, it is often quite slow because some functions might still need compilation on your local operating system and architecture. Subsequent use should be a lot faster.
 
 ### GUI
 
@@ -210,7 +210,6 @@ Options:
                                  cost of taking 2-10 longer accession times.
   -o, --output_folder DIRECTORY  A directory for all output (blank means
                                  `input_file` root is used).
-
   -l, --log_file PATH            Save all log data to a file (blank means
                                  'log_[date].txt' with date format
                                  yymmddhhmmss in 'log' folder of AlphaTims

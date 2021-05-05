@@ -245,6 +245,51 @@ gui_manual = pn.widgets.FileDownload(
     margin=(34, 20, 0, 20)
 )
 
+# if os.path.exists(alphatims.utils.DEMO_FILE_NAME):
+#     download_demo = None
+#     demo_dataset = pn.widgets.Button(
+#         name='Upload demo',
+#         button_type='primary',
+#         height=31,
+#         width=100,
+#         margin=(34, 20, 0, 20)
+#     )
+# else:
+#     download_demo = pn.widgets.Button(
+#         name='Download demo',
+#         button_type='default',
+#         height=31,
+#         width=100,
+#         margin=(34, 20, 0, 20)
+#     )
+#     demo_dataset = None
+#
+#     @pn.depends(download_demo.param.clicks, watch=True)
+#     def download_demo_data(*args):
+#         global demo_dataset
+#         import urllib.request
+#         import urllib.error
+#         import zipfile
+#         import io
+#         print("start")
+#         with urllib.request.urlopen(
+#             alphatims.utils.DEMO_FILE_NAME_GITHUB
+#         ) as sample_file:
+#             sample_byte_stream = io.BytesIO(sample_file.read())
+#             with zipfile.ZipFile(sample_byte_stream, 'r') as zip_ref:
+#                 zip_ref.extractall(
+#                     os.path.dirname(alphatims.utils.DEMO_FILE_NAME)
+#                 )
+#         demo_dataset = pn.widgets.Button(
+#             name='Upload demo',
+#             button_type='primary',
+#             height=31,
+#             width=100,
+#             margin=(34, 20, 0, 20)
+#         )
+#         print("DONE")
+
+
 github_version = alphatims.utils.check_github_version(silent=True)
 if github_version == alphatims.__version__:
     download_new_version_button = None
@@ -272,6 +317,8 @@ main_part = pn.Column(
         sizing_mode='stretch_width',
     ),
     pn.Row(
+        # download_demo,
+        # demo_dataset,
         upload_button,
         upload_progress,
         upload_spinner,
@@ -1285,7 +1332,7 @@ def init_settings(*args):
         STACK = alphatims.utils.Global_Stack(
             {
                 "intensities": (0, int(DATASET.intensity_max_value)),
-                "frames": (1, 2),
+                "frames": (0, DATASET.frame_max_index),
                 "scans": (0,  DATASET.scan_max_index),
                 "tofs": (0,  DATASET.tof_max_index),
                 "quads": (DATASET.quad_mz_min_value, DATASET.quad_mz_max_value),
@@ -1324,13 +1371,17 @@ def init_settings(*args):
         im_start.start, im_start.end = (0, DATASET.mobility_max_value)
         im_end.start, im_end.end = (0, DATASET.mobility_max_value)
 
-        quad_slider.start, quad_slider.end = STACK["quads"]
-        quad_start.start, quad_start.end = STACK["quads"]
-        quad_end.start, quad_end.end = STACK["quads"]
+        if DATASET.acquisition_mode != "noPASEF":
+            quad_slider.start, quad_slider.end = STACK["quads"]
+            quad_start.start, quad_start.end = STACK["quads"]
+            quad_end.start, quad_end.end = STACK["quads"]
 
-        precursor_slider.start, precursor_slider.end = STACK["precursors"]
-        precursor_start.start, precursor_start.end = STACK["precursors"]
-        precursor_end.start, precursor_end.end = STACK["precursors"]
+            precursor_slider.start, precursor_slider.end = STACK["precursors"]
+            precursor_start.start, precursor_start.end = STACK["precursors"]
+            precursor_end.start, precursor_end.end = STACK["precursors"]
+        else:
+            select_ms2_fragments.disabled = True
+            select_ms1_precursors.disabled = True
 
         tof_slider.start, tof_slider.end = STACK["tofs"]
         tof_start.start, tof_start.end = STACK["tofs"]

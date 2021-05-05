@@ -12,18 +12,6 @@ import numpy as np
 # local
 import alphatims.utils
 import alphatims.bruker
-BASE_PATH = os.path.dirname(__file__)
-SAMPLE_NAME = "20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d"
-FILE_NAME = os.path.join(
-    BASE_PATH,
-    "sandbox_data",
-    f"{SAMPLE_NAME}"
-)
-GITHUB_FILE_NAME = (
-    "https://github.com/MannLabs/alphatims/releases/"
-    f"download/0.1.210317/{SAMPLE_NAME}.zip"
-)
-
 alphatims.utils.set_progress_callback(None)
 
 
@@ -31,21 +19,25 @@ class TestSlicing(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not os.path.exists(FILE_NAME):
+        if not os.path.exists(alphatims.utils.DEMO_FILE_NAME):
             logging.info("Downloading sample...")
             import urllib.request
             import urllib.error
             import zipfile
             import io
-            with urllib.request.urlopen(GITHUB_FILE_NAME) as sample_file:
+            with urllib.request.urlopen(
+                alphatims.utils.DEMO_FILE_NAME_GITHUB
+            ) as sample_file:
                 sample_byte_stream = io.BytesIO(sample_file.read())
                 with zipfile.ZipFile(sample_byte_stream, 'r') as zip_ref:
                     zip_ref.extractall(
-                        os.path.dirname(FILE_NAME)
+                        os.path.dirname(alphatims.utils.DEMO_FILE_NAME)
                     )
-        if os.path.exists(FILE_NAME):
+        if os.path.exists(alphatims.utils.DEMO_FILE_NAME):
             try:
-                cls.data = alphatims.bruker.TimsTOF(FILE_NAME)
+                cls.data = alphatims.bruker.TimsTOF(
+                    alphatims.utils.DEMO_FILE_NAME
+                )
             except:
                 assert False, "Test data set is invalid..."
         else:
