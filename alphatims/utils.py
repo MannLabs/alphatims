@@ -30,7 +30,16 @@ LATEST_GITHUB_INIT_FILE = (
     "master/alphatims/__init__.py"
 )
 PROGRESS_CALLBACK = True
-
+DEMO_SAMPLE = "20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d"
+DEMO_FILE_NAME = os.path.join(
+    BASE_PATH,
+    "sandbox_data",
+    f"{DEMO_SAMPLE}"
+)
+DEMO_FILE_NAME_GITHUB = (
+    "https://github.com/MannLabs/alphatims/releases/"
+    f"download/0.1.210317/{DEMO_SAMPLE}.zip"
+)
 
 def set_logger(
     *,
