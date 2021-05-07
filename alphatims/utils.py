@@ -321,16 +321,16 @@ def set_threads(threads: int, set_global: bool = True) -> int:
         The number of threads.
     """
     import multiprocessing
-    if set_global:
-        global MAX_THREADS
     max_cpu_count = multiprocessing.cpu_count()
     if threads > max_cpu_count:
-        MAX_THREADS = max_cpu_count
+        threads = max_cpu_count
     else:
         while threads <= 0:
             threads += max_cpu_count
+    if set_global:
+        global MAX_THREADS
         MAX_THREADS = threads
-    return MAX_THREADS
+    return threads
 
 
 def threadpool(
