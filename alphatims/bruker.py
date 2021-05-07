@@ -2517,7 +2517,7 @@ def add_intensity_to_bin(
         ] += intensity
 
 
-@alphatims.utils.njit
+@alphatims.utils.njit(nogil=True)
 def indptr_lookup(
     targets: np.ndarray,
     queries: np.ndarray,
