@@ -35,6 +35,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Future perspectives**](#future-perspectives)
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
+  * [**Change log**](#change-log)
 
 ---
 ## About
@@ -330,3 +331,12 @@ We are actively working on a manuscript for publication. Please check back here 
 ## How to contribute
 
 All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md)
+
+---
+## Change log
+
+The following changes were introduced in AlphaTims's version.
+
+### 0.2.7
+
+  * Introduction of changelog

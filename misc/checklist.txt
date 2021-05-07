@@ -10,6 +10,7 @@ Versions updated
 No TODOs left?
 
 README updated?
+  - Update CHANGELOG
 
 Manual updated?
   if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
