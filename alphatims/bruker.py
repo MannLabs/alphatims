@@ -1728,8 +1728,11 @@ class TimsTOF(object):
             centroiding_window=centroiding_window,
             keep_n_most_abundant_peaks=keep_n_most_abundant_peaks,
         )
-        pepmasses = self.precursors.MonoisotopicMz.values
-        charges = self.precursors.Charge.values.astype(np.int64)
+        mono_mzs = self.precursors.MonoisotopicMz.values
+        average_mzs = self.precursors.AverageMz.values
+        charges = self.precursors.Charge.values
+        charges[np.flatnonzero(np.isnan(charges))] = 0
+        charges = charges.astype(np.int64)
         rtinseconds = self.rt_values[self.precursors.Parent.values]
         intensities = self.precursors.Intensity.values
         mobilities = self.mobility_values[
@@ -1745,11 +1748,12 @@ class TimsTOF(object):
                 title = (
                     f"index: {index}, "
                     f"intensity: {intensities[index - 1]:.1f}, "
-                    f"mobility: {mobilities[index - 1]:.3f}"
+                    f"mobility: {mobilities[index - 1]:.3f}, "
+                    f"average_mz: {average_mzs[index - 1]:.3f}"
                 )
                 infile.write("BEGIN IONS\n")
                 infile.write(f'TITLE="{title}"\n')
-                infile.write(f"PEPMASS={pepmasses[index - 1]:.6f}\n")
+                infile.write(f"PEPMASS={mono_mzs[index - 1]:.6f}\n")
                 infile.write(f"CHARGE={charges[index - 1]}\n")
                 infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
                 for mz, intensity in zip(
