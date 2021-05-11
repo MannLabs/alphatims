@@ -1,5 +1,8 @@
 on:
+  push:
+    branches: [ master ]
   workflow_dispatch:
+
 
 name: Publish on PyPi and release on GitHub
 
