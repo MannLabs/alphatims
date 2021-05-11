@@ -651,7 +651,7 @@ precursor_start = pn.widgets.IntInput(
     name='Start precursor',
     step=1,
     align="center",
-    width=80,
+    width=100,
     margin=(0, 0, 0, 0),
     disabled=True
 )
@@ -659,7 +659,7 @@ precursor_end = pn.widgets.IntInput(
     name='End precursor',
     step=1,
     align="center",
-    width=80,
+    width=100,
     margin=(0, 0, 0, 0),
     disabled=True
 )
@@ -1379,6 +1379,15 @@ def init_settings(*args):
             precursor_slider.start, precursor_slider.end = STACK["precursors"]
             precursor_start.start, precursor_start.end = STACK["precursors"]
             precursor_end.start, precursor_end.end = STACK["precursors"]
+
+            if DATASET.acquisition_mode == "diaPASEF":
+                print("QUE")
+                precursor_start.name = "Start window group"
+                precursor_end.name = "End window group"
+            else:
+                precursor_start.name = "Start precursor"
+                precursor_end.name = "End precursor"
+
         else:
             select_ms2_fragments.disabled = True
             select_ms1_precursors.disabled = True
