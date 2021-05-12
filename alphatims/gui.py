@@ -89,6 +89,13 @@ h2 {
     letter-spacing: 1.5px;
 }
 
+.bk-root .bk-btn-danger {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
 .bk.alert-danger {
     background-color: #EAEAEA;
     color: #c72d3b;
@@ -178,7 +185,7 @@ header = pn.Row(
 # MAIN PART
 project_description = pn.pane.Markdown(
     """### AlphaTims provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from Bruker's timsTOF Pro instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR.""",
-    margin=(10, 0, 0, 0),
+    # margin=(10, 0, 0, 0),
     css_classes=['main-part'],
     width=690
 )
@@ -235,15 +242,6 @@ quit_button = pn.widgets.Button(
     width=100,
     margin=(34, 20, 0, 0)
 )
-gui_manual = pn.widgets.FileDownload(
-    file=gui_manual_path,
-    label='GUI manual',
-    button_type='default',
-    auto=True,
-    height=31,
-    width=200,
-    margin=(34, 20, 0, 20)
-)
 
 # if os.path.exists(alphatims.utils.DEMO_FILE_NAME):
 #     download_demo = None
@@ -290,26 +288,84 @@ gui_manual = pn.widgets.FileDownload(
 #         print("DONE")
 
 
+gui_manual_button = pn.widgets.FileDownload(
+    file=gui_manual_path,
+    label='Download GUI manual',
+    # button_type='default',
+    # auto=True,
+    # height=31,
+    # width=200,
+    # margin=(34, 20, 0, 20)
+    button_type='primary',
+    # height=31,
+    # width=100,
+    # margin=(34, 20, 0, 0),
+)
+
 github_version = alphatims.utils.check_github_version(silent=True)
 if github_version == alphatims.__version__:
+    download_new_version_text = "AlphaTims version is up-to-date"
+    download_new_version_button_type = "primary"
     download_new_version_button = None
 else:
+    download_new_version_text = f"Download version {github_version}"
+    download_new_version_button_type = "danger"
     download_new_version_button = pn.widgets.Button(
-        name=f"Download AlphaTims version {github_version}",
-        button_type='primary',
-        height=31,
+        name=download_new_version_text,
+        button_type=download_new_version_button_type,
+        # height=31,
         # width=100,
-        margin=(34, 20, 0, 0),
+        # margin=(34, 20, 0, 0),
         # disabled=True,
         # link_url='https://github.com/MannLabs/alphatims',
     )
     download_new_version_button.js_on_click(
-        code="""window.open("https://github.com/MannLabs/alphatims#installation")"""
+        code=f"""window.open("https://github.com/MannLabs/alphatims#change-log")"""
     )
+
+download_test_data_button = pn.widgets.Button(
+    name="Download test data",
+    button_type='primary',
+    # height=31,
+    # width=100,
+    # margin=(34, 20, 0, 0),
+    # disabled=True,
+    # link_url='https://github.com/MannLabs/alphatims',
+)
+download_test_data_button.js_on_click(
+    code="""window.open("https://github.com/MannLabs/alphatims#test-data")"""
+)
+download_citation_button = pn.widgets.Button(
+    name="Download citation",
+    button_type='primary',
+    # height=31,
+    # width=100,
+    # margin=(34, 20, 0, 0),
+    # disabled=True,
+    # link_url='https://github.com/MannLabs/alphatims',
+)
+download_citation_button.js_on_click(
+    code="""window.open("https://github.com/MannLabs/alphatims#citing-alphatims")"""
+)
 
 
 main_part = pn.Column(
-    project_description,
+    pn.Row(
+        project_description,
+        pn.layout.HSpacer(width=500),
+        pn.Column(
+            gui_manual_button,
+            download_test_data_button,
+            download_citation_button,
+            download_new_version_button,
+        ),
+        background='#eaeaea',
+        align='center',
+        sizing_mode='stretch_width',
+        # height=190,
+        # margin=(10, 8, 10, 8),
+        css_classes=['background']
+    ),
     divider_descr,
     pn.Row(
         upload_file,
@@ -322,8 +378,8 @@ main_part = pn.Column(
         upload_button,
         upload_progress,
         upload_spinner,
-        gui_manual,
-        download_new_version_button,
+        # gui_manual_button,
+        # download_new_version_button,
         # quit_button,
         align='center',
         # sizing_mode='stretch_width',
