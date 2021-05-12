@@ -338,18 +338,17 @@ def threadpool(
     *,
     thread_count=None,
     include_progress_callback: bool = True,
+    return_results: bool = False,
 ) -> None:
     """A decorator that parallelizes a function with threads and callback.
 
-    The first argument of the decorated function need to be an iterable.
-    The original function should accept a single element of this iterable
-    as its first argument.
-    The original function cannot return values, instead it should store
-    results in e.g. one if its input arrays that acts as a buffer array.
+    The original function should accept a single element as its first argument.
+    If the caller function provides an iterable as first argument,
+    the function is applied to each element of this iterable in parallel.
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     thread_count : int, None
         The number of threads to use.
@@ -363,6 +362,14 @@ def threadpool(
         If False, no callback is added.
         See `set_progress_callback` for callback styles.
         Default is True.
+    return_results : bool
+        If True, it returns the results in the same order as the iterable.
+        This can be much slower than not returning results. Iti is better to
+        store them in a buffer results array instead
+        (be carefull to avoid race conditions).
+        If the iterable is not an iterable but a single index, a result is
+        always returned.
+        Default is False.
 
     Returns
     -------
@@ -377,6 +384,10 @@ def threadpool(
             def starfunc(iterable):
                 return func(iterable, *args, **kwargs)
 
+            try:
+                iter(iterable)
+            except TypeError:
+                return func(iterable, *args, **kwargs)
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
@@ -385,12 +396,22 @@ def threadpool(
                     set_global=False
                 )
             with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
-                for i in progress_callback(
-                    pool.imap_unordered(starfunc, iterable),
-                    total=len(iterable),
-                    include_progress_callback=include_progress_callback
-                ):
-                    pass
+                if return_results:
+                    results = []
+                    for result in progress_callback(
+                        pool.imap(starfunc, iterable),
+                        total=len(iterable),
+                        include_progress_callback=include_progress_callback
+                    ):
+                        results.append(result)
+                    return results
+                else:
+                    for result in progress_callback(
+                        pool.imap_unordered(starfunc, iterable),
+                        total=len(iterable),
+                        include_progress_callback=include_progress_callback
+                    ):
+                        pass
         return functools.wraps(func)(wrapper)
     if _func is None:
         return parallel_func_inner
@@ -406,7 +427,7 @@ def njit(_func=None, *args, **kwargs):
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     *args
         See numba.njit decorator.
@@ -446,7 +467,7 @@ def pjit(
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     thread_count : int, None
         The number of threads to use.
