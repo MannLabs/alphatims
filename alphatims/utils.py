@@ -451,6 +451,7 @@ def pjit(
     _func=None,
     *,
     thread_count=None,
+    include_progress_callback: bool = True,
     cache: bool = True,
     **kwargs
 ):
@@ -475,6 +476,12 @@ def pjit(
         Not possible as positional arguments,
         it always needs to be an explicit keyword argument.
         Default is None.
+    include_progress_callback : bool
+        If True, the default progress callback will be used as callback.
+        (See "progress_callback" function.)
+        If False, no callback is added.
+        See `set_progress_callback` for callback styles.
+        Default is True.
     cache : bool
         See numba.njit decorator.
         Default is True (in contrast to numba).
@@ -499,6 +506,8 @@ def pjit(
         @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
             iterable,
+            thread_id,
+            progress_counter,
             start,
             stop,
             step,
@@ -507,9 +516,11 @@ def pjit(
             if len(iterable) == 0:
                 for i in range(start, stop, step):
                     numba_func(i, *args)
+                    progress_counter[thread_id] += 1
             else:
                 for i in iterable:
                     numba_func(i, *args)
+                    progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
             if thread_count is None:
@@ -520,6 +531,7 @@ def pjit(
                     set_global=False
                 )
             threads = []
+            progress_counter = np.zeros(current_thread_count, dtype=np.int64)
             for thread_id in range(current_thread_count):
                 local_iterable = iterable[thread_id::current_thread_count]
                 if isinstance(local_iterable, range):
@@ -535,6 +547,8 @@ def pjit(
                     target=numba_func_parallel,
                     args=(
                         local_iterable,
+                        thread_id,
+                        progress_counter,
                         start,
                         stop,
                         step,
@@ -544,6 +558,18 @@ def pjit(
                 )
                 thread.start()
                 threads.append(thread)
+            if include_progress_callback:
+                import time
+                progress_count = 0
+                progress_bar = 0
+                for result in progress_callback(
+                    iterable,
+                    include_progress_callback=include_progress_callback
+                ):
+                    if progress_bar == progress_count:
+                        while progress_count == np.sum(progress_counter):
+                            time.sleep(0.01)
+                    progress_bar += 1
             for thread in threads:
                 thread.join()
                 del thread
