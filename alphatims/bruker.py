@@ -261,12 +261,12 @@ def read_bruker_sql(
 
 
 @alphatims.utils.njit(nogil=True)
-def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
+def parse_decompressed_bruker_binary_type2(decompressed_bytes: bytes) -> tuple:
     """Parse a Bruker binary frame buffer into scans, tofs and intensities.
 
     Parameters
     ----------
-    decomp_data : bytes
+    decompressed_bytes : bytes
         A Bruker frame binary buffer that is already decompressed with pyzstd.
 
     Returns
@@ -275,7 +275,7 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
         The scan_indices, tof_indices and intensities present in this binary
         array
     """
-    temp = np.frombuffer(decomp_data, dtype=np.uint8)
+    temp = np.frombuffer(decompressed_bytes, dtype=np.uint8)
     buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
     scan_count = buffer[0]
     scan_indices = buffer[:scan_count].copy() // 2
@@ -295,7 +295,57 @@ def parse_decompressed_bruker_binary(decomp_data: bytes) -> tuple:
     return scan_indices, tof_indices, intensities
 
 
-@alphatims.utils.threadpool
+@alphatims.utils.njit(nogil=True)
+def parse_decompressed_bruker_binary_type1(
+    decompressed_bytes: bytes,
+    scan_indices_: np.ndarray,
+    tof_indices_: np.ndarray,
+    intensities_: np.ndarray,
+    scan_start: int,
+    scan_index: int,
+) -> int:
+    """Parse a Bruker binary scan buffer into tofs and intensities.
+
+    Parameters
+    ----------
+    decompressed_bytes : bytes
+        A Bruker scan binary buffer that is already decompressed with lzf.
+    scan_indices_ : np.ndarray
+        The scan_indices_ buffer array.
+    tof_indices_ : np.ndarray
+        The tof_indices_ buffer array.
+    intensities_ : np.ndarray
+        The intensities_ buffer array.
+    scan_start : int
+        The offset where to start new tof_indices and intensity_values.
+    scan_index : int
+        The scan index.
+
+    Returns
+    -------
+    : int
+        The number of peaks in this scan.
+    """
+    buffer = np.frombuffer(decompressed_bytes, dtype=np.int32)
+    tof_index = 0
+    previous_was_intensity = True
+    current_index = scan_start
+    for value in buffer:
+        if value >= 0:
+            if previous_was_intensity:
+                tof_index += 1
+            tof_indices_[current_index] = tof_index
+            intensities_[current_index] = value
+            previous_was_intensity = True
+            current_index += 1
+        else:
+            tof_index -= value
+            previous_was_intensity = False
+    scan_size = current_index - scan_start
+    scan_indices_[scan_index] = scan_size
+    return scan_size
+
+
 def process_frame(
     frame_id: int,
     tdf_bin_file_name: str,
@@ -305,12 +355,10 @@ def process_frame(
     tof_indices: np.ndarray,
     frame_indptr: np.ndarray,
     max_scan_count: int,
+    compression_type: int,
+    max_peaks_per_scan: int,
 ) -> None:
     """Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.
-
-    IMPORTANT NOTE: This function is decorated with alphatims.utils.threadpool.
-    The first argument is thus expected to be provided as an iterable
-    containing ints instead of a single int.
 
     Parameters
     ----------
@@ -349,23 +397,71 @@ def process_frame(
         the start of a subsequent frame.
     max_scan_count : int
         The maximum number of scans a single frame can have.
+    compression_type : int
+        The compression type. This must be either 1 or 2.
+        Should be treieved from the global metadata.
+    max_peaks_per_scan : int
+        The maximum number of peaks per scan.
+        Should be treieved from the global metadata.
     """
-    import pyzstd
     with open(tdf_bin_file_name, "rb") as infile:
-        offset = tims_offset_values[frame_id]
-        infile.seek(offset)
-        bin_size = int.from_bytes(infile.read(4), "little")
-        scan_count = int.from_bytes(infile.read(4), "little")
-        if bin_size != 8:
-            comp_data = infile.read(bin_size - 8)
-            decomp_data = pyzstd.decompress(comp_data)
-            (
-                scan_indices_,
-                tof_indices_,
-                intensities_
-            ) = parse_decompressed_bruker_binary(decomp_data)
-            frame_start = frame_indptr[frame_id]
-            frame_end = frame_indptr[frame_id + 1]
+        frame_start = frame_indptr[frame_id]
+        frame_end = frame_indptr[frame_id + 1]
+        if frame_start != frame_end:
+            offset = tims_offset_values[frame_id]
+            infile.seek(offset)
+            bin_size = int.from_bytes(infile.read(4), "little")
+            scan_count = int.from_bytes(infile.read(4), "little")
+            max_peak_count = min(
+                max_peaks_per_scan,
+                frame_end - frame_start
+            )
+            if compression_type == 1:
+                import lzf
+                compression_offset = 8 + (scan_count + 1) * 4
+                scan_offsets = np.frombuffer(
+                    infile.read((scan_count + 1) * 4),
+                    dtype=np.int32
+                ) - compression_offset
+                compressed_data = infile.read(bin_size - compression_offset)
+                scan_indices_ = np.zeros(scan_count, dtype=np.int64)
+                tof_indices_ = np.empty(
+                    frame_end - frame_start,
+                    dtype=np.uint32
+                )
+                intensities_ = np.empty(
+                    frame_end - frame_start,
+                    dtype=np.uint16
+                )
+                scan_start = 0
+                for scan_index in range(scan_count):
+                    start = scan_offsets[scan_index]
+                    end = scan_offsets[scan_index + 1]
+                    if start == end:
+                        continue
+                    decompressed_bytes = lzf.decompress(
+                        compressed_data[start: end],
+                        max_peak_count * 4 * 2
+                    )
+                    scan_start += parse_decompressed_bruker_binary_type1(
+                        decompressed_bytes,
+                        scan_indices_,
+                        tof_indices_,
+                        intensities_,
+                        scan_start,
+                        scan_index,
+                    )
+            elif compression_type == 2:
+                import pyzstd
+                compressed_data = infile.read(bin_size - 8)
+                decompressed_bytes = pyzstd.decompress(compressed_data)
+                (
+                    scan_indices_,
+                    tof_indices_,
+                    intensities_
+                ) = parse_decompressed_bruker_binary_type2(decompressed_bytes)
+            else:
+                raise ValueError("TimsCompressionType is not 1 or 2.")
             scan_start = frame_id * max_scan_count
             scan_end = scan_start + scan_count
             scan_indptr[scan_start: scan_end] = scan_indices_
@@ -375,7 +471,9 @@ def process_frame(
 
 def read_bruker_binary(
     frames: np.ndarray,
-    bruker_d_folder_name: str
+    bruker_d_folder_name: str,
+    compression_type: int,
+    max_peaks_per_scan: int,
 ) -> tuple:
     """Read all data from an "analysis.tdf_bin" of a Bruker .d folder.
 
@@ -386,6 +484,11 @@ def read_bruker_binary(
         These can be acquired with e.g. alphatims.bruker.read_bruker_sql.
     bruker_d_folder_name : str
         The full path to a Bruker .d folder.
+    compression_type : int
+        The compression type. This must be either 1 or 2.
+    max_peaks_per_scan : int
+        The maximum number of peaks per scan.
+        Should be treieved from the global metadata.
 
     Returns
     -------
@@ -406,7 +509,14 @@ def read_bruker_binary(
         f"Reading {frame_indptr.size - 2:,} frames with "
         f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
     )
-    process_frame(
+    if compression_type == 1:
+        process_frame_func = alphatims.utils.threadpool(
+            process_frame,
+            thread_count=1
+        )
+    else:
+        process_frame_func = alphatims.utils.threadpool(process_frame)
+    process_frame_func(
         range(1, len(frames)),
         tdf_bin_file_name,
         tims_offset_values,
@@ -415,6 +525,8 @@ def read_bruker_binary(
         tof_indices,
         frame_indptr,
         max_scan_count,
+        compression_type,
+        max_peaks_per_scan,
     )
     scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
     scan_indptr[0] = 0
@@ -821,6 +933,9 @@ class TimsTOF(object):
             self._fragment_frames,
             self._precursors,
         ) = read_bruker_sql(bruker_d_folder_name)
+        self._meta_data = dict(
+            zip(global_meta_data.Key, global_meta_data.Value)
+        )
         (
             self._push_indptr,
             self._tof_indices,
@@ -828,11 +943,10 @@ class TimsTOF(object):
         ) = read_bruker_binary(
             self.frames,
             bruker_d_folder_name,
+            int(self._meta_data["TimsCompressionType"]),
+            int(self._meta_data["MaxNumPeaksPerScan"]),
         )
         logging.info(f"Indexing {bruker_d_folder_name}...")
-        self._meta_data = dict(
-            zip(global_meta_data.Key, global_meta_data.Value)
-        )
         self._frame_max_index = self.frames.shape[0]
         self._scan_max_index = int(self.frames.NumScans.max()) + 1
         self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
@@ -1728,8 +1842,11 @@ class TimsTOF(object):
             centroiding_window=centroiding_window,
             keep_n_most_abundant_peaks=keep_n_most_abundant_peaks,
         )
-        pepmasses = self.precursors.MonoisotopicMz.values
-        charges = self.precursors.Charge.values.astype(np.int64)
+        mono_mzs = self.precursors.MonoisotopicMz.values
+        average_mzs = self.precursors.AverageMz.values
+        charges = self.precursors.Charge.values
+        charges[np.flatnonzero(np.isnan(charges))] = 0
+        charges = charges.astype(np.int64)
         rtinseconds = self.rt_values[self.precursors.Parent.values]
         intensities = self.precursors.Intensity.values
         mobilities = self.mobility_values[
@@ -1745,11 +1862,12 @@ class TimsTOF(object):
                 title = (
                     f"index: {index}, "
                     f"intensity: {intensities[index - 1]:.1f}, "
-                    f"mobility: {mobilities[index - 1]:.3f}"
+                    f"mobility: {mobilities[index - 1]:.3f}, "
+                    f"average_mz: {average_mzs[index - 1]:.3f}"
                 )
                 infile.write("BEGIN IONS\n")
                 infile.write(f'TITLE="{title}"\n')
-                infile.write(f"PEPMASS={pepmasses[index - 1]:.6f}\n")
+                infile.write(f"PEPMASS={mono_mzs[index - 1]:.6f}\n")
                 infile.write(f"CHARGE={charges[index - 1]}\n")
                 infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
                 for mz, intensity in zip(
@@ -2481,7 +2599,7 @@ def filter_indices(
 
 
 # Overhead of using more than 1 threads is actually slower
-@alphatims.utils.pjit(thread_count=1)
+@alphatims.utils.pjit(thread_count=1, include_progress_callback=False)
 def add_intensity_to_bin(
     query_index: int,
     intensities: np.ndarray,
@@ -2517,7 +2635,7 @@ def add_intensity_to_bin(
         ] += intensity
 
 
-@alphatims.utils.njit
+@alphatims.utils.njit(nogil=True)
 def indptr_lookup(
     targets: np.ndarray,
     queries: np.ndarray,

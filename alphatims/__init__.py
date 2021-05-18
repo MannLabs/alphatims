@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.2.6"
+__version__ = "0.2.7"
 __license__ = "Apache"
 __description__ = "A Python package to index Bruker TimsTOF raw data for fast and easy accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
@@ -37,6 +37,7 @@ __urls__ = {
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
+    "stable": "requirements/requirements_stable.txt",
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
 }

@@ -321,16 +321,16 @@ def set_threads(threads: int, set_global: bool = True) -> int:
         The number of threads.
     """
     import multiprocessing
-    if set_global:
-        global MAX_THREADS
     max_cpu_count = multiprocessing.cpu_count()
     if threads > max_cpu_count:
-        MAX_THREADS = max_cpu_count
+        threads = max_cpu_count
     else:
         while threads <= 0:
             threads += max_cpu_count
+    if set_global:
+        global MAX_THREADS
         MAX_THREADS = threads
-    return MAX_THREADS
+    return threads
 
 
 def threadpool(
@@ -338,18 +338,17 @@ def threadpool(
     *,
     thread_count=None,
     include_progress_callback: bool = True,
+    return_results: bool = False,
 ) -> None:
     """A decorator that parallelizes a function with threads and callback.
 
-    The first argument of the decorated function need to be an iterable.
-    The original function should accept a single element of this iterable
-    as its first argument.
-    The original function cannot return values, instead it should store
-    results in e.g. one if its input arrays that acts as a buffer array.
+    The original function should accept a single element as its first argument.
+    If the caller function provides an iterable as first argument,
+    the function is applied to each element of this iterable in parallel.
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     thread_count : int, None
         The number of threads to use.
@@ -363,6 +362,14 @@ def threadpool(
         If False, no callback is added.
         See `set_progress_callback` for callback styles.
         Default is True.
+    return_results : bool
+        If True, it returns the results in the same order as the iterable.
+        This can be much slower than not returning results. Iti is better to
+        store them in a buffer results array instead
+        (be carefull to avoid race conditions).
+        If the iterable is not an iterable but a single index, a result is
+        always returned.
+        Default is False.
 
     Returns
     -------
@@ -377,6 +384,10 @@ def threadpool(
             def starfunc(iterable):
                 return func(iterable, *args, **kwargs)
 
+            try:
+                iter(iterable)
+            except TypeError:
+                return func(iterable, *args, **kwargs)
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
@@ -385,12 +396,22 @@ def threadpool(
                     set_global=False
                 )
             with multiprocessing.pool.ThreadPool(current_thread_count) as pool:
-                for i in progress_callback(
-                    pool.imap_unordered(starfunc, iterable),
-                    total=len(iterable),
-                    include_progress_callback=include_progress_callback
-                ):
-                    pass
+                if return_results:
+                    results = []
+                    for result in progress_callback(
+                        pool.imap(starfunc, iterable),
+                        total=len(iterable),
+                        include_progress_callback=include_progress_callback
+                    ):
+                        results.append(result)
+                    return results
+                else:
+                    for result in progress_callback(
+                        pool.imap_unordered(starfunc, iterable),
+                        total=len(iterable),
+                        include_progress_callback=include_progress_callback
+                    ):
+                        pass
         return functools.wraps(func)(wrapper)
     if _func is None:
         return parallel_func_inner
@@ -406,7 +427,7 @@ def njit(_func=None, *args, **kwargs):
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     *args
         See numba.njit decorator.
@@ -430,6 +451,7 @@ def pjit(
     _func=None,
     *,
     thread_count=None,
+    include_progress_callback: bool = True,
     cache: bool = True,
     **kwargs
 ):
@@ -446,7 +468,7 @@ def pjit(
 
     Parameters
     ----------
-    _func
+    _func : callable, None
         The function to decorate.
     thread_count : int, None
         The number of threads to use.
@@ -454,6 +476,12 @@ def pjit(
         Not possible as positional arguments,
         it always needs to be an explicit keyword argument.
         Default is None.
+    include_progress_callback : bool
+        If True, the default progress callback will be used as callback.
+        (See "progress_callback" function.)
+        If False, no callback is added.
+        See `set_progress_callback` for callback styles.
+        Default is True.
     cache : bool
         See numba.njit decorator.
         Default is True (in contrast to numba).
@@ -478,6 +506,8 @@ def pjit(
         @numba.njit(nogil=True, cache=True)
         def numba_func_parallel(
             iterable,
+            thread_id,
+            progress_counter,
             start,
             stop,
             step,
@@ -486,9 +516,11 @@ def pjit(
             if len(iterable) == 0:
                 for i in range(start, stop, step):
                     numba_func(i, *args)
+                    progress_counter[thread_id] += 1
             else:
                 for i in iterable:
                     numba_func(i, *args)
+                    progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
             if thread_count is None:
@@ -499,6 +531,7 @@ def pjit(
                     set_global=False
                 )
             threads = []
+            progress_counter = np.zeros(current_thread_count, dtype=np.int64)
             for thread_id in range(current_thread_count):
                 local_iterable = iterable[thread_id::current_thread_count]
                 if isinstance(local_iterable, range):
@@ -514,6 +547,8 @@ def pjit(
                     target=numba_func_parallel,
                     args=(
                         local_iterable,
+                        thread_id,
+                        progress_counter,
                         start,
                         stop,
                         step,
@@ -523,6 +558,18 @@ def pjit(
                 )
                 thread.start()
                 threads.append(thread)
+            if include_progress_callback:
+                import time
+                progress_count = 0
+                progress_bar = 0
+                for result in progress_callback(
+                    iterable,
+                    include_progress_callback=include_progress_callback
+                ):
+                    if progress_bar == progress_count:
+                        while progress_count == np.sum(progress_counter):
+                            time.sleep(0.01)
+                    progress_bar += 1
             for thread in threads:
                 thread.join()
                 del thread

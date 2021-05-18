@@ -1,7 +1,8 @@
-h5py==3.2.1
-numba==0.53.1
-pandas==1.2.3
-tqdm==4.60.0
-pyzstd==0.14.4
-psutil==5.8.0
-click==7.1.2
+h5py
+numba
+pandas
+tqdm
+pyzstd
+python-lzf
+psutil
+click
