@@ -37,6 +37,7 @@ __urls__ = {
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
+    "stable": "requirements/requirements_stable.txt",
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
 }
