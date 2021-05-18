@@ -332,22 +332,20 @@ def parse_decompressed_bruker_binary_type1(
     current_index = scan_start
     for value in buffer:
         if value >= 0:
-            intensities_[current_index] = value
             if previous_was_intensity:
                 tof_index += 1
-                tof_indices_[current_index] = tof_index
+            tof_indices_[current_index] = tof_index
+            intensities_[current_index] = value
             previous_was_intensity = True
             current_index += 1
         else:
             tof_index -= value
-            tof_indices_[current_index] = tof_index
             previous_was_intensity = False
     scan_size = current_index - scan_start
     scan_indices_[scan_index] = scan_size
     return scan_size
 
 
-@alphatims.utils.threadpool
 def process_frame(
     frame_id: int,
     tdf_bin_file_name: str,
@@ -361,10 +359,6 @@ def process_frame(
     max_peaks_per_scan: int,
 ) -> None:
     """Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.
-
-    IMPORTANT NOTE: This function is decorated with alphatims.utils.threadpool.
-    The first argument is thus expected to be provided as an iterable
-    containing ints instead of a single int.
 
     Parameters
     ----------
@@ -515,7 +509,14 @@ def read_bruker_binary(
         f"Reading {frame_indptr.size - 2:,} frames with "
         f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
     )
-    process_frame(
+    if compression_type == 1:
+        process_frame_func = alphatims.utils.threadpool(
+            process_frame,
+            thread_count=1
+        )
+    else:
+        process_frame_func = alphatims.utils.threadpool(process_frame)
+    process_frame_func(
         range(1, len(frames)),
         tdf_bin_file_name,
         tims_offset_values,
