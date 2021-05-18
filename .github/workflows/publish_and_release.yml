@@ -28,12 +28,14 @@ jobs:
           conda activate version_check
           pip install alphatims
           alphatims --version
+          set +e
           alphatims --version | grep -c '$current_version_as_regex'
-          already_on_pypi=$(alphatims --version | grep -c '$current_version_as_regex' )
+          already_on_pypi=$(alphatims --version | grep -c $current_version_as_regex )
           echo YAY
           already_on_pypi=$(alphatims --version | grep -c '$current_version_as_regex')
           echo $already_on_pypi
           conda deactivate
+          set -e
           if [ $already_on_pypi -ne 0 ]; then
             echo "Version is not updated"
             exit 1
