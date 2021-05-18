@@ -1,62 +1,63 @@
-2021-05-05 09:39:16> Platform information:
-2021-05-05 09:39:16> system        - Darwin
-2021-05-05 09:39:16> release       - 19.6.0
-2021-05-05 09:39:16> version       - 10.15.7
-2021-05-05 09:39:16> machine       - x86_64
-2021-05-05 09:39:16> processor     - i386
-2021-05-05 09:39:16> cpu count     - 8
-2021-05-05 09:39:16> cpu frequency - 2300.00 Mhz
-2021-05-05 09:39:16> ram           - 22.0/32.0 Gb (available/total)
-2021-05-05 09:39:16> 
-2021-05-05 09:39:16> Python information:
-2021-05-05 09:39:16> alphatims  - 0.2.6
-2021-05-05 09:39:16> bokeh      - 2.2.3
-2021-05-05 09:39:16> click      - 7.1.2
-2021-05-05 09:39:16> datashader - 0.12.1
-2021-05-05 09:39:16> h5py       - 3.2.1
-2021-05-05 09:39:16> hvplot     - 0.7.1
-2021-05-05 09:39:16> numba      - 0.53.1
-2021-05-05 09:39:16> pandas     - 1.2.3
-2021-05-05 09:39:16> psutil     - 5.8.0
-2021-05-05 09:39:16> python     - 3.8.8
-2021-05-05 09:39:16> pyzstd     - 0.14.4
-2021-05-05 09:39:16> selenium   - 3.141.0
-2021-05-05 09:39:16> tqdm       - 4.60.0
-2021-05-05 09:39:16> 
-2021-05-05 09:39:16> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
-2021-05-05 09:39:16> 
-2021-05-05 09:39:16> Initial loading of DDA_6
-2021-05-05 09:39:16> Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-05 09:39:16> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-05 09:39:17> Reading 2,978 frames with 214,172,697 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-05 09:39:18> Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d...
-2021-05-05 09:39:18> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-05 09:39:18> 
-2021-05-05 09:39:18> Initial loading of DIA_6
-2021-05-05 09:39:18> Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-05 09:39:18> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-05 09:39:18> Reading 3,182 frames with 158,552,099 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-05 09:39:19> Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d...
-2021-05-05 09:39:19> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-05 09:39:19> 
-2021-05-05 09:39:19> Initial loading of DDA_21
-2021-05-05 09:39:19> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-05 09:39:19> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-05 09:39:20> Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-05 09:39:22> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
-2021-05-05 09:39:22> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-05 09:39:22> 
-2021-05-05 09:39:22> Initial loading of DIA_21
-2021-05-05 09:39:22> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-05 09:39:22> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-05 09:39:22> Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-05 09:39:26> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
-2021-05-05 09:39:27> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-05 09:39:27> 
-2021-05-05 09:39:27> Initial loading of DDA_120
-2021-05-05 09:39:27> Importing data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-05 09:39:27> Reading frame metadata for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-05 09:39:31> Reading 68,114 frames with 2,074,019,899 detector strikes for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-05 09:39:53> Indexing /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d...
-2021-05-05 09:39:59> Succesfully imported data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-05 09:39:59> 
+2021-05-18 21:09:03> Platform information:
+2021-05-18 21:09:03> system        - Darwin
+2021-05-18 21:09:03> release       - 19.6.0
+2021-05-18 21:09:03> version       - 10.15.7
+2021-05-18 21:09:03> machine       - x86_64
+2021-05-18 21:09:03> processor     - i386
+2021-05-18 21:09:03> cpu count     - 8
+2021-05-18 21:09:03> cpu frequency - 2300.00 Mhz
+2021-05-18 21:09:03> ram           - 22.3/32.0 Gb (available/total)
+2021-05-18 21:09:03> 
+2021-05-18 21:09:03> Python information:
+2021-05-18 21:09:03> alphatims  - 0.2.7
+2021-05-18 21:09:03> bokeh      - 2.2.3
+2021-05-18 21:09:03> click      - 7.1.2
+2021-05-18 21:09:03> datashader - 0.12.1
+2021-05-18 21:09:03> h5py       - 3.2.1
+2021-05-18 21:09:03> hvplot     - 0.7.1
+2021-05-18 21:09:03> numba      - 0.53.1
+2021-05-18 21:09:03> pandas     - 1.2.3
+2021-05-18 21:09:03> psutil     - 5.8.0
+2021-05-18 21:09:03> python     - 3.8.8
+2021-05-18 21:09:03> python-lzf - 0.2.4
+2021-05-18 21:09:03> pyzstd     - 0.14.4
+2021-05-18 21:09:03> selenium   - 3.141.0
+2021-05-18 21:09:03> tqdm       - 4.60.0
+2021-05-18 21:09:03> 
+2021-05-18 21:09:03> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-05-18 21:09:03> 
+2021-05-18 21:09:03> Initial loading of DDA_6
+2021-05-18 21:09:03> Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
+2021-05-18 21:09:03> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
+2021-05-18 21:09:03> Reading 2,978 frames with 214,172,697 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
+2021-05-18 21:09:04> Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d...
+2021-05-18 21:09:05> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
+2021-05-18 21:09:05> 
+2021-05-18 21:09:05> Initial loading of DIA_6
+2021-05-18 21:09:05> Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
+2021-05-18 21:09:05> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
+2021-05-18 21:09:05> Reading 3,182 frames with 158,552,099 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
+2021-05-18 21:09:06> Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d...
+2021-05-18 21:09:06> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
+2021-05-18 21:09:06> 
+2021-05-18 21:09:06> Initial loading of DDA_21
+2021-05-18 21:09:06> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-18 21:09:06> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-18 21:09:06> Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-18 21:09:08> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
+2021-05-18 21:09:09> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-05-18 21:09:09> 
+2021-05-18 21:09:09> Initial loading of DIA_21
+2021-05-18 21:09:09> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-05-18 21:09:09> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-05-18 21:09:09> Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-05-18 21:09:13> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
+2021-05-18 21:09:13> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-05-18 21:09:13> 
+2021-05-18 21:09:13> Initial loading of DDA_120
+2021-05-18 21:09:13> Importing data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
+2021-05-18 21:09:13> Reading frame metadata for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
+2021-05-18 21:09:18> Reading 68,114 frames with 2,074,019,899 detector strikes for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
+2021-05-18 21:09:41> Indexing /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d...
+2021-05-18 21:09:46> Succesfully imported data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
+2021-05-18 21:09:46> 

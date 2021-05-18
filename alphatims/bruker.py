@@ -2599,7 +2599,7 @@ def filter_indices(
 
 
 # Overhead of using more than 1 threads is actually slower
-@alphatims.utils.pjit(thread_count=1)
+@alphatims.utils.pjit(thread_count=1, include_progress_callback=False)
 def add_intensity_to_bin(
     query_index: int,
     intensities: np.ndarray,
