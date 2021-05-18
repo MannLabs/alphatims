@@ -24,17 +24,20 @@ jobs:
         run: |
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           current_version_as_regex=$(echo $current_version | sed 's/\./\\./g')
-          conda create -n version_check python=3.8 pip=20 -y
+          conda create -n version_check python=3.8 pip=20.1 -y
           conda activate version_check
-          already_on_pypi=$(pip install alphatims== 2>&1 | grep "$current_version_as_regex")
+          set +e
+          already_on_pypi=$(pip install alphatims== 2>&1 | grep -c "$current_version_as_regex")
+          set -e
           conda deactivate
-          if [ $already_on_pypi ]; then
-            echo "Version is not updated"
+          if [ $already_on_pypi -ne 0 ]; then
+            echo "Version is already on PyPi"
             exit 1
           fi
           echo ::set-output name=version::$current_version
   Create_Draft_On_GitHub:
     runs-on: ubuntu-latest
+    needs: Version_Bumped
     outputs:
       upload_url: ${{ steps.draft_release.outputs.upload_url }}
     steps:
