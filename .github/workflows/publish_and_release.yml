@@ -27,7 +27,9 @@ jobs:
           conda create -n version_check python=3.8 -y
           conda activate version_check
           pip install alphatims
+          alphatims --version
           already_on_pypi=$(alphatims --version | grep "$current_version_as_regex")
+          echo test
           conda deactivate
           if [ "$already_on_pypi" ]; then
             echo "Version is not updated"
