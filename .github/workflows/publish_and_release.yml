@@ -28,6 +28,7 @@ jobs:
           conda activate version_check
           pip install alphatims
           alphatims --version
+          echo "$current_version_as_regex"
           already_on_pypi=$(alphatims --version | grep "$current_version_as_regex")
           echo test
           conda deactivate
