@@ -22,6 +22,7 @@ jobs:
         id: master_version_bumped
         shell: bash -l {0}
         run: |
+          grep -h
           current_version=$(grep "__version__" alphatims/__init__.py | cut -f3 -d ' ' | sed 's/"//g')
           conda create -n version_check python=3.8 -y
           conda activate version_check
