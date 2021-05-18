@@ -26,7 +26,8 @@ jobs:
           current_version_as_regex=$(echo $current_version | sed 's/\./\\./g')
           conda create -n version_check python=3.8 pip=20.1 -y
           conda activate version_check
-          already_on_pypi=$(pip install alphatims== 2>&1 | grep -c "$current_version_as_regex")
+          pip install alphatims
+          already_on_pypi=$(alphatims --version | grep -c "$current_version_as_regex")
           conda deactivate
           echo $already_on_pypi
           if [ $already_on_pypi -ne 0 ]; then
