@@ -29,7 +29,7 @@ jobs:
           pip install alphatims
           already_on_pypi=$(alphatims --version | grep "$current_version_as_regex")
           conda deactivate
-          if [ $already_on_pypi != ""]; then
+          if [ "$already_on_pypi" ]; then
             echo "Version is not updated"
             exit 1
           fi
