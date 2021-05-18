@@ -28,8 +28,7 @@ jobs:
           conda activate version_check
           pip install alphatims
           alphatims --version
-          alphatims --version | grep -c "$current_version_as_regex"
-          pip install alphatims== 2>&1 | grep -c "$current_version_as_regex"
+          alphatims --version | grep -c '$current_version_as_regex'
           already_on_pypi=$(alphatims --version | grep -c $current_version_as_regex)
           echo YAY
           already_on_pypi=$(alphatims --version | grep -c '$current_version_as_regex')
