@@ -35,7 +35,8 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Future perspectives**](#future-perspectives)
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
-  * [**Change log**](#change-log)
+  * [**Changelog**](#changelog)
+    * [**0.2.7**](#0.2.7)
 
 ---
 ## About
@@ -79,16 +80,24 @@ AlphaTims can be installed in an existing Python 3.8 environment with a single `
 pip install alphatims
 ```
 
-Alternatively, some basic plotting functions and the complete GUI can be installed with the command (Due to potential dependancy conflicts, you might need to run `pip install pip==20.2` or `pip install pip==21.0` first. Also note the double quotes `"`):
+Installing AlphaTims like this avoids conflicts when integrating it in other tools, as this does not enforce strict versioning of dependancies. However, if new versions of dependancies are released, they are not guaranteed to be fully compatible with AlphaTims. While this should only occur in rare cases where dependencies are not backwards compatible, you can always force AlphaTims to use dependancy versions which are known to be compatible with:
+
+```bash
+pip install "alphatims[stable]"
+```
+
+NOTE: You might need to run `pip install pip==21.0` before installing AlphaTims like this. Also note the double quotes `"`.
+
+Alternatively, some basic plotting functions and the complete GUI can be installed with the following command:
 
 ```bash
 pip install "alphatims[plotting]"
 ```
 
-When a new version of AlphaTims becomes available, the old version can easily be upgraded by running the command again with an additional `--upgrade` flag:
+When a new version of AlphaTims becomes available, the old version can easily be upgraded by running e.g. the command again with an additional `--upgrade` flag:
 
 ```bash
-pip install "alphatims[plotting]" --upgrade
+pip install "alphatims[plotting,stable]" --upgrade
 ```
 
 ### Developer
@@ -333,10 +342,19 @@ We are actively working on a manuscript for publication. Please check back here 
 All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md)
 
 ---
-## Change log
+## Changelog
 
-The following changes were introduced in AlphaTims's version.
+The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
 
 ### 0.2.7
 
-  * Introduction of changelog
+  * CHORE: Introduction of changelog.
+  * CHORE: Automated publish_and_release action to parse version numbers.
+  * FEAT/FIX: Include average precursor mz in MGF titles and set unknown precursor charges to 0.
+  * FIX: Properly resolve set_global argument of `alphatims.utils.set_threads`.
+  * FIX: Set nogil option for `alphatims.bruker.indptr_lookup`.
+  * DOCS: GUI Manual typos.
+  * FEAT: Include buttons to download test data and citation in GUI.
+  * FEAT: Include option for progress_callback in alphatims.utils.pjit.
+  * FIX/FEAT: Older samples with TimsCompressionType 1 can now also be read. This is at limite performance.
+  * FEAT: By default use loose versioning for the base dependancies. Stable dependancy versions can be enforced with `pip install "alphatims[stable]"`. NOTE: This option is not guaranteed to be maintained. Future AlphaTims versions might opt for an intermediate solution with semi-strict dependancy versioning.
