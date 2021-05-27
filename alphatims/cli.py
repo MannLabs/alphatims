@@ -334,9 +334,6 @@ def export_mgf(**kwargs):
 def export_selection(**kwargs):
     import numpy as np
     with parse_cli_settings("export selection", **kwargs) as parameters:
-        import alphatims.bruker
-        import alphatims.plotting
-        import holoviews as hv
         data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
         if (parameters["rt_bounds"][0] is not None):
             if (parameters["rt_bounds"][0] < 0):
@@ -418,6 +415,9 @@ def export_selection(**kwargs):
             logging.info(f"Exporting results to {output_file_name_base}.csv")
             df.to_csv(f"{output_file_name_base}.csv", index=False)
         if ("html" in parameters['format']) or ("png" in parameters['format']):
+            import alphatims.bruker
+            import alphatims.plotting
+            import holoviews as hv
             labels = {
                 "tof_mz": "mz",
                 "rt": "rt",
