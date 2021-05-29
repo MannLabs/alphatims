@@ -1616,6 +1616,16 @@ class TimsTOF(object):
         isolation_mzs = self.fragment_frames.IsolationMz.values
         isolation_widths = self.fragment_frames.IsolationWidth.values
         precursors = self.fragment_frames.Precursor.values
+        if (precursors[0] is None):
+            frame_groups = self.frames.MsMsType.values[1:]  # exc. zeroth frame
+            precursor_frames = np.flatnonzero(frame_groups == 0)
+            group_sizes = np.diff(precursor_frames)
+            group_size = group_sizes[0]
+            if np.any(group_sizes != group_size):
+                raise ValueError("Sample type not understood")
+            precursors = (1 + frame_ids - frame_ids[0]) % group_size
+            self.fragment_frames.Precursor = precursors
+            self._acquisition_mode = "diaPASEF"
         scan_max_index = self.scan_max_index
         frame_max_index = self.frame_max_index
         quad_indptr = [0]
