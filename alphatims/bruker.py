@@ -243,7 +243,6 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
-            fragment_frames.Frame += 1
         frames = pd.DataFrame(
             {
                 col: pd.to_numeric(
@@ -1610,7 +1609,7 @@ class TimsTOF(object):
         )
 
     def _parse_quad_indptr(self) -> None:
-        frame_ids = self.fragment_frames.Frame.values
+        frame_ids = self.fragment_frames.Frame.values + 1
         scan_begins = self.fragment_frames.ScanNumBegin.values
         scan_ends = self.fragment_frames.ScanNumEnd.values
         isolation_mzs = self.fragment_frames.IsolationMz.values
