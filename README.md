@@ -36,7 +36,8 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
-    * [**0.2.7**](#0.2.7)
+    * [**0.2.8**](#028)
+    * [**0.2.7**](#027)
 
 ---
 ## About
@@ -46,12 +47,12 @@ High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can b
 ---
 ## License
 
-AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) and external Python packages (available in the [requirements](requirements) folder), additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable.
+AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable. External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
 ---
 ## Installation
 
-AlphaTims can be installed and used on all major operating systems (Windows, MacOS and Linux).
+AlphaTims can be installed and used on all major operating systems (Windows, macOS and Linux).
 There are three different types of installation possible:
 
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
@@ -65,7 +66,7 @@ There are three different types of installation possible:
 The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
 * [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_windows.exe)
-* [**MacOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_macos.pkg)
+* [**macOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_macos.pkg)
 * [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_linux.deb)
 
 ***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
@@ -346,6 +347,14 @@ All contributions are welcome. Feel free to post a new issue or clone the reposi
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
 
+### 0.2.8
+
+  * FIX: ensure stable version for one click GUI.
+  * FIX: Do not require plotting dependancies for CLI export csv selection.
+  * FIX: Import of very old diaPASEF samples where the analysis.tdf file still looks like ddaPASEF.
+  * FIX: frame pointers of fragment_frame table.
+  * FEAT: Include visual report in performance notebook.
+
 ### 0.2.7
 
   * CHORE: Introduction of changelog.
@@ -356,5 +365,5 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * DOCS: GUI Manual typos.
   * FEAT: Include buttons to download test data and citation in GUI.
   * FEAT: Include option for progress_callback in alphatims.utils.pjit.
-  * FIX/FEAT: Older samples with TimsCompressionType 1 can now also be read. This is at limite performance.
+  * FIX/FEAT: Older samples with TimsCompressionType 1 can now also be read. This is at limited performance.
   * FEAT: By default use loose versioning for the base dependancies. Stable dependancy versions can be enforced with `pip install "alphatims[stable]"`. NOTE: This option is not guaranteed to be maintained. Future AlphaTims versions might opt for an intermediate solution with semi-strict dependancy versioning.
