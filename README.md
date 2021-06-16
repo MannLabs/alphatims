@@ -260,7 +260,7 @@ Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 
 Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) are available in the [performance notebook](nbs/performance.ipynb). All result can be summarized as follows:
 
-![](nbs/performance_results.pdf)
+<img src="nbs/performance_results.pdf" align="center">
 
 ### RAM
 
