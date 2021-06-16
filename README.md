@@ -261,6 +261,12 @@ Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) are available in the [performance notebook](nbs/performance.ipynb). All result can be summarized as follows:
 
 <img src="nbs/performance_results.pdf" align="center">
+<object data="https://github.com/MannLabs/alphatims/blob/develop/nbs/performance_results.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="https://github.com/MannLabs/alphatims/blob/develop/nbs/performance_results.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/MannLabs/alphatims/blob/develop/nbs/performance_results.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
+
 
 ### RAM
 
