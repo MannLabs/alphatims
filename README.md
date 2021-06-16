@@ -258,7 +258,9 @@ Performance can be measured in function of [speed](#speed) or [RAM](#ram) usage.
 
 ### Speed
 
-Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) are available in the [performance notebook](nbs/performance.ipynb).
+Typical time performance statistics on data in-/output and slicing of standard [HeLa datasets](#test-sample) are available in the [performance notebook](nbs/performance.ipynb). All result can be summarized as follows:
+
+![](nbs/performance_results.pdf)
 
 ### RAM
 
@@ -354,6 +356,8 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FIX: Import of very old diaPASEF samples where the analysis.tdf file still looks like ddaPASEF.
   * FIX: frame pointers of fragment_frame table.
   * FEAT: Include visual report in performance notebook.
+  * FEAT: Include DIA 120 sample in performance tests.
+  *
 
 ### 0.2.7
 
