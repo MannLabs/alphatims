@@ -17,7 +17,7 @@ rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_macos
 pip install pyinstaller==4.2
-pip install "../../dist/alphatims-0.2.8-py3-none-any.whl[plotting,stable]"
+pip install "../../dist/alphatims-0.2.8-py3-none-any.whl[plotting,stable,legacy]"
 conda list
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate

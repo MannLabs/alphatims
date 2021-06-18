@@ -40,5 +40,6 @@ __requirements__ = {
     "stable": "requirements/requirements_stable.txt",
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
+    "legacy": "requirements/requirements_legacy.txt",
 }
 __requirements_style__ = None
