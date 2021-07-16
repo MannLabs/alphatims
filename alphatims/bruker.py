@@ -703,7 +703,7 @@ class TimsTOF(object):
 
     @property
     def is_compressed(self):
-        """: bool : HDF arraya are compressed or not."""
+        """: bool : HDF array is compressed or not."""
         return self._compressed
 
     @property

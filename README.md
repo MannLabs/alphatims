@@ -4,7 +4,7 @@
 ---
 # AlphaTims
 
-AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann). To enable all hyperlinks in this document, please view it at [https://github.com/MannLabs/alphatims](https://github.com/MannLabs/alphatims).
+AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/alphatims).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -95,11 +95,19 @@ Alternatively, some basic plotting functions and the complete GUI can be install
 pip install "alphatims[plotting]"
 ```
 
+When older samples need to be analyzed, it might be essential to install the `legacy` version as well (See also the [troubleshooting](#troubleshooting) section):
+
+```bash
+pip install "alphatims[legacy]"
+```
+
 When a new version of AlphaTims becomes available, the old version can easily be upgraded by running e.g. the command again with an additional `--upgrade` flag:
 
 ```bash
-pip install "alphatims[plotting,stable]" --upgrade
+pip install "alphatims[plotting,legacy,stable]" --upgrade
 ```
+
+NOTE: Multiple dependancy packs can be installed by comma-separation. Note however that this only works without spaces!
 
 ### Developer
 
