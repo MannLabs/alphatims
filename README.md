@@ -297,7 +297,7 @@ Common installation/usage issues include:
 The basic workflow of AlphaTims looks as follows:
 
 * Read data from a [Bruker `.d` folder](#bruker-raw-data).
-* Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and store them as a persistent [HDF5 file](https://www.hdfgroup.org/solutions/hdf5/).
+* Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and optionally store them as a persistent [HDF5 file](https://www.hdfgroup.org/solutions/hdf5/).
 * Use Python's [slicing mechanism](#slicing-timstof-objects) to retrieve data from this object e.g. for visualisation.
 
 ### Bruker raw data
