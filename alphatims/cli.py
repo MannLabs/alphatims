@@ -247,8 +247,8 @@ def detect(**kwargs):
     pass
 
 
-@export.command("hdf", help="Export BRUKER_D_FOLDER as hdf file.")
-@cli_option("bruker_d_folder", as_argument=True)
+@export.command("hdf", help="Export BRUKER_RAW_DATA as hdf file.")
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("disable_overwrite")
 @cli_option("enable_compression")
 @cli_option("output_folder")
@@ -260,7 +260,7 @@ def detect(**kwargs):
 def export_hdf(**kwargs):
     with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
-        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
         if "output_folder" not in parameters:
             directory = data.directory
         else:
@@ -273,8 +273,8 @@ def export_hdf(**kwargs):
         )
 
 
-@export.command("mgf", help="Export BRUKER_D_FOLDER as (profile) mgf file.")
-@cli_option("bruker_d_folder", as_argument=True)
+@export.command("mgf", help="Export BRUKER_RAW_DATA as (profile) mgf file.")
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("keep_n_most_abundant_peaks")
 @cli_option("centroiding_window")
 @cli_option("disable_overwrite")
@@ -287,7 +287,7 @@ def export_hdf(**kwargs):
 def export_mgf(**kwargs):
     with parse_cli_settings("export mgf", **kwargs) as parameters:
         import alphatims.bruker
-        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
         if "output_folder" not in parameters:
             directory = data.directory
         else:
@@ -303,18 +303,9 @@ def export_mgf(**kwargs):
 
 @export.command(
     "selection",
-    help="Load a BRUKER_D_FOLDER and select a data slice for export."
+    help="Load a BRUKER_RAW_DATA and select a data slice for export."
 )
-@cli_option(
-    "bruker_d_folder",
-    as_argument=True,
-    type={
-        "name": "path",
-        "exists": True,
-        "file_okay": True,
-        "dir_okay": True
-    }
-)
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("ion_type")
 @cli_option("rt_bounds")
 @cli_option("mobility_bounds")
@@ -333,8 +324,9 @@ def export_mgf(**kwargs):
 @cli_option("export_parameters")
 def export_selection(**kwargs):
     import numpy as np
+    import alphatims.bruker
     with parse_cli_settings("export selection", **kwargs) as parameters:
-        data = alphatims.bruker.TimsTOF(parameters["bruker_d_folder"])
+        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
         if (parameters["rt_bounds"][0] is not None):
             if (parameters["rt_bounds"][0] < 0):
                 parameters["rt_bounds"] = (
@@ -415,7 +407,6 @@ def export_selection(**kwargs):
             logging.info(f"Exporting results to {output_file_name_base}.csv")
             df.to_csv(f"{output_file_name_base}.csv", index=False)
         if ("html" in parameters['format']) or ("png" in parameters['format']):
-            import alphatims.bruker
             import alphatims.plotting
             import holoviews as hv
             labels = {
@@ -453,7 +444,7 @@ def export_selection(**kwargs):
 
 
 @detect.command("ions", help="Detect ions (NotImplemented yet).")
-@cli_option("bruker_d_folder", as_argument=True)
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -466,7 +457,7 @@ def detect_ions(**kwargs):
 
 
 @detect.command("features", help="Detect features (NotImplemented yet).")
-@cli_option("bruker_d_folder", as_argument=True)
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")
@@ -479,7 +470,7 @@ def detect_features(**kwargs):
 
 
 @detect.command("analytes", help="Detect analytes (NotImplemented yet).")
-@cli_option("bruker_d_folder", as_argument=True)
+@cli_option("bruker_raw_data", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
 @cli_option("threads")

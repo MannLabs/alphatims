@@ -164,12 +164,12 @@
     "nargs": 2,
     "required": true
   },
-  "bruker_d_folder": {
-    "help": "A Bruker .d folder with raw data.",
+  "bruker_raw_data": {
+    "help": "Bruker raw data (.d folder or .hdf file).",
     "type": {
       "name": "path",
       "exists": true,
-      "file_okay": false,
+      "file_okay": true,
       "dir_okay": true
     },
     "required": true
