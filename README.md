@@ -4,7 +4,7 @@
 ---
 # AlphaTims
 
-AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/alphatims).
+AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) as a modular tool of the [AlphaPept ecosystem](https://github.com/MannLabs/alphapept). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/alphatims).
 
 * [**AlphaTims**](#alphatims)
   * [**About**](#about)
@@ -347,7 +347,7 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
 ---
 ## Citing AlphaTims
 
-We are actively working on a manuscript for publication. Please check back here in a little while for updates!
+Check out the [BioRxiv paper](https://www.biorxiv.org/content/10.1101/2021.07.27.453933v1).
 
 ---
 ## How to contribute
@@ -369,6 +369,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FEAT: Include DIA 120 sample in performance tests.
   * FEAT: Show performance in README.
   * FIX: Move python-lzf dependancy (to decompress older Bruker files) to legacy requirements, as pip install on Windows requires visual c++ otherwise.
+  * DOCS: BioRxiv paper link.
 
 ### 0.2.7
 
