@@ -300,6 +300,11 @@ The basic workflow of AlphaTims looks as follows:
 * Convert data to a [TimsTOF object in Python](#timstof-objects-in-python) and optionally store them as a persistent [HDF5 file](https://www.hdfgroup.org/solutions/hdf5/).
 * Use Python's [slicing mechanism](#slicing-timstof-objects) to retrieve data from this object e.g. for visualisation.
 
+Also checkout:
+
+* The [paper](https://doi.org/10.1101/2021.07.23.453379) for a complete overview.
+* The [presentation](https://datashare.biochem.mpg.de/s/JlVKCvLHdQjsVZU) at [ISCB](https://www.iscb.org/ismbeccb2021) for a brief video.
+
 ### Bruker raw data
 
 Bruker stores TimsTOF raw data in a `.d` folder. The two main files in this folder are `analysis.tdf` and `analysis.tdf_bin`.
@@ -347,12 +352,12 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
 ---
 ## Citing AlphaTims
 
-Check out the [BioRxiv paper](https://www.biorxiv.org/content/10.1101/2021.07.27.453933v1).
+Check out the [paper](https://doi.org/10.1101/2021.07.23.453379).
 
 ---
 ## How to contribute
 
-All contributions are welcome. Feel free to post a new issue or clone the repository and create a PR with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md)
+If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](issues) or clone the repository and create a [pull request](pulls) with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md).
 
 ---
 ## Changelog
@@ -361,7 +366,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
 
 ### 0.2.8
 
-  * FIX: ensure stable version for one click GUI.
+  * FIX: Ensure stable version for one click GUI.
   * FIX: Do not require plotting dependancies for CLI export csv selection.
   * FIX: Import of very old diaPASEF samples where the analysis.tdf file still looks like ddaPASEF.
   * FIX: frame pointers of fragment_frame table.
@@ -370,6 +375,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FEAT: Show performance in README.
   * FIX: Move python-lzf dependancy (to decompress older Bruker files) to legacy requirements, as pip install on Windows requires visual c++ otherwise.
   * DOCS: BioRxiv paper link.
+  * FIX: RT in m in/sec conversion of the GUI.
 
 ### 0.2.7
 

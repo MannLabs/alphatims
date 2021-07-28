@@ -34,6 +34,7 @@ __urls__ = {
     "GitHub": __github__,
     "ReadTheDocs": "https://alphatims.readthedocs.io/en/latest/",
     "PyPi": "https://pypi.org/project/alphatims/",
+    "Scientific paper": "https://doi.org/10.1101/2021.07.23.453379",
 }
 __requirements__ = {
     "": "requirements/requirements.txt",

@@ -189,16 +189,21 @@ def heatmap(
     """
     axis_dict = {
         "mz": "m/z, Th",
-        "rt": "RT, min",
         "mobility": "Inversed IM, V·s·cm\u207B\u00B2",
         "intensity": "Intensity",
     }
+    if rescale_to_minutes:
+        df['rt_values_min'] = df['rt_values'] / 60
+        axis_dict["rt"] = "RT, min"
+    else:
+        axis_dict["rt"] = "RT, sec"
     x_axis_label = axis_dict[x_axis_label]
     y_axis_label = axis_dict[y_axis_label]
     z_axis_label = axis_dict[z_axis_label]
     labels = {
         'm/z, Th': "mz_values",
-        'RT, min': "rt_values",
+        'RT, min': "rt_values_min",
+        'RT, sec': "rt_values",
         'Inversed IM, V·s·cm\u207B\u00B2': "mobility_values",
         'Intensity': "intensity_values",
     }
@@ -212,8 +217,6 @@ def heatmap(
     #         (f'{z_axis_label}', f'@{z_dimension}'),
     #     ]
     # )
-    if rescale_to_minutes:
-        df["rt_values"] /= 60
     scatter = df.hvplot.scatter(
         x=x_dimension,
         y=y_dimension,
