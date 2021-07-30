@@ -193,7 +193,6 @@ def heatmap(
         "intensity": "Intensity",
     }
     if rescale_to_minutes:
-        df['rt_values_min'] = df['rt_values'] / 60
         axis_dict["rt"] = "RT, min"
     else:
         axis_dict["rt"] = "RT, sec"
