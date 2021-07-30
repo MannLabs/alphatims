@@ -7,7 +7,7 @@ rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_windows
-pip install "../../dist/alphatims-0.2.8-py3-none-any.whl[plotting,stable,legacy]"
+pip install "../../dist/alphatims-0.2.9-py3-none-any.whl[plotting,stable,legacy]"
 pip install pyinstaller==4.2
 # TODO https://stackoverflow.com/questions/54175042/python-3-7-anaconda-environment-import-ssl-dll-load-fail-error/60405693#60405693
 pyinstaller ../pyinstaller/alphatims.spec -y
