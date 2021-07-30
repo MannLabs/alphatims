@@ -3,6 +3,5 @@ numba
 pandas
 tqdm
 pyzstd
-python-lzf
 psutil
 click

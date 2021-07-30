@@ -14264,7 +14264,7 @@ a.anchor-link {
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>This notebook is intended to demonstrate the performance of AlphaTIMS.
+<p>This notebook is intended to demonstrate the performance of AlphaTims.
 It contains the following information:</p>
 <ol>
 <li><a href="#Samples"><strong>Samples</strong></a></li>
@@ -14319,32 +14319,32 @@ It contains the following information:</p>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>2021-05-18 21:09:03&gt; Platform information:
-2021-05-18 21:09:03&gt; system        - Darwin
-2021-05-18 21:09:03&gt; release       - 19.6.0
-2021-05-18 21:09:03&gt; version       - 10.15.7
-2021-05-18 21:09:03&gt; machine       - x86_64
-2021-05-18 21:09:03&gt; processor     - i386
-2021-05-18 21:09:03&gt; cpu count     - 8
-2021-05-18 21:09:03&gt; cpu frequency - 2300.00 Mhz
-2021-05-18 21:09:03&gt; ram           - 22.3/32.0 Gb (available/total)
-2021-05-18 21:09:03&gt; 
-2021-05-18 21:09:03&gt; Python information:
-2021-05-18 21:09:03&gt; alphatims  - 0.2.7
-2021-05-18 21:09:03&gt; bokeh      - 2.2.3
-2021-05-18 21:09:03&gt; click      - 7.1.2
-2021-05-18 21:09:03&gt; datashader - 0.12.1
-2021-05-18 21:09:03&gt; h5py       - 3.2.1
-2021-05-18 21:09:03&gt; hvplot     - 0.7.1
-2021-05-18 21:09:03&gt; numba      - 0.53.1
-2021-05-18 21:09:03&gt; pandas     - 1.2.3
-2021-05-18 21:09:03&gt; psutil     - 5.8.0
-2021-05-18 21:09:03&gt; python     - 3.8.8
-2021-05-18 21:09:03&gt; python-lzf - 0.2.4
-2021-05-18 21:09:03&gt; pyzstd     - 0.14.4
-2021-05-18 21:09:03&gt; selenium   - 3.141.0
-2021-05-18 21:09:03&gt; tqdm       - 4.60.0
-2021-05-18 21:09:03&gt; 
+<pre>2021-06-08 09:32:54&gt; Platform information:
+2021-06-08 09:32:54&gt; system        - Darwin
+2021-06-08 09:32:54&gt; release       - 19.6.0
+2021-06-08 09:32:54&gt; version       - 10.15.7
+2021-06-08 09:32:54&gt; machine       - x86_64
+2021-06-08 09:32:54&gt; processor     - i386
+2021-06-08 09:32:54&gt; cpu count     - 8
+2021-06-08 09:32:54&gt; cpu frequency - 2300.00 Mhz
+2021-06-08 09:32:54&gt; ram           - 22.6/32.0 Gb (available/total)
+2021-06-08 09:32:54&gt; 
+2021-06-08 09:32:54&gt; Python information:
+2021-06-08 09:32:54&gt; alphatims  - 0.2.8
+2021-06-08 09:32:54&gt; bokeh      - 2.2.3
+2021-06-08 09:32:54&gt; click      - 8.0.1
+2021-06-08 09:32:54&gt; datashader - 0.12.1
+2021-06-08 09:32:54&gt; h5py       - 3.2.1
+2021-06-08 09:32:54&gt; hvplot     - 0.7.1
+2021-06-08 09:32:54&gt; numba      - 0.53.1
+2021-06-08 09:32:54&gt; pandas     - 1.2.4
+2021-06-08 09:32:54&gt; psutil     - 5.8.0
+2021-06-08 09:32:54&gt; python     - 3.8.10
+2021-06-08 09:32:54&gt; python-lzf - 0.2.4
+2021-06-08 09:32:54&gt; pyzstd     - 0.15.0
+2021-06-08 09:32:54&gt; selenium   - 3.141.0
+2021-06-08 09:32:54&gt; tqdm       - 4.60.0
+2021-06-08 09:32:54&gt; 
 </pre>
 </div>
 </div>
@@ -14371,11 +14371,12 @@ It contains the following information:</p>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">file_names</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;DDA_6&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;DIA_6&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DDA_6&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIA_6&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d&quot;</span><span class="p">,</span>
     <span class="s2">&quot;DDA_21&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d&quot;</span><span class="p">,</span>
     <span class="s2">&quot;DIA_21&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;DDA_120&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d&quot;</span>
+    <span class="s2">&quot;DDA_120&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d&quot;</span><span class="p">,</span>
+<span class="c1">#     &quot;DIA_120&quot;: &quot;/Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_SA_HeLa_400ng_diaPASEF_high_speed_A1_1_7546.d&quot;,</span>
 <span class="p">}</span>
 <span class="n">overview</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">file_names</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">})</span>
@@ -14403,12 +14404,13 @@ It contains the following information:</p>
 <span class="kn">import</span> <span class="nn">alphatims.bruker</span>
 
 <span class="n">timstof_objects</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">detector_strikes</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">detector_events</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">sample_id</span><span class="p">,</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">file_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial loading of </span><span class="si">{</span><span class="n">sample_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">timstof_objects</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">alphatims</span><span class="o">.</span><span class="n">bruker</span><span class="o">.</span><span class="n">TimsTOF</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
-    <span class="n">detector_strikes</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">timstof_objects</span><span class="p">[</span><span class="n">sample_id</span><span class="p">])</span>
+    <span class="n">detector_events</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">timstof_objects</span><span class="p">[</span><span class="n">sample_id</span><span class="p">])</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector events&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">detector_events</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14428,65 +14430,49 @@ It contains the following information:</p>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>2021-05-18 21:09:03&gt; WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors &lt; 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
-2021-05-18 21:09:03&gt; 
-2021-05-18 21:09:03&gt; Initial loading of DDA_6
-2021-05-18 21:09:03&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-18 21:09:03&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-18 21:09:03&gt; Reading 2,978 frames with 214,172,697 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-18 21:09:04&gt; Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d...
-2021-05-18 21:09:05&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_MA_HeLa_200ng_DDA_06-15_5_6min_4cm_S1-A1_1_21717.d
-2021-05-18 21:09:05&gt; 
-2021-05-18 21:09:05&gt; Initial loading of DIA_6
-2021-05-18 21:09:05&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-18 21:09:05&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-18 21:09:05&gt; Reading 3,182 frames with 158,552,099 detector strikes for /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-18 21:09:06&gt; Indexing /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d...
-2021-05-18 21:09:06&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201016_tims03_Evo03_PS_SA_HeLa_200ng_300-1200_2steps_16scans_06-15_5_6min_4cm_S1-A4_1_21720.d
-2021-05-18 21:09:06&gt; 
-2021-05-18 21:09:06&gt; Initial loading of DDA_21
-2021-05-18 21:09:06&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-18 21:09:06&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-18 21:09:06&gt; Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-18 21:09:08&gt; Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
-2021-05-18 21:09:09&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-05-18 21:09:09&gt; 
-2021-05-18 21:09:09&gt; Initial loading of DIA_21
-2021-05-18 21:09:09&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-18 21:09:09&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-18 21:09:09&gt; Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-18 21:09:13&gt; Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
-2021-05-18 21:09:13&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-05-18 21:09:13&gt; 
-2021-05-18 21:09:13&gt; Initial loading of DDA_120
-2021-05-18 21:09:13&gt; Importing data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-18 21:09:13&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-18 21:09:18&gt; Reading 68,114 frames with 2,074,019,899 detector strikes for /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-18 21:09:41&gt; Indexing /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d...
-2021-05-18 21:09:46&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/HeLa_200ng_1428.d
-2021-05-18 21:09:46&gt; 
+<pre>2021-06-08 09:32:54&gt; WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors &lt; 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2021-06-08 09:32:54&gt; 
+2021-06-08 09:32:54&gt; Initial loading of DDA_6
+2021-06-08 09:32:54&gt; Importing data from /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d
+2021-06-08 09:32:54&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d
+2021-06-08 09:32:54&gt; Reading 3,156 frames with 143,542,808 detector strikes for /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d
+2021-06-08 09:32:55&gt; Indexing /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d...
+2021-06-08 09:32:55&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_MA_HeLa_50ng_5_6min_DDA_S1-B1_1_25185.d
+2021-06-08 09:32:55&gt; 
+2021-06-08 09:32:55&gt; Initial loading of DIA_6
+2021-06-08 09:32:55&gt; Importing data from /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d
+2021-06-08 09:32:55&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d
+2021-06-08 09:32:55&gt; Reading 3,176 frames with 126,982,956 detector strikes for /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d
+2021-06-08 09:32:56&gt; Indexing /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d...
+2021-06-08 09:32:56&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20210510_TIMS03_EVO03_PaSk_SA_HeLa_50ng_5_6min_DIA_high_speed_S1-B2_1_25186.d
+2021-06-08 09:32:56&gt; 
+2021-06-08 09:32:56&gt; Initial loading of DDA_21
+2021-06-08 09:32:56&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-06-08 09:32:56&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-06-08 09:32:57&gt; Reading 11,886 frames with 295,251,252 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-06-08 09:32:59&gt; Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
+2021-06-08 09:32:59&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2021-06-08 09:32:59&gt; 
+2021-06-08 09:32:59&gt; Initial loading of DIA_21
+2021-06-08 09:32:59&gt; Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-06-08 09:32:59&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-06-08 09:32:59&gt; Reading 11,868 frames with 730,564,765 detector strikes for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-06-08 09:33:03&gt; Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
+2021-06-08 09:33:03&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2021-06-08 09:33:03&gt; 
+2021-06-08 09:33:03&gt; Initial loading of DDA_120
+2021-06-08 09:33:03&gt; Importing data from /Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d
+2021-06-08 09:33:03&gt; Reading frame metadata for /Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d
+2021-06-08 09:33:08&gt; Reading 67,024 frames with 2,736,188,777 detector strikes for /Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d
+2021-06-08 09:33:36&gt; Indexing /Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d...
+2021-06-08 09:33:44&gt; Succesfully imported data from /Users/swillems/Data/alphatims_testing/20210507_TIMS01_LC01_PaSk_MA_HeLa_400ng_ddaAPSEF_A1_1_7545.d
+2021-06-08 09:33:44&gt; 
 </pre>
 </div>
 </div>
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector strikes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">detector_strikes</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
@@ -14498,10 +14484,10 @@ It contains the following information:</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">format</span><span class="p">({</span><span class="s2">&quot;Detector events&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:,}</span><span class="s2">&quot;</span><span class="p">})</span>
 </pre></div>
 
      </div>
@@ -14517,68 +14503,44 @@ It contains the following information:</p>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 
 
 
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Type</th>
-      <th>Gradient (min)</th>
-      <th>Detector strikes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>DDA_6</th>
-      <td>DDA</td>
-      <td>6</td>
-      <td>214,172,697</td>
-    </tr>
-    <tr>
-      <th>DIA_6</th>
-      <td>DIA</td>
-      <td>6</td>
-      <td>158,552,099</td>
-    </tr>
-    <tr>
-      <th>DDA_21</th>
-      <td>DDA</td>
-      <td>21</td>
-      <td>295,251,252</td>
-    </tr>
-    <tr>
-      <th>DIA_21</th>
-      <td>DIA</td>
-      <td>21</td>
-      <td>730,564,765</td>
-    </tr>
-    <tr>
-      <th>DDA_120</th>
-      <td>DDA</td>
-      <td>120</td>
-      <td>2,074,019,899</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+<style  type="text/css" >
+</style><table id="T_b33f2_" ><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Type</th>        <th class="col_heading level0 col1" >Gradient (min)</th>        <th class="col_heading level0 col2" >Detector events</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_b33f2_level0_row0" class="row_heading level0 row0" >DDA_6</th>
+                        <td id="T_b33f2_row0_col0" class="data row0 col0" >DDA</td>
+                        <td id="T_b33f2_row0_col1" class="data row0 col1" >6</td>
+                        <td id="T_b33f2_row0_col2" class="data row0 col2" >143,542,808</td>
+            </tr>
+            <tr>
+                        <th id="T_b33f2_level0_row1" class="row_heading level0 row1" >DIA_6</th>
+                        <td id="T_b33f2_row1_col0" class="data row1 col0" >DIA</td>
+                        <td id="T_b33f2_row1_col1" class="data row1 col1" >6</td>
+                        <td id="T_b33f2_row1_col2" class="data row1 col2" >126,982,956</td>
+            </tr>
+            <tr>
+                        <th id="T_b33f2_level0_row2" class="row_heading level0 row2" >DDA_21</th>
+                        <td id="T_b33f2_row2_col0" class="data row2 col0" >DDA</td>
+                        <td id="T_b33f2_row2_col1" class="data row2 col1" >21</td>
+                        <td id="T_b33f2_row2_col2" class="data row2 col2" >295,251,252</td>
+            </tr>
+            <tr>
+                        <th id="T_b33f2_level0_row3" class="row_heading level0 row3" >DIA_21</th>
+                        <td id="T_b33f2_row3_col0" class="data row3 col0" >DIA</td>
+                        <td id="T_b33f2_row3_col1" class="data row3 col1" >21</td>
+                        <td id="T_b33f2_row3_col2" class="data row3 col2" >730,564,765</td>
+            </tr>
+            <tr>
+                        <th id="T_b33f2_level0_row4" class="row_heading level0 row4" >DDA_120</th>
+                        <td id="T_b33f2_row4_col0" class="data row4 col0" >DDA</td>
+                        <td id="T_b33f2_row4_col1" class="data row4 col1" >120</td>
+                        <td id="T_b33f2_row4_col2" class="data row4 col2" >2,736,188,777</td>
+            </tr>
+    </tbody></table>
 </div>
 
 </div>
@@ -14601,7 +14563,7 @@ It contains the following information:</p>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">alphatims</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -14611,9 +14573,7 @@ It contains the following information:</p>
     <span class="n">raw_load_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = alphatims.bruker.TimsTOF(file_name)
     <span class="n">raw_load_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">raw_load_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .d (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">raw_load_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .d (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">raw_load_times</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14634,19 +14594,19 @@ It contains the following information:</p>
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Time to load DDA_6 raw Bruker .d folder:
-1.58 s ± 41.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+1.07 s ± 10.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DIA_6 raw Bruker .d folder:
-1.11 s ± 8.53 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+917 ms ± 21.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DDA_21 raw Bruker .d folder:
-3.08 s ± 68.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+3.06 s ± 61.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DIA_21 raw Bruker .d folder:
-4.65 s ± 109 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+4.6 s ± 102 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DDA_120 raw Bruker .d folder:
-20.2 s ± 2.55 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
+28.2 s ± 2.98 s per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 </pre>
 </div>
@@ -14654,22 +14614,6 @@ Time to load DDA_120 raw Bruker .d folder:
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .d (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">raw_load_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
@@ -14686,7 +14630,7 @@ Time to load DDA_120 raw Bruker .d folder:
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">save_hdf_times</span> <span class="o">=</span> <span class="p">{}</span>
@@ -14697,6 +14641,7 @@ Time to load DDA_120 raw Bruker .d folder:
     <span class="n">save_hdf_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data.save_as_hdf(path, file_name, overwrite=True)
     <span class="n">save_hdf_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">save_hdf_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Save .hdf (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">save_hdf_times</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14717,19 +14662,19 @@ Time to load DDA_120 raw Bruker .d folder:
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Time to export DDA_6 to HDF file:
-550 ms ± 27.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+368 ms ± 21.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to export DIA_6 to HDF file:
-427 ms ± 46.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+388 ms ± 80.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to export DDA_21 to HDF file:
-798 ms ± 18.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+819 ms ± 51.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to export DIA_21 to HDF file:
-1.96 s ± 63.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+1.86 s ± 84.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to export DDA_120 to HDF file:
-6.07 s ± 71.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+6.76 s ± 135 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 </pre>
 </div>
@@ -14737,22 +14682,6 @@ Time to export DDA_120 to HDF file:
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Save .hdf (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">save_hdf_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
@@ -14769,7 +14698,7 @@ Time to export DDA_120 to HDF file:
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -14780,6 +14709,7 @@ Time to export DDA_120 to HDF file:
     <span class="n">load_hdf_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = alphatims.bruker.TimsTOF(file_name)
     <span class="n">load_hdf_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">load_hdf_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .hdf (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">load_hdf_times</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14800,19 +14730,19 @@ Time to export DDA_120 to HDF file:
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Time to load DDA_6 HDF file:
-475 ms ± 6.07 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+319 ms ± 17.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DIA_6 HDF file:
-358 ms ± 4.28 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+158 ms ± 9.51 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DDA_21 HDF file:
-823 ms ± 68.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+852 ms ± 88.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DIA_21 HDF file:
-1.94 s ± 177 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+2.24 s ± 460 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to load DDA_120 HDF file:
-10.1 s ± 156 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+13 s ± 198 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 </pre>
 </div>
@@ -14820,22 +14750,6 @@ Time to load DDA_120 HDF file:
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .hdf (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">load_hdf_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
@@ -14852,7 +14766,7 @@ Time to load DDA_120 HDF file:
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">tmp</span> <span class="o">=</span> <span class="n">timstof_objects</span><span class="p">[</span><span class="s2">&quot;DDA_6&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -14878,7 +14792,7 @@ Time to load DDA_120 HDF file:
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -14900,7 +14814,7 @@ Time to load DDA_120 HDF file:
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Testing LC slice data[100.0: 100.5] (</span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detector hits).&quot;</span>
     <span class="p">)</span>
-    <span class="n">frame_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[100.:100.5]
+    <span class="n">frame_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[100.:100.5, &quot;raw&quot;]
     <span class="n">frame_slice_counts</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
     <span class="n">frame_slice_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">frame_slice_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     
@@ -14908,7 +14822,7 @@ Time to load DDA_120 HDF file:
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Testing TIMS slice data[:, 450] (</span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detector hits).&quot;</span>
     <span class="p">)</span>
-    <span class="n">scan_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, 450]
+    <span class="n">scan_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, 450, &quot;raw&quot;]
     <span class="n">scan_slice_counts</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
     <span class="n">scan_slice_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">scan_slice_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     
@@ -14916,7 +14830,7 @@ Time to load DDA_120 HDF file:
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Testing QUAD slice data[:, :, 700.0: 710] (</span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detector hits).&quot;</span>
     <span class="p">)</span>
-    <span class="n">quad_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, :, 700.0: 710]
+    <span class="n">quad_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, :, 700.0: 710, &quot;raw&quot;]
     <span class="n">quad_slice_counts</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
     <span class="n">quad_slice_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">quad_slice_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     
@@ -14924,11 +14838,20 @@ Time to load DDA_120 HDF file:
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Testing TOF slice data[:, :, :, 621.9: 622.1] (</span><span class="si">{</span><span class="n">count</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> detector hits).&quot;</span>
     <span class="p">)</span>
-    <span class="n">tof_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, :, :, 621.9: 622.1]
+    <span class="n">tof_slice_time</span> <span class="o">=</span> <span class="o">%</span><span class="k">timeit</span> -o tmp = data[:, :, :, 621.9: 622.1, &quot;raw&quot;]
     <span class="n">tof_slice_counts</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
     <span class="n">tof_slice_times</span><span class="p">[</span><span class="n">sample_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">tof_slice_time</span><span class="o">.</span><span class="n">timings</span><span class="p">)</span>
     
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">frame_slice_times</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">frame_slice_counts</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">scan_slice_times</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">scan_slice_counts</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">quad_slice_times</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">quad_slice_counts</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">tof_slice_times</span><span class="p">)</span>
+<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">tof_slice_counts</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14949,54 +14872,54 @@ Time to load DDA_120 HDF file:
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
 <pre>Time to slice DDA_6:
-Testing LC slice data[100.0: 100.5] (18,034 detector hits).
-1.64 ms ± 43.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-Testing TIMS slice data[:, 450] (393,184 detector hits).
-37.9 ms ± 2.2 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-Testing QUAD slice data[:, :, 700.0: 710] (185,235 detector hits).
-28.4 ms ± 1.9 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-Testing TOF slice data[:, :, :, 621.9: 622.1] (52,422 detector hits).
-79.8 ms ± 3.49 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+Testing LC slice data[100.0: 100.5] (124,835 detector hits).
+3.49 ms ± 43.9 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+Testing TIMS slice data[:, 450] (234,662 detector hits).
+7.68 ms ± 106 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+Testing QUAD slice data[:, :, 700.0: 710] (40,583 detector hits).
+11.1 ms ± 140 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+Testing TOF slice data[:, :, :, 621.9: 622.1] (38,471 detector hits).
+63.3 ms ± 710 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 Time to slice DIA_6:
-Testing LC slice data[100.0: 100.5] (86,623 detector hits).
-7.29 ms ± 497 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-Testing TIMS slice data[:, 450] (277,025 detector hits).
-23.6 ms ± 1.88 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-Testing QUAD slice data[:, :, 700.0: 710] (8,346,135 detector hits).
-684 ms ± 14.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-Testing TOF slice data[:, :, :, 621.9: 622.1] (23,165 detector hits).
-94.4 ms ± 1.57 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+Testing LC slice data[100.0: 100.5] (59,714 detector hits).
+1.75 ms ± 45.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+Testing TIMS slice data[:, 450] (162,369 detector hits).
+5.77 ms ± 89.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+Testing QUAD slice data[:, :, 700.0: 710] (4,173,952 detector hits).
+159 ms ± 12.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+Testing TOF slice data[:, :, :, 621.9: 622.1] (27,954 detector hits).
+88.2 ms ± 480 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 Time to slice DDA_21:
 Testing LC slice data[100.0: 100.5] (20,923 detector hits).
-1.74 ms ± 13.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+656 µs ± 8.92 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 Testing TIMS slice data[:, 450] (658,010 detector hits).
-62.9 ms ± 1.25 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+26.9 ms ± 3.07 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 Testing QUAD slice data[:, :, 700.0: 710] (759,187 detector hits).
-104 ms ± 2.62 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+61.5 ms ± 2.84 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 Testing TOF slice data[:, :, :, 621.9: 622.1] (69,405 detector hits).
-179 ms ± 5.42 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+166 ms ± 1.12 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 Time to slice DIA_21:
 Testing LC slice data[100.0: 100.5] (5,098 detector hits).
-877 µs ± 11.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+230 µs ± 15.3 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 Testing TIMS slice data[:, 450] (1,353,926 detector hits).
-126 ms ± 928 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+54.2 ms ± 3.7 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 Testing QUAD slice data[:, :, 700.0: 710] (47,439,349 detector hits).
-5.05 s ± 133 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+1.5 s ± 76.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 Testing TOF slice data[:, :, :, 621.9: 622.1] (116,658 detector hits).
-412 ms ± 17.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+380 ms ± 3.95 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 Time to slice DDA_120:
-Testing LC slice data[100.0: 100.5] (2,331 detector hits).
-807 µs ± 99.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-Testing TIMS slice data[:, 450] (3,988,021 detector hits).
-359 ms ± 21.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-Testing QUAD slice data[:, :, 700.0: 710] (4,618,589 detector hits).
-596 ms ± 21.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
-Testing TOF slice data[:, :, :, 621.9: 622.1] (611,802 detector hits).
-1.12 s ± 11.9 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+Testing LC slice data[100.0: 100.5] (2,185 detector hits).
+127 µs ± 2.55 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+Testing TIMS slice data[:, 450] (5,292,442 detector hits).
+208 ms ± 18.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+Testing QUAD slice data[:, :, 700.0: 710] (7,071,306 detector hits).
+434 ms ± 13.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+Testing TOF slice data[:, :, :, 621.9: 622.1] (797,700 detector hits).
+1.22 s ± 77.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 </pre>
 </div>
@@ -15004,43 +14927,6 @@ Testing TOF slice data[:, :, :, 621.9: 622.1] (611,802 detector hits).
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">frame_slice_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">frame_slice_counts</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">scan_slice_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">scan_slice_counts</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">quad_slice_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">quad_slice_counts</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (s)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">tof_slice_times</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-<span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (hits)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">tof_slice_counts</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
@@ -15057,10 +14943,22 @@ Testing TOF slice data[:, :, :, 621.9: 622.1] (611,802 detector hits).
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">overview</span><span class="o">.</span><span class="n">T</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">format_df</span><span class="p">(</span><span class="n">overview</span><span class="p">):</span>
+    <span class="n">new_overview</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">column_name</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">overview</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">overview</span><span class="o">.</span><span class="n">dtypes</span><span class="p">):</span>
+        <span class="n">new_column</span> <span class="o">=</span> <span class="n">overview</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">:</span>
+            <span class="n">new_column</span> <span class="o">=</span> <span class="n">new_column</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+            <span class="n">new_column</span> <span class="o">=</span> <span class="n">new_column</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">#.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">new_overview</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_column</span>
+    <span class="k">return</span> <span class="n">new_overview</span><span class="o">.</span><span class="n">T</span>
+
+<span class="n">overview</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;performance_results.csv&quot;</span><span class="p">)</span>
+<span class="n">format_df</span><span class="p">(</span><span class="n">overview</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15076,7 +14974,7 @@ Testing TOF slice data[:, :, :, 621.9: 622.1] (611,802 detector hits).
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
 
 
 
@@ -15124,104 +15022,214 @@ Testing TOF slice data[:, :, :, 621.9: 622.1] (611,802 detector hits).
       <td>120</td>
     </tr>
     <tr>
-      <th>Detector strikes</th>
-      <td>214,172,697</td>
-      <td>158,552,099</td>
+      <th>Detector events</th>
+      <td>143,542,808</td>
+      <td>126,982,956</td>
       <td>295,251,252</td>
       <td>730,564,765</td>
-      <td>2,074,019,899</td>
+      <td>2,736,188,777</td>
     </tr>
     <tr>
       <th>Load .d (s)</th>
-      <td>1.58</td>
-      <td>1.11</td>
-      <td>3.08</td>
-      <td>4.65</td>
-      <td>20.2</td>
+      <td>1.07</td>
+      <td>0.917</td>
+      <td>3.06</td>
+      <td>4.60</td>
+      <td>28.2</td>
     </tr>
     <tr>
       <th>Save .hdf (s)</th>
-      <td>0.550</td>
-      <td>0.427</td>
-      <td>0.798</td>
-      <td>1.96</td>
-      <td>6.07</td>
+      <td>0.368</td>
+      <td>0.388</td>
+      <td>0.819</td>
+      <td>1.86</td>
+      <td>6.76</td>
     </tr>
     <tr>
       <th>Load .hdf (s)</th>
-      <td>0.475</td>
-      <td>0.358</td>
-      <td>0.823</td>
-      <td>1.94</td>
-      <td>10.1</td>
+      <td>0.319</td>
+      <td>0.158</td>
+      <td>0.852</td>
+      <td>2.24</td>
+      <td>13.0</td>
     </tr>
     <tr>
       <th>Slice LC (s)</th>
-      <td>0.00164</td>
-      <td>0.00729</td>
-      <td>0.00174</td>
-      <td>0.000877</td>
-      <td>0.000807</td>
+      <td>0.00349</td>
+      <td>0.00175</td>
+      <td>0.000656</td>
+      <td>0.000230</td>
+      <td>0.000127</td>
     </tr>
     <tr>
       <th>Slice LC (hits)</th>
-      <td>18,034</td>
-      <td>86,623</td>
+      <td>124,835</td>
+      <td>59,714</td>
       <td>20,923</td>
       <td>5,098</td>
-      <td>2,331</td>
+      <td>2,185</td>
     </tr>
     <tr>
       <th>Slice TIMS (s)</th>
-      <td>0.0379</td>
-      <td>0.0236</td>
-      <td>0.0629</td>
-      <td>0.126</td>
-      <td>0.359</td>
+      <td>0.00768</td>
+      <td>0.00577</td>
+      <td>0.0269</td>
+      <td>0.0542</td>
+      <td>0.208</td>
     </tr>
     <tr>
       <th>Slice TIMS (hits)</th>
-      <td>393,184</td>
-      <td>277,025</td>
+      <td>234,662</td>
+      <td>162,369</td>
       <td>658,010</td>
       <td>1,353,926</td>
-      <td>3,988,021</td>
+      <td>5,292,442</td>
     </tr>
     <tr>
       <th>Slice QUAD (s)</th>
-      <td>0.0284</td>
-      <td>0.684</td>
-      <td>0.104</td>
-      <td>5.05</td>
-      <td>0.596</td>
+      <td>0.0111</td>
+      <td>0.159</td>
+      <td>0.0615</td>
+      <td>1.50</td>
+      <td>0.434</td>
     </tr>
     <tr>
       <th>Slice QUAD (hits)</th>
-      <td>185,235</td>
-      <td>8,346,135</td>
+      <td>40,583</td>
+      <td>4,173,952</td>
       <td>759,187</td>
       <td>47,439,349</td>
-      <td>4,618,589</td>
+      <td>7,071,306</td>
     </tr>
     <tr>
       <th>Slice TOF (s)</th>
-      <td>0.0798</td>
-      <td>0.0944</td>
-      <td>0.179</td>
-      <td>0.412</td>
-      <td>1.12</td>
+      <td>0.0633</td>
+      <td>0.0882</td>
+      <td>0.166</td>
+      <td>0.380</td>
+      <td>1.22</td>
     </tr>
     <tr>
       <th>Slice TOF (hits)</th>
-      <td>52,422</td>
-      <td>23,165</td>
+      <td>38,471</td>
+      <td>27,954</td>
       <td>69,405</td>
       <td>116,658</td>
-      <td>611,802</td>
+      <td>797,700</td>
     </tr>
   </tbody>
 </table>
 </div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Alternatively, it can be presented visually:</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector events&quot;</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">edgecolors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;black&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="n">linestyle</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;:&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="s2">&quot;DIA&quot;</span> <span class="k">else</span> <span class="s2">&quot;-&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+<span class="n">scatter_dimensions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector events&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .d (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector events&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Load .hdf (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Detector events&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Save .hdf (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (hits)&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice LC (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (hits)&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TIMS (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (hits)&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice QUAD (s)&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (hits)&quot;</span><span class="p">],</span> <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Slice TOF (s)&quot;</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">scatter_dimensions</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">sizes</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="n">linestyle</span><span class="p">)</span>
+    
+<span class="n">function_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;Load .d&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Load .hdf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Save .hdf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Slice LC&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Slice TIMS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Slice quadrupole&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Slice TOF&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower left&quot;</span><span class="p">,</span>
+    <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="n">scatterpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">scatter_dimensions</span><span class="p">):</span>
+    <span class="n">function_legend</span><span class="o">.</span><span class="n">legendHandles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">sample_legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+    <span class="p">[</span> 
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">acq</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">grad</span><span class="si">}</span><span class="s2"> min&quot;</span> <span class="k">for</span> <span class="n">acq</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Type&quot;</span><span class="p">],</span>
+            <span class="n">overview</span><span class="p">[</span><span class="s2">&quot;Gradient (min)&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">],</span>
+    <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span>
+    <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">scatterpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sizes</span><span class="p">):</span>
+    <span class="n">sample_legend</span><span class="o">.</span><span class="n">legendHandles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">size</span><span class="p">]</span>
+    <span class="n">sample_legend</span><span class="o">.</span><span class="n">legendHandles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;grey&#39;</span><span class="p">)</span>
+    <span class="n">sample_legend</span><span class="o">.</span><span class="n">legendHandles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_linestyle</span><span class="p">(</span><span class="n">linestyle</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">sample_legend</span><span class="o">.</span><span class="n">legendHandles</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">(</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+    
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">sample_legend</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">function_legend</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;#Detector events (logscale)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Time in seconds (logscale)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+    <span class="s1">&#39;performance_results.pdf&#39;</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span>
+    <span class="n">dpi</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span>
+    <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+<div class="jp-RenderedImage jp-OutputArea-output ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgcAAAEKCAYAAACG1/Z4AAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjQuMiwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy8rg+JYAAAACXBIWXMAAAsTAAALEwEAmpwYAABwTElEQVR4nO3dd3hUVfoH8O87LZlJ76SH9EYPoUWqFBE0CAiI67IWRHRx7e7+dtfVLaKi6yq6yopdEBVQQJog0lvoIYQ0II2QkJ5MZjLl/P5IggmkTMpkJsn7eZ55nLlz5t73Jph577nnnJeEEGCMMcYYayCxdACMMcYYsy6cHDDGGGOsCU4OGGOMMdYEJweMMcYYa4KTA8YYY4w1wckBY4wxxpqQWTqArkREMwHMdHBweCQ8PNzS4TDGWI9y4sSJ60IID0vHwSyPeuM6B3FxcSIpKcnSYTDGWI9CRCeEEHGWjoNZXq/qOWCMsb7o+vXryMrKglarhY2NDUJCQuDm5mbpsFgPxskBY4z1UFeuXMHm7btwNiMbcldfQKoADLXQfbMFg8KDMHPa7QgICLB0mKwH6lXJQcOYg9DQUEuHwhhjZnX69Bl8sGYDHEKGIXzSKEilv/45Nxj0uHQ5A/98dzWeeGAOBgwYYMFIWU/EYw4YY6yHyc7Oxj/fXQ2/+Dtg7+zaYrvK0uvIT9qBPy97BH5+fm3ut7kxBydOnIiWyWQ/A+D7FNajWK/XTxw2bFiKuQ7Qq3oOGGOsL9i2aw/s+w9uNTEAAAcXd6gCB2L7rl/w8KL7O3QsmUz2c79+/Vzd3d1rpVJph/bBuo7BYMD169ddCwoKfgbQz1zH4XUOGGOsByktLcXJlEx49zdturZ3/wgcT76I8vLyjh7Szd3dXceJgXWQSqVwd3fXwcw9Ob0qOSCimUS0qhP/EzDGmFW7cuUKpC7ekMrkJrWXyRWQOfXDlStXOnxMTgysS3f8PnpVciCE2CyEWOzk5GTpUBhjzCy0Wi1IalpicINMjtraWvME1A2kUqkqMjJSFRoaqoqIiFD99a9/tdHr9QCALVu2yB0cHFRRUVGqoKAgVVxcnGrt2rVNfkC1tbVwcXFRPfbYY7atHecf//iHon///qrQ0FDVkiVLWm3bmtdee02xcuVKRUc/bw14zAFjjPUgtra2EDpt+z6kr4WNjY15AmrucHo9ampqoFQqIZN1/mvGxsYGqampagDIzc2luXPnKisqKmzffvttDVA3CH3Pnj01AHDw4EHp3LlzbZRKJRITE3UA8P3338uDgoKwZcsWycqVK5u98t68ebP8xx9/lJ0/f16tUqmQm5tLHY33hRde6LmZWL1e1XPAGGO9XXBwMIzlBdDVmpYg1Go1MFZcQ3BwsJkjqxsst3PnTtnzzz9v+9xzz9k+//zztjt37pQZDIYuO4afn59YvXq15tNPP5U0t98xY8YYnnvuOf177713IytZu3at7PHHH9f5+Phg9+7dzWYr//3vf2XPP/+8TqVS3TjOzW22bNkiHz58uGrSpElKPz8/1WOPPWb7/vvvKwYMGKAKCwtTnT9/XgIATz31lO1f/vIXGwCIj49XLVmyxHbAgAGqwMBA1bZt23rERTknB4wx1oM4ODhg9NAY5GeaNostPyMFCcMGwM7OzsyRAbt375Zt3bpVPnz4cCQmJmL48OHYunWrvKUv5I6Kjo42GgwG5OfnN3t1Hx8fb8jMzCQAqK6uxoEDB2jevHm6OXPm6L/66qtmY8nKyqK9e/dKBw4cqBo+fLjql19+afbGfmpqKlavXq1JS0tTr1+/XpKWliY5d+6c+je/+Y3hzTffbPZWgl6vx7lz59Svv/667pVXXukRtxs4OWCMsR5m6qQJ0OeloORaXqvtSgpyIa5dxJRJE8wek16vx/bt22UjRowQLi4uAAAXFxeMGDFCbN++XdYwRqA7NF6/Z926dfJRo0YJBwcH3H///bodO3ZIdDrdLZ8xGAwoLS3FqVOn1K+//rp24cKFNs31TAwYMEAEBQUJlUqFgIAA3HHHHXoAGDx4sDE7O7vZZGXu3Ll6ABg9erQ+L6/135m14OSAMcZ6GC8vLzy1+AGUJe/F5fNJ0NaoIYSAwaCHEALaGjUuJSehImU/nlr8ADw8zF9osaamBmq1Gg2JQQMXFxeo1Wpote0cJ9GKlJQUiVQqhY+PT7Or+B0/flwaGhoqAGDdunWygwcPko+Pj2rYsGHKsrIybN68+ZYRnf369RNz5swxSKVSTJgwwSCRSFBQUHDLl33jsRsSiQRKpVI0PG/p9klDG6lUiu5MkjqjR9z7MBUvn8wY6ytCQkLwl6eXYs26b7Br1f9BX10KqQQwGAG5vSsmT52OBU8v7ZbEAACUSiVUKhVKS0ubJAilpaVQqVRdNiAyLy+PHnnkEZtFixYZmxtYeOTIEemKFStk7733nq64uBjHjx+n3NxcdcNYgrfffluxZs0a2T333NOk+2DGjBmGXbt2SWfOnKk7e/asRKfToV+/fr1vCWET9arkQAixGcDmuLi4RywdC2OMmVN1dTU2f/sVlAXn8Nc7A+DnHAYJCRgEkFeqxcm8JGz+thbzFy1GwxejOclkMkybNk2/detWecOthdLSUhw9epSmT5+u68ysBa1Wi8jISJVer4dUKsW9995reOmll250RSQlJVFUVJSqpqYGbm5ueP3113WJiYm6d999VzFq1CjR+PwXLFige/nll2VqtbrJz2XZsmW18+fPV4aFhankcjlWrVrVpxd+4toKjDHWw2i1Wnzy/lsIMV7C7UOCQHTrrW4hBHaeuozL0hD8bulTUCjaHgfXXG2FM2fO6AYNGmTS1DyDwYDdu3fLtm/ffuPLd9q0afpJkybp+/IXrTmcOXNGMWjQoHYueGG6XtVzwBhjfcGBvb/AsyYdt48MbTYxAAAiwpQhQVh/6CIO7d+P8ZMmmT0uqVSKKVOm6CdOnKjXarWwsbHpknUOWPfjAYmMMdaD6PV6nDqwHWOjfVpMDBoQEcZGe+PEvq0tDpYzB5lMBjs7O04MejBODhhjrAfJzMyEu6QS7k6mrVvg6WIPZ1GOrKwsM0fGehNODhhjrAepqKiAu6p9f7o97CSoqKgwU0SsN+LkgDHGehAiQnuHkRtF3Tx8xkxl9f9aiCiYiFYT0XeWjoUxxizNw8MDOeUGmDrTTAiB3AoD3N3dzRwZ600skhwQ0cdEVEhEyTdtn0ZEF4kog4heBAAhRJYQ4iFLxMkYY9YmICAARgdfZF8rM6n9paulkLgEwM/Pz7yBmVFbJZsnTJigbNz+9ttvVw4aNKjVxR22bNkib9jn8OHDO7wQxL59+6SLFi3qcHlna2WpnoNPAUxrvIGIpADeA3AHgGgAC4gouvtDY4wx60VEGDFxBnadL4S+fgbC1eIKHDh3GT+dyMCBc5dRUFIJANDpDdidUoQRE+5sc2ZDV9Dr9aisrIRer8fhw4elarW6S/bbULI5IyNDvXv37pqffvpJ+uyzzzb7hVxUVETJyclUWVmJlJSUZr/jioqK6Mknn5Rv2rRJk5GRod64cWNNR2MbO3as4dNPP9V09PPWyiLJgRBiH4CSmzbHA8io7ymoBfA1gLtN3ScRLSaiJCJKKioq6sJoGWPMusQNHw6n6Il4e9MpLN+4Dy/v2IvvitOxVXMZ315Px9+27cXyjfvw9qZTcBs4GUOHDeuWuPbs2SP78MMPbXft2mX7888/y69cudLlKx+1VbL5yy+/lN9+++3GxMREw2effdbsIkEfffSRfPr06cbw8HBjwz6ba6dSqVSPPvqobWhoqGrUqFGqPXv2SOPj41V+fn6qL7/8Ug407bl46qmnbOfMmaNsaPP3v/+9a9aMtgBrGnPgCyCn0etcAL5E5EZEHwAYQkR/bOnDQohVQog4IURcd60lzhhjlkBECAiLxC/lNdivqIJioAPcQxzRr78TPEIdIR9oj/2KKuyr0CAgNKLbeg3kcrk0Orquw3fYsGFIT0+Xr1q1StHVayy0VrL522+/lS5cuFC/aNEi3YYNG5pNTtLT0yVlZWWIj49XxcTEqFauXNns8pE1NTWYNGmSISMjQ21vby/+/Oc/K/bt26f+9ttvtf/4xz+aTTwyMzPpl19+UR87dqzmzTfflGo0PbNTwepXqBBCFANYYkpbLrzEGOsLLl26hI9/+BjjHpwAuVKOq/n5uFKUD4NOB5lcDtfAcEwe6YNadS1Wb1wND3cPBAYGmjWmd999V+Hh4UGNBz7K5XLY29ubPHiys3Jycujy5cs0ZcoUvVQqhVwux7Fjx6Tx8fFNshO9Xo+zZ89K9u3bp66urqZRo0Ypx44dqx84cKCxcTu5XI7Zs2frACA6OlrY2NgIW1tbDB8+3NBS6eXJkycbVCoVVCqVcHV1RW5uriQ0NNTYbGMrZk09B3kA/Bu99qvfZjIhxGYhxGInJ6cuDYwxxqzJtp+3wXWAK+yc7KBQKBAYFIQhw0cjbvQ4DB4+GgGBQVAoFLB3todzrDN27Nlh9phmz56tu7lcsxACQUFBoqtXSmypZPNnn30mr6yshL+/v8rHx0eVl5eHzz///JYrfF9fXzFhwgSjk5MTfHx8RHx8vDh+/PgtvQwymQwNNSEkEsmNypIymazFFScbV5/sSSWab2ZNycFxAGFE1J+IFADmA9jUnh0Q0UwiWlVeXm6WABljzNKKi4txNussvEO8TWrvE+KDk+knUVpaata4fHx8xJUrV4RO92sl5IqKCrF///4uvafRWsnm9evXyzZu3Fibn5+vzs/PVx85ckTzww8/3PI9N3fuXP3Ro0cltbW1qKiowOnTp2nAgAE97urenCxyW4GI1gIYD8CdiHIBvCSEWE1ETwDYAUAK4GMhxPn27JdLNjPGervs7GzYeNlAKjNtrJ9ULoWNhw2ys7Nx85V9VyIi+Pn5Gfr160dnzpyR1NbWYvbs2TpXV9dOf+m2VbIZAFJTUyV5eXmYMGHCjUv1qKgoo4ODA37++WfpxIkTb1zqDx061DBp0iRDVFSUSiKR4P777zfcfOuhr+tVJZsbjTl4JD093dLhMMZYlzt69CjWnFiDiNERJn8m7UAa7h95P+Li4lpt19mSzQ2ysrIkarUasbGxfDVuJuYu2WxNtxU6jcccMMYszWAwoKqqCgajwJEjR1FZWdml+1cqlTBq2veda9AaYGvbfev0BAcHGzkx6NmsfrZCe/BsBcaYpW346QDOZBXALWwIrqRcRoLUE5GuZfB1te+Sbv2QkBAYvzaiVlMLhW2zM/Ca0NZoIUoEgoODO31s1ndwzwFjjHWBK1eu4MsdR5Aj6Qe3sCEAgMDoIcgp0+HzXSdx6ExalxzHzs4OowePRk5qTtuNAeRcyEHCkASoVB1eIZj1Qb0qOWCMMUspqqrFxUJ1swsOeQdHIZfcUV7RNbcYpk6cCuMlI4pyWl8NtjC7ELgCTJ4wuUuOy/qOXpUc8FRGxpglGI1GXDfawbVfy8WNCguL8N7qL7rkeO7u7vjDg39AeVI5Mo5noKaqaWmAmsoapB9PR9WpKjz18FNwc3PrkuOyvqNXjTngqYyMMUvIycnBjxs2Inj09Bbb2Du7ImH4/C47ZmBgIP7yh79g38F9+HnHzzDYGSCVS2GoNUCmlmHSyEm4be5tcHZ27rJjsr6jV/UcMMaYJQQGBmL6PfNabaOuLMfli8mttmkvFxcX3D3jbrzxlzfw9L1PY8n0JXh63tN4/S+vY+adM3tNYtBWyWYHBwdVVFSUKigoSBUXF6dau3Ztkyl+tbW1cHFxUT322GMtTtl49NFHbfv3768KDw9XTZ48WVlUVEQAcPXqVRoxYoRKpVKpHnjggU5N+bh06ZJk2rRpyrZbWl6v6jlgjLGO0ul00Ov1sLW17VChIkV1AUoLK+Di2fzKhTIJ0N/DobNhNn9shcJqZiPk5+fTgQMHZEVFReTh4SESEhL0Ny9z3F4NJZsBIDc3l+bOnausqKiwffvttzUAEBcXJ/bs2VMDAAcPHpTOnTvXRqlUIjExUQcA33//vTwoKAhbtmyRrFy5EjevrAgAU6ZMMbz77rsahUKBJUuW2P7lL3+x+eCDDzQqlUq8/PLLtWfOnJGcP3++UxfU/fv3N27fvr3D5aG7U6/qOeAxB4yx9iouLsanX6zB71/8G5b93z/w0qtv4vjxpHYXC/J1ViKkX/MzpUqu5WF8jD/ihg7pipCt1p49e6T//Oc/bTIyMqREJMnIyJD+85//tNmzZ0+XlW5uq2TzmDFjDM8995z+vffeu3Hxu3btWtnjjz+u8/Hxwe7du5u9KJ49e7ZOoaibGjp69GhDQ8VHJycnTJs2Ta9Utn7B7+Pjo1q6dKltZGSkKiYmRrV//35pQkKC0t/fX/Xaa68pgLpVHMPCwlQA8M477yimTJmivO2225SBgYGqJUuWdN9CFCboVckBT2VkjLVHWVkZXvvPBzhVTAiZuABR0x4AAuPw4Xc7sXvPL+3aV2RkJO6fMAiUdxYVBVegr61F8dUcuNkrEGxTiQD73rMabXPy8/Ppu+++k48bNw5Dhw5FcHAwhg4dinHjxuG7776TN1deuaNaK9kMAPHx8YbMzEwCgOrqahw4cIDmzZunmzNnjv6rr75qs8f8k08+kU2bNq3dyykHBAQYU1NT1SNHjjQ+9NBDNps3b645cuRIzeuvv97sMVNSUmjjxo2alJQU9aZNmyTp6elW853MtxUYY33W7j17UePoj+CYYTe2uXj6QDl6GtZv+x6jR45o1/oAUgnhodlTIUAordbi4L5ULBgZCKIgM0RvXQ4cOCDz9fWFo6Njk+2Ojo7w9fXFgQMHZPfee6+uhY93qca9PuvWrZOPGjVKODg44P7779cNGTJEqdPpIJc3v/Lw888/byOTyfDoo4+2a8loALj33nv1ABAbG2usqqoiFxcXuLi4CIVCgYYxDI2NGTNGuLu7CwAIDQ0VmZmZkrCwMKtYWbLVLIWIRhHRe0R0loiKiCibiLYS0eNExJfnjLEe7eCJs/AOib5lu63KHuTgiY7UaHFwcICjgz0C+7nhvnvndGj8Qk9UVFRELQ2AdHZ2bvbLsaNaKtnc4Pjx49LQ0FABAOvWrZMdPHiQfHx8VMOGDVOWlZVh8+bNzWYG77zzjmLnzp3S9evX1zQ3LqEttra2Aqgr1WxjY3MjNiJC42qVDRq3qS/vbDX/WFpMDohoG4CHUVclcRoAbwDRAP4MwBbAD0R0V3cEaSoec8AYaw+9Xg+JtIUOVKkUzd3TbktOTg5Sk/YBuUlYveKvKM673LkgewgPDw9RVlbW7HtlZWXw8PDokvsqrZVsBoAjR45IV6xYIVu6dKm+uLgYx48fp5ycHHVDGefly5fr16xZc8sv/dtvv5X/5z//kf344481N/d+9EWt3Vb4jRDi+k3bqgCcrH+8SUTuZousA3idA8ZYewyODkdyTgb8wwc22W7Q66AvzUdQUJDJ+zIajYCmHLKUjZAXZQOVbpgXLYFd2tdIOmwLaf8EDBnWelXEniwhIUG/d+9eaWhoaJNbCxUVFcjLy8OiRYv0rXy8VW2VbE5KSqKoqChVTU0N3Nzc8Prrr+sSExN17777rmLUqFGi8a2hBQsW6F5++WWZWq1ucsvomWeekdfW1mLSpElKABg6dKhxzZo1GqBusGF1dTV0Oh127Nih2rp1q3bYsGG9usSzSSWbiSgQQJgQYhcRKQHIhBBdW2qsC8XFxYmkpCRLh8EYs3J5eXn45zur4BozFq79/EBEqNVqkJX0C8ZG9sPC+feavK/DB/ZDl/wDxkbcuhpheZUGEu8YOMSZvj9L6GzJ5j179ki/++47ua+vL5ydnVFWVoa8vDzMnTtXN378+F79ZdrdzF2yuc0BiUT0CIDFAFwBhADwA/ABgEnmCooxxrqDr68vnn7kN/hs3UZcvHAEUoUSQl2KyaPjkDjzznbta0R/e+iqnZCVX4zM6nI4+9th44/n8NDEoQhxcUVl4QUkHdiDuIQJZjoby5swYYIhIiLC2LDOQWhoqFi0aFGn1zlg3c+U2QqPA4gHcBQAhBDpRORp1qgYY6ybhIaG4pU/PYv8/HxotVp4eXnBzs6uXfuoqKjApUO74Oeow0+GXBRBDVeNHfqNdcMOyoX2RAaGyj2gCMwC0HuTAwDw8fER3TUrgZmPKcmBVghR2zDilohkADgLZIz1GkQEX1/fDn9ep9PhaPJFrFPkwC/aFa4OdcmFTF43YE74SFGmMOCuIbfOjGDMGpmy4MJeIvoTACURTQbwLYDN5g2LMdabqNVq6HQ6VFdV4cCBA+1efdDaubm5YdSsBPSLcG72fVulHCdKruGvq9Z2b2CMdZApPQcvAngIwDkAjwLYCuAjcwbVUUQ0E8DM0NBQS4fCGKtn0Ovw5aoP0M9eBQelDS7lXYWPyga1tnYICQtrcTGanqSsrAwf7T4KRxc1vF3sm23j6ukOZ9+h3RwZYx3TZnIghDAC+F/9w6rxVEbWXhqNBqdPn0bS/qMoLrwOCMDF3RXDEuIxdNhQtLWeOmvdkcOHoS/MQ4yP543FgCL7B6IgMw1J51Nxz+8egl9gkGWD7AJCCPgFBUPp6QV1/nkopBLIpL92zGYWVsItOAy3DRhgwSi7V1FREbm6uoqOLCbELK+1RZDO1a+M2OyjO4NkzBwuXryIt15+Hek/ncHYfsOwdMIDWDrxAUzyH4kre1Pw1suv49y5c5YOs0cry89FTXlZs6sExsVEojL3CmpqekSRula5uLhg3OhxgModhTJflMIRWokKqdfUgFsI3MNHolYjQdKO3j3F+scff5Rt3LhRcfz4cfmrr75qU1BQINFoNJ3eb1slmydMmNAki7/99tuVgwYNanHd6/fff18RHh6uCgsLUw0ZMkR1+PDhGxnMnDlzlK6urqqGAkmdMW7cOGVXrgzZnVrrOZjRbVEw1s3S0tKwYfU6zBoyFT7u/Zq85+fpAz9PHxSWFmHD598DDwAD+tAVX1fR6/VwU0ihM7bc+3Jo/37kVNZgyrRp3RiZeRSeKURBeQGCIsIBAAaDAf2cKiEcnOBEBE9fT8wMnGnhKM2jqKiIKisrJdXV1VKFQkHFxcWYMmUKzp07p0hKSsL06dN1Q4cO7fA6B22VbL45luTkZFKpVEhJSZFER0ffUqsgNDTUeODAgRpPT0/xzTffyB999FGbs2fPqgHgwQcf1D355JPiwQcftOlovA327t3bYzPfFnsOhBBXWnt0Z5CMdSWdTofvPluHuwZNviUxaMzTxQOz4qZh01cb0BVXP33Nvr17kXT6dKttokL6Y/SI+O4JyMxuH387Hpn2CNSlamhrtJBKpXB2dgYR4dKRS4iWRMPGptPfN1Zp586dsp07d8odHR3J1rZp5eGBAwdCKpV2WbXBtko2f/nll/Lbb7/dmJiYaPjss8+aHdAyZcoUvaenpwCA8ePH6wsKCm68N336dH1bSz3Pnj1buXDhQttBgwap/Pz8VFu2bJHPmTNHGRwcrJo9e/aNbNjHx0eVn59PqampkuDgYNW8efOUoaGhqjFjxigrK612HUEAJsxWIKKRRHSciKqIqJaIDERU0R3BMWYO58+fh5fcBX6ePm229XL1RIBdP5xu40uO3WripEkYNnBgq21yrl5DQdHNq7T3TLa2tgh0CsQQyRAEIQju5I6c/TmY6D8RT971JCKDIy0dotnExMS0uNS0QqHA6dOnpRs2bOiykaetlWz+9ttvpQsXLtQvWrRIt2HDhjYHPLz77ruK8ePHt3v6TFlZGZ08eVL96quv6ubPny9/7rnnatPS0tSpqal08ODBW46bnZ2NZcuW1WZkZKidnJzwxRdfKNp7zO5kymyFlQDmo24KYxyABwCEmzMoxswp6eAxDA4wfb75oKAY7D9wDCNHjjRjVL3TlZJyeNhIoWhhRoKjmzts21ESuSUNA0sv5+TB080VcXHDbikd3F0mjatbPFav12Os11h4uXr16sqM58+flxw4cEDa2iwxZ2dn+Pn5mb0UcU5ODl2+fJmmTJmil0qlkMvlOHbsmDQ+Pr7ZWxqbN2+Wf/XVV9KDBw+2u/v/zjvvNEilUgwbNszg5uYmHzFihAEAwsPDRWZmpmTMmDFNjunr64uGbYMHDzZeunTJqv9RmNTVI4TIACAVQhiEEJ+grkojYz1SaVEJPJxNrxnm4eyOsuJSM0bUe3mHhEKhvHW1QSEE8gqvI+GOO+Hn59epY5SXl+OfK/6Dz346gWOFhO+OZuKvy/+NnJycTu23s2QyGfr169erEwMAcHd3F15eXq1eeQsh4OZ2a82JjmqpZPNnn30mr6yshL+/v8rHx0eVl5eHzz//vNnM9MiRI9KlS5fKv//+e423t3e7ew4ayjNLJBIoFL92AkgkEjQMlmyscRtrK8/cHFOSAzURKQCcJqLXiegpEz/XJYjIjog+I6L/EdHC7jou672IqF2L8AghQNRt/+R7lYSx4zB0ynTsP3cBaq0WFVVVKC2vgJOXN2rtnaCwa35NgPbYsm0HypQ+CB85Gf7hsQiLGwvbkHh8/vWGXrfYkjXy8vISfn5+xtbKW+fn5+PkyZNd8j9RayWb169fL9u4cWNtQ3nmI0eOaH744YdbjpuWlia59957bVavXl07cOBAs/do9ESm3Fb4DeqSgScAPAXAH8DszhyUiD5G3WyIQiFEbKPt0wD8B4AUwEdCiOUA7gHwnRBiMxGtA/BVZ47NmIe3J64WX4OLo7NJ7QtKrsHNy6qqk/cotnZ2ePD3T8LJ0QFpFy6grKICsWPHIXZc5/ZbUVGBYyfP4sdTl6E2yGDrlAWfwGAAgKd/MFJTj6KsrAwuLi5t7qu0tBTnk5Oh1Wjg6++P8PBwSCScEJrq5MmT5OLiIlxdXW+5GjYYDJgwYYIhPDy8w/UW2irZDACpqamSvLw8TJgw4cZle1RUlNHBwQE///yzdOLEiTeylz//+c82ZWVlWLZsmQKAQiqV4vz582oAmDFjhvLo0aNUWloKLy8v1QsvvKB/+umnTapK2Zu0WbKZiOwA1NQvhgQikgKwEUKoO3xQorEAqgB83pAc1O83DcBkALkAjgNYAOBuANuEEKeJaI0Q4r629s8lm1lrUlJSsHftDtw39h6T2q8/tAVD7hqNIUOGmDky1h4Xcq5j9eZ9OJd9HbbuAbBVqRDuqYKLowOEELj40xq88Zdn4OTk1OI+hBDYue1HbPjiv6jRFsIAA2wk9giOiMcTz/0Zzs7O3XdCVqCjJZv1ej1KS0slGzZskLu5uZG9vX19jxuJvXv30lNPPaVtmB3Auoa5SzabkhrvBtB4xJASwK7OHFQIsQ9AyU2b4wFkCCGyhBC1AL5GXWKQi7oy0a3GS0SLiSiJiJKKioo6Ex7r5SIiIlAl1yIjN6vNtlcKcnBNX4rY2Ng227Luk5OTg5/P58I3LBaBvt6oriyDkMiwf/smVFeUIj/rAsID+7WaGADAyZMn8cHKl0G+FYi4wwdDZvWHxwglTl74CW8t/xvfljCRTCaDh4eHMTAw0BAVFaXT6/WGkydPijFjxtS+8MILGk4Meh5TbivYCiGqGl4IIaqIqPPDi2/lC6DxCKJcACMAvANgJRHdiVYKPgkhVgFYBdT1HJghPtZLSKVSLHjwfny+8mMIIRDmH9Jsu8tXs/Hj+Z+xYMkDvWL9/96k6Hoxcq9eg6dff4SGBKO49CSKr6TBxj8WeeePwVlU44GlD7W5n68+/QD2oVIMGO17Y+BgYKgrnN2U2LX2Z1y6dAnBwcHmPp1eY9q0aXoAiIiIMEybNg0ymSlfMcwamfKbqyaioUKIkwBARMMAdNuqT0KIagC/M6UtF15ipvLz88MDTzyIdZ+swbGs0xjoFwVvNy8AQGHpdZzJTUGFpAb3PfbbFudvM8sZOmQwzlVnoqTGALlcjjEjh6Oo6DquJR/E7xLHY8iQIU1Gh7fkTNoZTLzX+5YZBU4uStj3k+HEiROcHHQAJwU9nym/wT8A+JaI8gEQgH4A5pkhljzUDXZs4Fe/zWRceIm1h5+fH576v2eRnp6O4weP4kR6CgDAxcMNY+dPQUREBLhojPXSZBxFucwLDu4+0Otq4e/jhQm+YxAfH2/y9EGjhCBa+BXrFRIelMj6LFOqMh4nokgAEfWbLgohOjzqtBXHAYQRUX/UJQXzAbQ5+LAx7jlg7SWRSBAREYGIiIi2GzOr8sC8WTCQDL8cP4eDv+zCsheeglIR1q59DIyNx/mLJ5AQH4jG6URpZQ3KrwkMHz68a4PuA4qLi5GWlibVaDSwtbVFeHi4oSvXOGDdo83kgIjmAtguhEgmoj8DGEpE/2i4zdARRLQWwHgA7kSUC+AlIcRqInoCwA7UTWX8WAhxvj375Z4DxvqOhnLaM24bihm3De3QPh757aN48pXHkOR0DcHeDlDIpCiurMHJkyWYMGI6AgICujLkXu3y5cu0detWeXJyssTV1RVyuRw6nQ5ffPGFPDY21jh9+nRdUFAQjwfrIUzpM/uLEKKSiBIATAKwGsB/O3NQIcQCIYS3EEIuhPATQqyu375VCBEuhAgRQvyzvfsloplEtKq8vLwz4THWo1y7dg0nTpzAkSNHcPbsWajVHZ5l3OfExsbiL4//HdWZ7jh0uBJ7DhUj5SgwNuROvPDUC5YOr8c4deqUZMWKFTYajUYybdo0JCQkYMSIEUhISMC0adOg0WgkK1assDl16lSH7tO0VbLZwcFBFRUVpQoKClLFxcWp1q5d22QEcW1tLVxcXFSPPfaYbbMHALB69Wp5aGioSiKRqPbt23fjZtOGDRvkMTExqrCwMFVMTIxq06ZNN/a9b98+aVhYmCogIEC1aNEi29YWgmqLtZV3NmXMQcPZ3gngf0KIH4noH2aMqcO454D1JRcvXsSu7duRm5UJd3sVpFIpNDodyjRaDBs5GpMmT4arq6ulw7R648eNx/C44UhNTYVWq4Wfnx/8/f17/bLHXeXy5cu0evVqxYgRI+Dh4XHL+wqFAtHR0XB3d8fq1asVzz77rLa9PQhtlWyOi4sTe/bsqQGAgwcPSufOnWujVCqRmJioA4Dvv/9eHhQUhC1btkhWrlzZ7FiiIUOGGL/77jvN4sWLmyQQnp6exi1btmj69+9vPHbsmHTGjBk2hYWFOgB4/PHHbT744APt+PHjDRMmTFCuX79efu+993botru1lXc2JYvLI6IPUTcIcSsR2Zj4uW7HPQesr9j7yy/49P2VcDFqcefo4Rg1eADiB0Rj7NBBmDx0IIounsd/3ngd+fn5lg61R7Czs8OwYcMwevRoBAQEcGLQDlu3bpUHBwc3mxg05unpieDgYGzdurVT84LbKtk8ZswYw3PPPad/7733blz8rl27Vvb444/rfHx8sHv37mYviocOHWoYPHjwLUspJyQkGPr3728EgGHDhhm0Wi3UajUuX75MVVVVmDRpkkEqlWLhwoWGjRs33pJ19NTyzqZ8yd+LunEAU4UQZQBcATxnzqA6SgixWQixuK2FTxjryc6ePYsdG9dj4rBBCPLzvWVEvdLWFoOjIhDh6Yr/vbcS1l43nvVcxcXFSE5Olpg6CDw0NBTJycmS0tLOFTJrrWQzAMTHxxsyMzMJAKqrq3HgwAGaN2+ebs6cOfqvvvqqw/MsP/vsM3l0dDRUKhWys7Ml/fr1u/FeQECAsaCgoNl4emJ5Z1OSA1sAvwAoJiJXAFoAe8wZFOs9qqurAQBFRUVITU21cDQ9nxACW3/4HnERobBTKlttG+TnCweJwNGjR7spOtbXpKWlSV1dXU1aUwKou8Xg6uqK1NRUs84Rbryy5bp16+SjRo0SDg4OuP/++3U7duyQ6HTt7/k/fvy49KWXXpJ/9NFHmvZ+9qbyzhgxYoRBJpPdKO98c3trKO9sSnJwEkAR6uoepNc/v0xEJ+sXRLIafFvBuujVtfjfa++hcGc6SnZfQmXSVWiulONS1iVLh9ZjXbp0CerSEni5mzY1LCIoAPt/3o3ODJTqCaqrq3mpYwvQaDTtXj1UJpNBq9W23bAVLZVsbnD8+HFpaGioAIB169bJDh48SD4+Pqphw4Ypy8rKsHnz5nYFnZGRIZkzZ47NRx99VBsTE2MEbvQU3GhT35PQbDw9sbyzKcnBTwCmCyHchRBuAO4A8COApQDeN2dw7cW3FayDEAIHft6HyiP5WJRwL2xIgX5uXgj3CkZF8jUc+G43tJrO/XHoq9LT0uDl5GDyPXEXR0cIrQaFhYVmjqz7Xb9+HR989QG2X96Of6/7N77d9i2OHTuGtLQ0GI1chbc72Nraor1X4Xq9HjY2Nh0+ZmslmwHgyJEj0hUrVsiWLl2qLy4uxvHjxyknJ0fdUMZ5+fLl+jVr1ph8a6GoqIjuvPNO25dfflk3derUG9/kQUFBwt7eHrt375YaDAZ89dVX0sTExF6ThZuSHIwUQuxoeCGE2Fm/7QiAjv+GWa+l1+tRc6kMotZ4y5eYjcIGdw2ZDH1+dbMZM2udpqYGNor2Xakp5J2/UrNGOYYcFLsXI704HRnIwKepn2LF9hV46+u38K+3/oWysjJLh9jrhYeHG0pKSlBba1pF49raWpSUlCAyMrJdX6INJZtDQ0NVEydOVE6cONG4YsWKG937SUlJ1DCV8fHHH7d5/fXXdYmJibo1a9YoRo0aJVSqX8sBLViwQLd79266ecrv559/Lvfy8lKdPn0as2bNsklISFACwOuvv67Izs7G8uXL5ZGRkarIyEhVbm4uAcB7772nXbJkiU1QUJAqKChIzJkzxxwLBFqEKSWbd6KuMuPX9Zvmoa6s8jQAx4UQHVt9xIy4ZLNlGWp0qD6Yj9b+aW05sQvDEscgMjKy+wLrBXbu2IG0w/sxNCbK5M9sO5KEpc8+D29vbzNG1r2Sk5OxLX8b7DztkJaehvTidLj5u+Ha8WsYlzAOJbkl6K/vj8cfftzSofYoHSnZ/P777ys0Go0kOjq6zf2npKTA1tbWuHTpUtOyCdYiayjZfB/q6hx8X/8IqN8mRd1MBqvBYw6sw6erP8WVgtxW28yMn8yJQQeER0TgWnmlyffXS8rKIVeq4OXlZebIupdSpYSe6nqeLuVdgkRJyMvOAnlWIfnUfmjl1TiTcYZnanSD6dOn67KyslBUVNRqu8LCQmRlZWH69Om95uq6N2szORBCXBdC/B7AWAC3CSGeEEIUCSFqhRAZ5g/RdDzmwDo88MBvEODl12qb5OyL/Ie7AwIDA+Hg4Yn8wtb/EDe4eDkbt02c1OsKCIUEhyDQPRBGoxEVFRXQVBahn50UkpRqDPOzg74oA/lXc0zu7mYdFxQUJB566KHao0ePIiUl5ZafeW1tLVJSUnDs2DE89NBDtbyEcs/Q5l8MIhpARKcAJAM4T0QniCjW/KGxnsqgAE7nprTaRqM09LovrO5ARJiROAsn07NQ1cYyyZnZOVBLZIgfMaKbouteIkPAUGKAqNZCV1gDVxtbxA/0h9JWDg+5AtqC62h8r5mZz5AhQ4zPPvus1tbW1rh9+3YcOHAAR44cwYEDB7B9+3bY2toan332We2QIUN4pGgPYcqIzQ8BPC2E2AMARDQewCoAo80XFuvJZDIZdK6SugLfN10j6PQ6FGvKMH7WZEgUXA7ZVDU1NTh79iyKrhVBCIGg6FjsPHYSA4L80d/fD7JGo7ar1WpcyLyEUiNhye+Xwc7OzoKRm899c+qKtp5b+zNyrpRAImoh+smQmVIEbZYGI/v3R3V19Y0CTazjDAZDm+XLg4KCxNKlS2sbqjJqtVrY2NhwVUYz6I6pyaYkB3YNiQEACCF+ISKr/GvDJZutg0wmw+13T0XplSJ8//m3mDViOq6VFMHJwRF6R8L5qisIl1vVEhlWS6PR4Mct25B05DTc7XzgbO8OAFCrpaiqkeHIxcs4ezkHXs5OkBJBq9OjymDEyNvG4rfjx6M332JrmAkzctBoLBnui+KqGmTmlGKQgwtixnnih4v6Xn3+3aj4+vXrru7u7rq2EgQAcHNzw6hRo3rNlD5rYzAYcP36dTmAYnMex5TZChtRtxDSF/Wb7gcwTAgxy5yBdQbPVrAOBoMBhYWF8HR0x4EDB+Dt74Pw6AhLh9VjqNVqfPDe/yCpccCQqHgobZt2kWtrtTh38STyK9Jxx8zJsLW1hUqlQnBwcKfmkfc06enp2PS/5bgzxhHB3q4oKKnC1rPXEDt1ERLGjbd0eD1Kc7MVTpw4ES2TyX4GwJf/1qNYr9dPHDZsWOv3bzvBlOTABcDLABLqN+0H8DchROcWxzYjTg5Yb7B61SfQXJchLnZ0q4senbt4ChXIw5NPP9Fnx3Gkp6dj77YNKMjOgrO7F0ZOnIFhw4dzAaV2ai45YH1Tm7cV6pOAZd0QC2Os3tWrV5GVmoOZ4+5r8wsuNnwwth/MQmZmJsLCwropQusSFhaGsLAXLB0GY71Gi8kBEW3GLcPJfiWEuMssETHGcOjgEQR6RZjUE0BECPaOxIG9h/pscsAY61qt9Rys6LYoWI9iNBqRn58Pg8EAb29vkyuyMdNlpl3CAL+EthvWC/Dtj5+STpoxIsZYX9JiciCE2NudgbCe4ezZs9i+YStsaiWQSWUo01VizJSxGDdhPN/f7UI6nQ4ymell52VSGXS1vPAcY6xrtHVbYRWA7UII3U3vBQNYBOCyEOJjs0bYDjyV0bxSU1Ox9YsfcPfQKfBx7wcAKKsqx6afdgIAxk+cYMnweg2tVgt1TRXKrufgQupx9O8fCy/31usiqGuqYedglTOMzUan0yE3Oxv93eQ4fPw0/COHwM/f39JhMdYrtHZD8xEAtwFIJaLjRLSViH4moizULYx0wpoSA4CXTza3Pdt2Y3J0wo3EAACc7Z1w94ipOLhzHy9V20UKcrNB5deQfXEfFDWFqMpPhq62ptXPpF9JxdDhA7opQutQde0KUja+CZz6Cr7FB2Gf/j2EhpfkZqwrtJgcCCEKhBDPCyFCAMwF8HcATwOIFUJMFkL80F1BMsvTaDQoyilAiG//W95zsnOEq8IReXl5FoisdykpKUHRxRTcnjAaam0FHFR2kBpr8c2G91BR1XxBsVqdFrnFGRg5amQ3R2s5FRUVcLh6EHcOq+spCPByhjNV4Yu3/9pmASDGWNtMmhQthLgshDgshDgthGh9QXfWK0kkEggIGIzNL3ymN7a9vCpr29nTp5GSkgKFQo7g8CBcuZoBg9GAkdED4Gh/a4+YTleLvce3Y8RtQ+Du7m6BiC3j7KmTOH3i2C3bE4d596mfA2PmYvqIJ9anKRQKBEYEI+XyRQwMiWny3rWSQqgltfD19bVQdL3HuPHjkVRVCp1Wg6CgIBj0BmRkpqBWYg/f8LGwta2rE6A36HEpOwNpOWcROzwMM++aYeHIu1fC2HGA/BygrWqyPb/CiDCjkRNVxjqJkwNmstvvnILP3l0NAIgJioREIsHlq9nYmbwPUxbcyX+QuwBJJEi9VgxHoxYerq4ICQ2Gi5srdp25gK2H1sFe6QgCobKmAqGRgVjwUCIiIiL63kwRIuy8LEGUtAz+ns4AAIMRSKlyBK/0wFjntbl8cpPGdUsp+wshzpovpM7j5ZPNJycnB7t+3ImctMsgIrj0c8P4OyYhNpareHeVa9euQW404NTRwzh07DiefuFF2Dk5o6qqCqWlpRBCwMnJqc8XFbp69SrcqBz5yQex/eApLH7yRUic/SwdVo/GyyezBqbUVvgFwF2o62U4AaAQwEEhxNNmj66DODkwP41GA6PRCKVS2feuWruJTqeDTqeDSqVqu3EfVltbi5qamj6fLHUFTg5YA1MGJDoJISoA3APgcyHECAC3mzesXxFRMBGtJqLvuuuYrG0NFQA5MTAfuVzOiYEJFAoFJwaMdTFTkgMZEXkDuBfAlvbsnIg+JqJCIkq+afs0IrpIRBlE9GJr+xBCZAkhHmrPcVlTRqMRQghoNBrk5+dbOhzGGGNWzpTk4BUAOwBkCCGO16+OmG7i/j8FMK3xBiKSAngPwB0AogEsIKJoIhpARFtueniafCasRWs+/gIXfzyJwt0ZOPDtLhjVvMwuY4yxlrVrQGKHDkAUBGCLECK2/vUoAH8TQkytf/1HABBCvNrGfr4TQsxp5f3FABYDQEBAwLArV650zQn0cIZqHYr3XYKNzObGtiJ1CWpDbRAdE23ByBhj1obHHLAGrdVWeBetl2xe1sFj+gLIafQ6F8CIVuJwA/BPAEOI6I8tJRFCiFWoqwWBuLg482Y8PYRWq8WaDz7DPQOnNtkutAboyjQWiooxxpi1a22dg4bh/mNQ1/2/rv71XAAp5gyqMSFEMYAlprTlwktNSaVSjI0fA9yUB7g5uiIorF/zH2KMMdbntVZb4TMhxGcABgIYL4R4VwjxLoBJAAZ34ph5ABqXTvOr39ZpXHipKZlMBp+oAFwuyG6y/VjaSZzM/HWpiqqqKhQWFkKv13d3iFZBo9EgPT0dGRkZ0Ol4PAZjjJmyQqILAEcAJfWv7eu3ddRxAGFE1B91ScF8APd1Yn83cM/BraqEBnnyMgQrg3HizEkEBgdhwsI7AHsZampq8MN3G5FxJg0quS20Uj0mzZyC+BHxlg67WwghsHvXLuzevhV2MmndjA4jcOesezB6zJg2P6/T6VBdXQ1nZ2fzB8uYhZw4ccJTJpN9BCAWJtbjYVbPCCBZr9c/PGzYsMLmGpiSHCwHcIqI9gAgAGMB/M2UoxPRWgDjAbgTUS6Al4QQq4noCdTNgJAC+FgIcd6U/bVFCLEZwOa4uLhHumJ/vYGHhwemz58JAFDgChT9XWHjZgcA+OLjz2B7TWDJpPshl8lRXF6CDeu3wsHRAVFRUZYMu1vs3bsX+7dtwcTBA2CnrKtZUFFVhR+/+Ro2NjYYFtf8uKwvPvkKkUFDoa3R4UzKcfz2oYVQ2EmgUCi6M3zGuoVMJvuoX79+UR4eHqUSiYTHc/UCRqORioqKogsKCj5C3SKHt2gzCxRCfIK6AYMbAWwAMKr+dkObhBALhBDeQgi5EMJPCLG6fvtWIUS4ECJECPFPk8+oDUQ0k4hWlZc3X9q2rxudMPpGcaSSkhLkXriMSUPGQi6TAwDcnFwxNmIkDu05YMkwu4VOp8PurT9i1IDoG4kBADja22N4VBh2/LgFN8/kuXbtGrLOFMFTHg59uQwKgz2GR0zA+f15WPH3d1FWVtbNZ8FYt4j18PCo4MSg95BIJMLDw6Mcdb1BzbcxcV9SAEUASgGEE9HYLoivy/GYA9OVl5fDVeV8S7EkT2d3lBaVtPCp3qOoqAgSowGO9va3vOfh6orK0hJUVFTc2CaEwPq1m5GVkgsXJ7cmPzciwvihM6At4x5X1itJODHofep/py3+0WrztgIRvQZgHoDzqLtPAdRNcdzXFQF2JR5zYDpPT08UqktQo9VAaWN7Y/ulgivwC/Zv5ZO9g1Qqhd5ggBDiliWgjULA0EzZ3zEDp0Jb3fyARZlMjt3b9iF6lB8GDx5srrAZs2oVGp3kVHaZqqS6VqaQkjHK21ET7GFfa+m4WPuZcqmTCCBCCHGnEGJm/aPZexSWxj0HprOzs0PcuHhsOPwj8q8XQFOrwdnM8zh05RTGThpv6fDMztPTEw5u7sgvLLrlvcu5eegfFg77Rr0K+/ceQGZGRqv77OfqD1/v3p9YMdacfWlFdu/uzvDal1bkmJxXrjqZXWb/1dFs99X7s9yrNLpOdaupVKohXRVnR/e5ZcsWhwkTJvSZK09TfmFZAOTmDoR1v2l3TsegO0Zge9Y+fLj3K2RJruGB3z8IHx8fS4dmdkSEe+6dh5MZl5GZnQOD0Qi9Xo+LWZdwIe8aZiTOatK+f3AwnJ1cW92nMAo4ONx6m4Kx3i7pcolyb1qRk1GIWyqx5ZdrFGuP5bgazbwaL+tapsxWUAM4TUS7AWgbNnZihUSz4dsK7UNEGJMwBmMS2p621xuFh4dj8ZN/wI4ff8T3+4+ACIgeOAiP3/+7GwM3G/gH+OLKmdbHYly6lgrfbFtERkaaM2zGrIpRCBzKLHZorU1BhUaRdq3SJrKfo7a1du1x6NAh5WOPPRZYU1MjCQwM1K5Zs+ayh4eH4c0333T/5JNPPHQ6HQUFBWm/++67Sw4ODsbU1FTF/Pnzg9VqtWTatGllphzju+++c3zuuef8lUqlMT4+vqqrYu8JTOk52ATg7wAOATjR6GF1+LYCa6/+/ftjyRNP4LW3/4PX3n4HDz6y+JbEAKirbHkyfT9qdc3/bdMb9Jiz4C5ODFifk1uilpfX6Nq80EzOq1C21aY9Fi1a1P9f//pXblpaWkpMTEzNCy+84AMACxcuLE1OTr5w8eLFlIiIiJp33nnHHQCWLl0a8PDDDxelpaWleHt7t7namVqtpieeeCJo06ZNGcnJyRcKCwv7VA+6KVMZPwOwFr8mBWtMncrIWE8hk8luGYDYmEQiwe+fegxhQ31wLu0U9HodhBAwGo3QGXXYn7wZDu42LX6esd6qRmc0aTyBVmfosuk8xcXF0srKSumdd95ZBQCPPPJI8ZEjR+wB4MSJE8phw4ZFhIeHR69fv97t/PnztgBw8uRJ+0ceeaQEAB599NHito5x+vRpWz8/P+2AAQO0EokECxcubPMzvUmbvywiGo+6Es3vAXgfQJq1TmVkzJyICG5+dug/2BWhQ72RXZaCa9p0jJwehmXPLG01uWCst3JWyQ2mtHMysV1nLV68uP/KlSuz09LSUl544YV8rVZ743uOp2SazpRM7k0AU4QQ44QQYwFMBfBv84bVMbwIEjM3mUyGiZMmwDPQEXN+MwN333sHpHIJlMou7TFlrMfwcrTV+zjZtjldcWiAS3VXHdPNzc3g6Oho2L59uz0ArF692m3UqFFVAKBWqyUBAQE6rVZLX3/99Y1RxEOHDq363//+5woA//vf/9zaOsbgwYM1eXl5ivPnz9sAQON99QWmJAdyIcTFhhdCiDRY6ewFHnPA2kMIccsqiO1x8/oIjPVVt0d7lUsl1OL/TLG+TmofZ2WHK7tpNBqJl5fXwIbH3/72N69PPvnk0gsvvOAXHh4effbsWeXy5cvzAeDFF1/Mj4+Pj4qLi4sMCwu7UZP2/fffz161apVneHh4dF5eXovfYePGjQu9fPmyXKVSiXfffffKjBkzQqOjo6Pc3d37VGU6auuPIxF9jLrFj76s37QQgFQI8aCZY+uwuLg4kZSU1HZD1idlZGTgp+0/IzPtEmRyGYbGDcTtUyfB1bVPXRgwdgsiOiGEaFJU5MyZM5cHDRp0va3PZhVVKXamXHMqqtTe+OJVyCTGoQHO1ZOivColnExbnTNnzrgPGjQoqLn3TJnK+BiAxwE0TF3cj7qxB4z1OGfOnMG6z3/AwOB4zJ44ATp9LS5kJuOdN/+L3z+9BG5ubfY2MsaaEexhX7tknH1RdnG1/Hp1rUwhlYgwL3utjUzK9/l7IFOSAxmA/wgh3gIAIpICsMph2bzOAWuNXq/Hxm+24LZBU+Hm4gEAkEqVGBI9HJQC/LRzN+YvuNfCUTLWswW42ekC3OzanCrIrJspYw52A2g82koJYJd5wukcHnPAWnPlyhXIjLY3EoPGIkMG4NSxs50ag8AYY72FKcmBrRDixspQ9c9V5guJMfPQ6XSQyRTNvqeQK2DQG2A0Gpt9nzHG+hJTkoNqIhra8IKIhgGoMV9IjJmHn58fyqqLoK29dZXDnPzLCAzx57UKGGMMpo05+AOAb4koHwAB6Ie6Es6M9Sj29vaIHzMUB0/uRsKwSVDI64bOlFWU4HT6Yfxm8VwLR8hYD6cplyA3SQX1dRmkCiP6DdDALZRLNvdAbSYHQojjRBQJIKJ+00UhBA82YT3SXXfPwA9iM3488DVc7T1Rq6+FxliJWQumc10Exjoj82c7ZP7sCKPh1zmLOcfs4eRXi6EPlMDGocP37FQq1RC1Wn2qS+Jsxz59fX0HJCUlXfD29m51jYPG7f7xj394fvzxxx6xsbHqTZs2XerKmLtTm8kBEakAPA0gUAjxCBGFEVGEEGKL+cNjrGvJZDLMnjMLk6dMQm5uLmQyGfr37w+53CrX9WKsZ8g+okT6T82PBC/PVeDEp64Y9fh1UJeVV7Baq1ev9ti1a1daSEhIj76INuU39QmAWgCj6l/nAfiH2SLqBF4+mZnK0dER0dHRCA8P58SAsc4QRuDS3lZLNqMiX4HCC106Bf7QoUPKQYMGRYaHh0dPnjw5pKioSAoAb775pntsbGxURERE9NSpU0MqKyslAJCamqoYPHhwZHh4ePSyZct8TD3O66+/7hkdHR0VHh4eferUKVsAKCgokI4ZMyYsNDQ0Zt68eYENs5zuu+++gNzcXJs77rgj7OWXX/bsyvPtbqYkByFCiNcB6ABACKFG3dgDq8NTGRljrJuVXpGjpqzt8WtXz/Soks0N3N3d9SkpKRcefPDBouXLl3sBwIsvvugzatSoqoyMjPOzZs0qu3r1qgIA1qxZk+3p6anbu3dv2ksvvVTYlefb3UxJDmqJSAlAAAARhQBovqg9Y4yxvkVfY9q9Ar2mR5VsbnDfffeVAkB8fLw6JyfHBgCOHDni8OCDDxYDwPz588sdHR27peJkdzLll/USgO0A/InoK9QtivS8WaNijDHWMyhdTPtitHXukSWbbW1tBQDIZDKh1+utstfcHNpMDoQQPwG4B8AiAGsBxAkhfjFvWIwxxnoEB289nPzanq7oH9+jSja3ZuTIkZWffvqpGwB88803jhUVFb1ugZQ2kwMiGgNAI4T4EYAzgD8RUaC5A2PdS61W4+rVq9BoNG03ZoyxxiLuKIdE1vJVuc9gNZz8elTJ5tbiWb58ef7BgwftQ0NDYzZs2ODi7e3d69ZyMKVk81kAgwAMRN3MhdUA7hVCjDN/eB3DJZtNp9frsXnTDzi6bx9s5FJo9UaMvf12TLtjOiSS3j/tiDH2q86UbEZxhgIXtjih6tqvX6wyGyP8hlcj4o7KvjCNsafpbMlmvRBCENHdAN4TQqwmooe6NEJmMdu3bUPKkUOYOnwwbBQK1Gg0OPDzLihVdpgwYYKlw2OM9RRuobVI+EMRSi7JUV0kg8xGwCNCC5ktVzPrgUxJ5SqJ6I8A7gfwIxFJAHTrxHAiSiSi/xHROiKa0p3H7s10Oh0O/rIH8bFRsFHUFSRS2tpieHQk9uzcwRUKGWPt59pfB//4GngP0nBi0HOZkhzMQ93UxYeEEAUA/AC8YeoBiOhjIiokouSbtk8jootElEFEL7a2DyHE90KIRwAsAdd16DIajQZCr4Odsun0YycHe1RVlMNg6HWzcxhjjJnAlNoKBQDeavQ6G8Dn7TjGpwBWNv4MEUkBvAdgMoBcAMeJaBMAKYBXb/r8g0KIhsUk/lz/OdYF7OzsoHJ0xPXSUri7uNzYnl9YBB9/f8hkptx1Yowx1tuYfYSIEGIfgJKbNscDyBBCZAkhagF8DeBuIcQ5IcSMmx6FVOc1ANuEECebOw4RLSaiJCJKKioqMu9J9RISiQR33j0LR1IuIregABqtFlfy8nEyPQvT70q0dHgAgOLiYly8eBHXr7c9HooxxljXsNSloS+AnEavcwGMaKX97wHcDsCJiEKFEB/c3EAIsQrAKqButkIXxtqrDYuLg61Sid3bt+H06fPw9Q/A7x7/PcLDwy0al06nw9drvsGFM+lwsnNHWfV1RA0Mxfz77oWifnwEY8y6VNZWSs4WnVWVakplcqncGOESoQlyCup10/z6gh7RbyyEeAfAO221I6KZAGaGhoaaP6heJCYmBjExMZYOo4ltW7ejIKMCM8cuhFQqhcFgwMETu7Ft63bcnXiXpcNjjN3kUP4hu8P5hx0N4teSzWeKztj3s+tXe0/oPSX2CvsOl2x+4YUX+q1fv95NIpEIiUSC999//8rEiRO7bFGllrzzzjtuSUlJdp9//nm2qe3y8/Nl06ZNC9XpdJJ///vf2dOmTasyd5zmYNIiSET0ExGlEVEWEV0ioqxOHjcPgH+j13712zqFCy/1DgaDAUf2JyEudgyk0rqFx6RSKeIGjMHRA0k8UJIxK3Oq8JTyQN4Bp8aJQYOC6gLF+vT1rkbRsdxg165ddjt27HA+d+5cSlpaWsqePXvSgoODrbY3YsuWLQ5RUVE1Fy5cSOmpiQFg2piD1agbkJgAYDiAuPr/dsZxAGFE1J+IFADmA9jUyX1yyeZeQq/XQ6fTQ6W0a7JdaauCXmeETtejy6Qz1qsYhRFHrx5ttWTzNfU1RWZZZodKNufl5cldXV31SqVSAIC3t7c+KChIBwDPPvusd2xsbFRYWFjMggULAo1GI06dOmU7YMCAqIbPX7x4UREeHh4NAPv371cNHz48IiYmJiohISHsypUrbU7LLygokN92221hgYGBsUuWLPFr2P6f//zHLSgoKHbAgAFRhw4dsgfqyki/9NJLfjt37nSOjIyMrqqq6rG1GExJDsqFENuEEIVCiOKGh6kHIKK1AA4DiCCiXCJ6SAihB/AEgB0ALgD4RghxvkNn0Aj3HPQsarUa6mo11JUa7N27D0Zj3ZWFQqGAt68ncvIvN2mfe/UKvHw9YGPTpWXhGWOdkFeVJ6+orWjzFnVKcUqHSjYnJiZW5OfnK4KCgmLvv//+gB9//NG+4b3nnnuuMDk5+UJ6evr5mpoayddff+00ZMgQjU6no9TUVAUAfP75566JiYmlWq2Wli1bFvDDDz9knj9//sJvf/vb688++6xvm3GnpKi+//77rAsXLpzftGmTS0ZGhvzKlSvy5cuX+xw6dCj1+PHjqWlpaUoAGD16dM0f//jH/JkzZ5ampqam2Nvb99jxb6aMOdhDRG8A2IBGpZpbmjVwMyHEgha2bwWw1ZR9mIrHHPQs2zbtAqrt4O3mj4zMa4gJqYa7nwOICHfdcyc+/u+XqFJXwsvdG4XFBUjLO41Fj94Hoh6bjDPW62j1WpNmvWkNprW7mZOTkzE5OTll+/btDrt373b47W9/G/LXv/41d9myZcXbtm1zeOutt/ppNBpJWVmZLDo6ugZAeWJiYsnnn3/u+q9//atg48aNLuvWrcs6e/asTXp6unLixInhAGA0GuHh4dFmN2RCQkKFm5ubAQBCQ0M1mZmZNoWFhbKRI0dW+vj46AHgnnvuKUlLS7PtyPlZK1OSg4ZZBI3X2xYAJnZ9OJ0jhNgMYHNcXNwjlo6Fta6qXA1/+1ig/s7BgPBhSPolFRrVVSTecxdCQ0Ox9KmH8cvP+5Ccdwjevl5YMudB+Pv7t75jxli3crRxNGkQkKPCtHbNkclkmDFjRuWMGTMqBw4cWPPFF1+4PfzwwyXPPPNM4NGjR1NCQ0N1Tz/9tI9Go5EAwG9+85vSuXPnBs+fP7+UiDBgwADtsWPHlKGhoTWnT59Obc+xFQrFjat/qVQqdDpdn7g6MaVk84RmHlaXGAA85qAnWfH6W6it1TbZ5mjnCF+P4Buv/fz8cP8D9+G5Pz6F+x+4jxMDxqyQp8pT38+uX5sDBAd5DurQ7IIzZ87YnDt37sa9xFOnTin9/Pxq1Wq1BAD69eunLy8vl2zevPnGSm4xMTFaiUSCv/71rz6zZs0qAYCBAwdqSkpKZLt27bIDAK1WS0lJSR262h87dmz10aNHHQoKCqRarZY2btzo0vanepYWew6I6H4hxJdE9HRz7wsh3mpuuyVxz0HP8djiJ3DlbNO1sfQGPbzdXFv4BGPMWo33G1/+bdq37s3NVgCAaNdotbedd4dKNldUVEiXLVsWUFFRIZVKpSIoKEj72WefXXF3dzcsXLiwKCoqKsbDw0M/aFDT5OOee+4p+fvf/+732muv5QGAra2t+PrrrzOXLVsWUFlZKTUYDPTYY49di4uLa1Kn/quvvnI6fvy43dtvv53fUkyBgYG6F154IX/kyJFRDg4OhtjYWHVHzs2atViymYgeFUJ8SEQvNfe+EOJls0bWCVyy2fpVVlRh7YebMTB8+I3S0PlF2bDpV4M7pt9h4egY65s6U7L5cvllxc85Pztdr7l+YwaAQqIwDvIYVD3Of1ylhEs2W50OlWwWQnxY/1+rTQJuxgMSew6lyhaDxoTA084Jv+zdCw8vV0ybdxtsVD1iXS7G2E2CnIJqH3R6sCinMkdeoimRKSQKEewcrLWR2vTYEft9Wa/6S8y3FXoOmUyGEaPjAQByt5GwtbWFrV23VgJnjJmBv4O/zt/Bnxcj6eF6VXLArJNer0dycjIyzp2DjZ0dhsTHw8/vxloiTZ4zxhizPE4OmFnpdDp89t//QpuSgihHJ6j1Ony+YwfG338/Rt92m6XDY4wx1ow2kwMi8gLwLwA+Qog7iCgawCghxGqzR9dOPObA+pw8eRKGlBTMjY65sXhRVE0Nvlq7FgOHDIG9vX0be2CMMdbdTBk++inqljn2qX+dBuAPZoqnU3j5ZOuTcvw4Brp7NFnV0FGphL9UiszMTAtGxhjraobKSknVgQP25Zs2OVds2+6ovXyZ66v3UKYkB+5CiG8AGAGgvi4Cl8VjJpErFKhtpoqiXogbFRcZYz1f1YGDdtf/+1+v6v0HHDXnU1Q1p0/bl6392r3408/cDVVVnZrH+MILL/QLDQ2NCQ8Pj46MjIz++eef7QAgPj4+Yt++fSoAGDduXOj169c79Udly5YtDhMmTLil61mr1dLSpUt9AwMDY6Ojo6MGDx4c+c033zh25ljWzpQxB9VE5Ia6JZNBRCMB8BKEzCSDRo3C7hMnEOrpCYWs7p/b1bIyXJPJEBYWZuHoGGNdQX3ypLJ6//5mu2z1V68qyr751tV10W+vk6T9OULjks1KpVJcvXpVptVqb1lsae/evRkdCN0kTz31lE9BQYE8NTX1vFKpFDk5ObIdO3a0WomypzPlN/U06sophxDRQQCfA/i9WaPqIF4+2frExsYi6Pbb8XlqKvakp2HrxVT8UFSEe5cu5eqKjPUCwmhE9ZEjrX5R6q9dU2gzMrq8ZHNjvr6+A65evSoDgJUrV7qFh4dHR0RERCcmJvYHgPz8fNnUqVNDYmNjo2JjY6N27txpd/M+mlNZWSlZs2aNx0cffZTdEIO/v7/+4YcfLu3I+fQUbfYcCCFOEtE4ABEACMBFIYRVzmHldQ6sDxEhce5cjEhIQGZmJmxsbDA3JgYqlcrSoTHGuoAuL09uLG+7ZLPmfIrSNjxc21a7myUmJla8+uqrPkFBQbEJCQkVCxYsKLnzzjurWmqflJRku2LFCu/Dhw+nent7669duyYFgEcffdT/6aefvjZ16tSq9PR0xdSpU8OysrLOt3X8lJQUG29v71pXV1dje2PvyUyZrSAFMB1AUH37KURklbUVmPXy9vaGt7e3pcNgjHUxUV8Jsc12WtPa3ay1ks3Ntd+xY4fjzJkzS72962o5eHl5GQDg4MGDjunp6cqGdlVVVdLy8nKJk5NTn/rSN5UpYw42A9AAOIf6QYmMMcYYAEicnEwaoC41sV1zmivZ3FJy0BIhBE6ePHlBpVK1aznn6Oho7dWrVxUlJSWSvtR7YEom5yeEuEcI8ZIQ4uWGh9kjY4wxZvXknp56mbd3myWblYMHd2nJ5pbaT506tWLz5s0uBQUFUgBouK2QkJBQ8eqrr3o2tDt06JCypX005uDgYJw/f/71xYsXB2g0GgLqxi98/PHHva5Mc2OmJAfbiGiK2SNhVk2nqxtmkpmZiZqaGgtHwxizJg4TJ5RDJm3xitw2Jlot9+54yeYHHnigf0hISEx4eHh0amqq8rXXXmuxnHJcXJzmmWeeuXrbbbdFRkRERC9dutQfAFatWpVz8uRJu/Dw8OiQkJCYlStXejT3+cOHDzt6eXkNbHjs2rXL7u23385zd3fXh4eHx4SFhcVMmzYt1KkTPSE9QYslm280IJoF4EvUJRI61A1KFEIIq53jySWbu1Zmair2f/klZvgH4EBWJoZOnYqAiRMtHRZjrIt1pmSz9vJlRdWuXU76ol9LNpNCYVQOHlRtP2FCZUemMTLz6lDJ5kbeAjAKwDnRViZhYbx8snm4paVjirsHRG0txvj5QySfx9ZLlzDlt7+FTMblORhjgE1QUK3Nww8X1ebkyPXFxTKJQiEUISFaiQ2XbO6JTEnlcgAkW3tiAPDyyeaw7YcfcPHECcgbrWZIRLAvKYWhmZUPGWN9m8LfX6caPLjGNjpaw4lBz2XKZV8WgF+IaBuAG3NUeSpj3zAiLg7VmVm3bI/09+dFjBhjrJcypefgEoDdABQAHBo9WB/g6uuLfBsFNLpf173S6HT46txZ9IDOJMYYYx1gygqJPG2xj6sKDQVqalCQmoq8yiqMnT0bS2Oim1RaZIwx1nu0mBwQ0UohxBNEtBn1RZcaE0LcZdbImNWYNHUqAEBx7Rpqc3OhGjrEwhExxqyRtkYvuZZVrqqp0smkMjK6+zlonL1Uba6BwKxPa7cVHqj/7woAbzbzYH2Ml5cXhg0bZukwGGNWKDul2C5p62Wv7JQSx6LsSlVBVoV98r4899O7st1ra/RWX7J5/fr1jpGRkdGRkZHRKpVqSFBQUGxkZGT0rFmzghqXcn7nnXfciGjY999/f+P2+hdffOFMRMM++eQTFwBYu3atU1RUVHRERER0SEhIzBtvvOHemfO3hNZuK2QCgBBibzfFwhhjrAe6mlmmzD5f0uw0sapSreL8gXzXwbf7X+/IrcjuKtk8e/bsitmzZ6cAdUnHihUrcsaOHasGgC1btjQZZxcWFlazdu1a18TExEoA+Prrr10jIiJqAECr1dKTTz4ZePjw4QshISG6mpoaSktLU3QmNktoLTnwIKKnW3qzu2YrEFEUgCcBuAPYLYT4b3cclzHGWNuEEMhNLW11kHp1mVZRkl9t4+Zr3+6qjM2VbG6una+v74CkpKQL3t7e+pUrV7q98847XkSEqKiomu+///5Sfn6+7He/+11gXl6eAgDeeuut7ClTpnRoSecRI0ZUHT161F6r1ZJGo6HLly/bxMTEqAGgrKxMotfrycvLSw8ASqVSDBo0qN3nbWmtdfVIAdij6QyFds1WIKKPiaiQiJJv2j6NiC4SUQYRvdjaPoQQF4QQSwDcC2CMKcdljDHWPSqua+Ratb7Nwe1F2ZUm1TK4WWJiYkV+fr4iKCgo9v777w/48ccf7Vtr31Cyee/evWkXL15M+fDDD7OBX0s2JycnX9i4cWPmkiVLgjoSD1C31svYsWMrNmzY4LhmzRrnadOmlTW85+XlZZg8eXJZQEDAwJkzZ/b/73//69oT14Rp7Rd6VQjxSif3/ymAlQA+b9hQXwL6PQCTAeQCOE5Em1CXjLx60+cfFEIUEtFdAB4D8EUn42GMMdaF9DqDSeMJ9DpjryrZvHDhwpK3337bq7KyUvr222/nvPzyyzdq0q9bt+7KsWPHCrdt2+bwzjvv9Nu1a5fj+vXrL3fkOJbSWnLQ6XlqQoh9RBR00+Z4ABlCiCwAIKKvAdwthHgVwIwW9rMJwCYi+hHAmmaDJVoMYDEABAQEdDZ0xhhjJrBVyU26LLZRyXpkyeaWTJgwQb1kyRKlUqk0Dhw48JbbBvHx8TXx8fE1ixcvLgkNDR0A4HJXHLe7tJbJTTLTMX1RtyRzg9z6bc0iovFE9A4RfQhga0vthBCrhBBxQog4D49mi20xxhjrYnbONnp7F5s2pyv2C3bqkSWbW/P3v/899+9//3te423l5eWSxgMYjx49qvTx8elx0zlb7DkQQpR0ZyAtEUL8AuAXU9r29cJLarUa6enpMBgMCAoKgqurq6VDYoz1Af0Hupef35/vbjSKZnucPQIc1A6uth0u2bxs2bKAiooKqVQqFUFBQdrPPvvsSkvtG5dslkgkIjY2Vr1+/frLq1atynn44YcDwsPDow0GA40YMaJy9OjR2R2JqcG9995bcfM2o9GIN954w+uJJ54ItLW1NapUKuPq1asvdeY4ltBmyeZOH6DutsIWIURs/etRAP4mhJha//qPAFB/W6FL9LWSzUII7N29G/s2bISfRAIZAdm1tYgcOxaJ8+Zx5UTGmEk6U7K57JpakXW6yEldUXujZLNUJjH2C3asDhroXskrqlqfzpZs7mrHAYQRUX8AeQDmA7ivK3bcV3sOTp44gRPffIPfhEfAvr4Yks5gwNYDB/CjQoG75861cISMsd7O2UtVO3RqYFF5UY28prJWJpVJhIu3nVYml3ARlh6oU6tWtYWI1gI4DCCCiHKJ6CEhhB7AEwB2ALgA4BshxPmuOF5fLNkshMC+zZsx0dfvRmIAAHKpFFNCw3Bmzx5UV3foVh9jjLWbk4dS1y/YqcYjwEHDiUHPZdaeAyHEgha2b0Urgws7qi/2HGi1WpQXFMA3JvaW95QKBTykUhQUFCAkJMQC0THGGOuJzNpz0N36Ys+BTCaDkEig1d861kcIgWq9HjaNehQYY4yxtvSq5ICIZhLRqvLyckuH0m1kMhmiR47E6dycW967UlwMiYcHfH1bnCnKGGOM3aJXJQd9secAACbPnInzcjn2Z6SjTK1GlVaLk1euYMf1Itz1wAPgUcKMse6gVVdLLp85aZ+yf4/zxcP7HUuv5vW4gkOsTq9KDvoqV1dXLPnjHyEfNw7fFRXiq9wclMbG4Hd/+hP60vgLxpjlXD5z0u7I+q+9Lp8+4ViYlaG6mpZqf2bnVvcTP37vrlWrrb5ks7n5+voOuHr1qlnH+TUuLd1ZvWoCfF8ckNjA2dkZM++5BzPvucfSoTDG+pi8iynKy6dPNNtlW3m9SHFu9w7XYTMSrbpksyUYjUYIISCVWl9O06t6DvrqbQXGGLMUIQSyk8+0Wqm3quS64nrOlQ6NjG6uZHNQUJDu5naNr8xXrlzpFh4eHh0RERGdmJjYHwDy8/NlU6dODYmNjY2KjY2N2rlzp90tcVZV0YwZM4KDg4NjJk+eHDJw4MDIhp4JlUo1pKHdJ5984jJ79uwgAFizZo3TwIEDI6OioqJHjx4dnpOTIwOAgoIC6ZgxY8JCQ0Nj5s2bF9iw4ODFixcVQUFBsbNmzQoKDw+PyczMVLS079mzZwfdd999AbGxsVFBQUGxa9eudQIAtVpNc+bMCQoPD4+OioqK3rx58y0//4qKCsncuXODBgwYEBUVFRX95ZdfOrfn596rkgPGGGPdq7ywQK6tqmqzF7rwUqbVl2xesWKFp1KpNGZlZZ3/xz/+kZ+SknJLAnGzyZMnV50+fTr1woULKXPmzCl55ZVX+gHAiy++6DNq1KiqjIyM87NmzSq7evXqjfEX2dnZNk888URRRkbG+fDw8FbrLuTk5NicOXPmwubNm9P/8Ic/BKrVanrttdc8iQhpaWkpa9asyVq8eHGQWq1u0pvypz/9yXvChAkV586du7B///6Lf/7zn/0qKipM/s7vVbcVGGOMdS99ba1pJZtNbHez7izZfODAAftly5YVAsCIESNqwsPD1W3Fd+nSJUViYqJfUVGRvLa2VuLv768FgCNHjjhs2LAhAwDmz59f/uijj96oSunt7V07adIkk1anmz17dolUKsWAAQO0/v7+2tOnT9seOnTI/ve//30hAAwZMkTj4+NTe+7cOdvGn/vll18cd+zY4fzOO+/0AwCtVksZGRmKoUOHakw5bq9KDvrymAPGGLMEWzt7k0oxm9quOdZQsrnxeImampobL5544omAJ598smDhwoXlW7ZscXjllVd82tqXSqUyNn7d0r5vfq+51y0RQuC7777LGDRo0C3lpE3Rq24r8JgDxhjrXvaubnoHd482SxJ7h0dafcnmhISEqq+++soVAI4fP26blpamanjPzc1Nd/LkSVuDwYAffvjBpWF7ZWWlNCAgQAcAn376qVvD9pEjR1Y2vP7mm28cKyoqWhx12NK+AWDDhg0uBoMB58+ft8nJybEZNGiQZsyYMVVffvmlKwCcPXvW5urVq4qBAwc26RGYMGFCxZtvvullNNblIQcPHmzXbZ1e1XPAGGOs+4UMG1F+Ztc2d2EwNHtZ6xkcqnZ097D6ks3PPvts4fz58/sHBwfHhIaGaqKjo28kNC+//HLe3XffHerq6qofNGiQurq6WgIA//d//5e/YMGCECcnJ31CQkJldna2DQAsX748f/bs2cGhoaExcXFxVd7e3i0mNC3tGwB8fX1rBw0aFFVVVSV9++23r6hUKvH8888XPvDAA4Hh4eHRUqkUH3744eWGAZsNli9fnr948eKAyMjIaKPRSP7+/to9e/aYPKPD7CWbLcGSJZtrampga2uLqqoqZGVlYdCgQRaJgzHG2qszJZtLr+Yp0o8ddlKXlf5aslkuN3qHRVaHxI3okSWb4+PjI1asWJEzduzYNscemMPs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
+"
+>
 </div>
 
 </div>

@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __license__ = "Apache"
 __description__ = "A Python package to index Bruker TimsTOF raw data for fast and easy accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
@@ -34,11 +34,13 @@ __urls__ = {
     "GitHub": __github__,
     "ReadTheDocs": "https://alphatims.readthedocs.io/en/latest/",
     "PyPi": "https://pypi.org/project/alphatims/",
+    "Scientific paper": "https://doi.org/10.1101/2021.07.23.453379",
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
     "stable": "requirements/requirements_stable.txt",
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
+    "legacy": "requirements/requirements_legacy.txt",
 }
 __requirements_style__ = None

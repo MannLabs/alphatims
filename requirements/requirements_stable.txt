@@ -1,8 +1,7 @@
 h5py==3.2.1
 numba==0.53.1
 pandas==1.2.4
-tqdm==4.60.0
+tqdm==4.61.1
 pyzstd==0.14.4
-python-lzf==0.2.4
 psutil==5.8.0
-click==8.0.0
+click==8.0.1

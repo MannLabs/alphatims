@@ -243,7 +243,6 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
-            fragment_frames.Frame += 1
         frames = pd.DataFrame(
             {
                 col: pd.to_numeric(
@@ -704,7 +703,7 @@ class TimsTOF(object):
 
     @property
     def is_compressed(self):
-        """: bool : HDF arraya are compressed or not."""
+        """: bool : HDF array is compressed or not."""
         return self._compressed
 
     @property
@@ -1115,6 +1114,7 @@ class TimsTOF(object):
         return_tof_indices: bool = False,
         return_precursor_indices: bool = False,
         return_rt_values: bool = False,
+        return_rt_values_min: bool = False,
         return_mobility_values: bool = False,
         return_quad_mz_values: bool = False,
         return_push_indices: bool = False,
@@ -1157,6 +1157,9 @@ class TimsTOF(object):
         return_rt_values : bool
             If True, include "rt_values" in the dict.
             Default is False.
+        return_rt_values_min : bool
+            If True, include "rt_values_min" in the dict.
+            Default is False.
         return_mobility_values : bool
             If True, include "mobility_values" in the dict.
             Default is False.
@@ -1190,6 +1193,7 @@ class TimsTOF(object):
                 return_scan_indices,
                 return_quad_indices,
                 return_rt_values,
+                return_rt_values_min,
                 return_mobility_values,
                 return_quad_mz_values,
                 return_precursor_indices,
@@ -1207,7 +1211,7 @@ class TimsTOF(object):
                     raw_indices,
                     "right"
                 ) - 1
-        if (return_frame_indices or return_rt_values) and (
+        if (return_frame_indices or return_rt_values or return_rt_values_min) and (
             frame_indices is None
         ):
             frame_indices = push_indices // self.scan_max_index
@@ -1253,6 +1257,8 @@ class TimsTOF(object):
             result["tof_indices"] = tof_indices
         if return_rt_values:
             result["rt_values"] = self.rt_values[frame_indices]
+        if return_rt_values_min:
+            result['rt_values_min'] = result["rt_values"] / 60
         if return_mobility_values:
             result["mobility_values"] = self.mobility_values[scan_indices]
         if return_quad_mz_values:
@@ -1530,6 +1536,7 @@ class TimsTOF(object):
         tof_indices: bool = True,
         precursor_indices: bool = True,
         rt_values: bool = True,
+        rt_values_min: bool = True,
         mobility_values: bool = True,
         quad_mz_values: bool = True,
         push_indices: bool = True,
@@ -1563,6 +1570,9 @@ class TimsTOF(object):
             Default is True.
         rt_values : bool
             If True, include "rt_values" in the dataframe.
+            Default is True.
+        rt_values_min : bool
+            If True, include "rt_values_min" in the dataframe.
             Default is True.
         mobility_values : bool
             If True, include "mobility_values" in the dataframe.
@@ -1600,6 +1610,7 @@ class TimsTOF(object):
                 return_precursor_indices=precursor_indices,
                 return_tof_indices=tof_indices,
                 return_rt_values=rt_values,
+                return_rt_values_min=rt_values_min,
                 return_mobility_values=mobility_values,
                 return_quad_mz_values=quad_mz_values,
                 return_push_indices=push_indices,
@@ -1610,12 +1621,22 @@ class TimsTOF(object):
         )
 
     def _parse_quad_indptr(self) -> None:
-        frame_ids = self.fragment_frames.Frame.values
+        frame_ids = self.fragment_frames.Frame.values + 1
         scan_begins = self.fragment_frames.ScanNumBegin.values
         scan_ends = self.fragment_frames.ScanNumEnd.values
         isolation_mzs = self.fragment_frames.IsolationMz.values
         isolation_widths = self.fragment_frames.IsolationWidth.values
         precursors = self.fragment_frames.Precursor.values
+        if (precursors[0] is None):
+            frame_groups = self.frames.MsMsType.values[1:]  # exc. zeroth frame
+            precursor_frames = np.flatnonzero(frame_groups == 0)
+            group_sizes = np.diff(precursor_frames)
+            group_size = group_sizes[0]
+            if np.any(group_sizes != group_size):
+                raise ValueError("Sample type not understood")
+            precursors = (1 + frame_ids - frame_ids[0]) % group_size
+            self.fragment_frames.Precursor = precursors
+            self._acquisition_mode = "diaPASEF"
         scan_max_index = self.scan_max_index
         frame_max_index = self.frame_max_index
         quad_indptr = [0]

@@ -1724,11 +1724,15 @@ def update_global_selection(updated_option, updated_value):
             update_widgets(updated_option)
             update_selected_indices_and_dataframe()
         if DATASET:
-            logging.info("Updating plots")
-            PLOTS[0] = visualize_tic()
-            PLOTS[1] = visualize_scatter()
-            PLOTS[2] = visualize_1d_plot()
-            PLOTS[3] = show_df()
+            if updated_value == "df":
+                logging.info("Showing table")
+                PLOTS[3] = show_df()
+            else:
+                logging.info("Updating plots")
+                PLOTS[0] = visualize_tic()
+                PLOTS[1] = visualize_scatter()
+                PLOTS[2] = visualize_1d_plot()
+                PLOTS[3] = show_df()
 
 
 def update_widgets(updated_option):

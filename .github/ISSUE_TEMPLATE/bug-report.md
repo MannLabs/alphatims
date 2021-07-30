@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+Make sure your bug is not addressed in the [troubleshooting section](https://github.com/MannLabs/alphatims#troubleshooting) or in [previous issues](https://github.com/MannLabs/alphatims/issues?q=is%3Aissue). If not, provide a clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -37,7 +37,7 @@ If applicable, add screenshots to help explain your problem.
      - processor [e.g. i386]
      - cpu count [e.g. 8]
    - Python information:
-     - alphatims version [e.g. 0.1.210330]
+     - alphatims version [e.g. 0.2.7]
      - [other packages]
 
 **Additional context**
