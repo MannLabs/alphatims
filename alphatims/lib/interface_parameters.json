@@ -124,45 +124,51 @@
   },
   "rt_bounds": {
     "help": "The upper and lower rt bounds (as a pair) for the data selection in seconds. Negative values are interpreted as frame indices instead of rt values.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "float",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "mobility_bounds": {
     "help": "The upper and lower mobility bounds (as a pair) for the data selection. Negative values are interpreted as scan indices instead of mobility values.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "float",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "precursor_bounds": {
     "help": "The upper and lower precursor bounds (as a pair) for the data selection.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "int",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "quad_mz_bounds": {
     "help": "The upper and lower quad mz bounds (as a pair) for the data selection.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "float",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "tof_mz_bounds": {
     "help": "The upper and lower TOF mz bounds (as a pair) for the data selection. Negative values are interpreted as TOF indices instead of tof mz values.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "float",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "intensity_bounds": {
     "help": "The upper and lower intensity bounds (as a pair) for the data selection.",
-    "default": [null, null],
+    "default": [[null, null]],
     "type": "float",
     "nargs": 2,
-    "required": true
+    "required": false,
+    "multiple": true
   },
   "bruker_raw_data": {
     "help": "Bruker raw data (.d folder or .hdf file).",

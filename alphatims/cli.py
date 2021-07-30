@@ -242,7 +242,10 @@ def export(**kwargs):
     pass
 
 
-@run.group("detect", help="Detect structures within the data.")
+@run.group(
+    "detect",
+    help="Detect structures within the data (NotImplemented yet)."
+)
 def detect(**kwargs):
     pass
 
@@ -323,60 +326,87 @@ def export_mgf(**kwargs):
 @cli_option("parameter_file")
 @cli_option("export_parameters")
 def export_selection(**kwargs):
-    import numpy as np
-    import alphatims.bruker
     with parse_cli_settings("export selection", **kwargs) as parameters:
-        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
-        if (parameters["rt_bounds"][0] is not None):
-            if (parameters["rt_bounds"][0] < 0):
-                parameters["rt_bounds"] = (
-                    int(-parameters["rt_bounds"][0]),
-                    int(-parameters["rt_bounds"][1]),
-                )
-        if (parameters["mobility_bounds"][0] is not None):
-            if (parameters["mobility_bounds"][0] < 0):
-                parameters["mobility_bounds"] = (
-                    int(-parameters["mobility_bounds"][0]),
-                    int(-parameters["mobility_bounds"][1]),
-                )
-        if (parameters["tof_mz_bounds"][0] is not None):
-            if (parameters["tof_mz_bounds"][0] < 0):
-                parameters["tof_mz_bounds"] = (
-                    int(-parameters["tof_mz_bounds"][0]),
-                    int(-parameters["tof_mz_bounds"][1]),
-                )
-        frame_values = alphatims.bruker.convert_slice_key_to_int_array(
-            data, slice(*parameters["rt_bounds"]), "frame_indices"
+        import numpy as np
+        import alphatims.bruker
+        frame_values = np.empty(
+            shape=(len(parameters["rt_bounds"]), 3),
+            dtype=np.int64
         )
-        scan_values = alphatims.bruker.convert_slice_key_to_int_array(
-            data, slice(*parameters["mobility_bounds"]), "scan_indices"
+        scan_values = np.empty(
+            shape=(len(parameters["mobility_bounds"]), 3),
+            dtype=np.int64
+        )
+        tof_values = np.empty(
+            shape=(len(parameters["tof_mz_bounds"]), 3),
+            dtype=np.int64
+        )
+        intensity_values = np.empty(
+            shape=(len(parameters["intensity_bounds"]), 2),
+            dtype=np.float64
         )
         if "precursors" in parameters["ion_type"]:
             quad_values = np.array([[-1, 0]])
             precursor_values = np.array([[0, 1, 1]])
         else:
-            quad_values = np.empty(shape=(0, 2), dtype=np.float64)
-            precursor_values = np.empty(shape=(0, 3), dtype=np.int64)
-        if "fragments" in parameters["ion_type"]:
-            quad_values_ = alphatims.bruker.convert_slice_key_to_float_array(
-                slice(*parameters["quad_mz_bounds"])
+            quad_values = np.empty(
+                shape=(len(parameters["quad_mz_bounds"]), 2),
+                dtype=np.float64
             )
-            precursor_values_ = alphatims.bruker.convert_slice_key_to_int_array(
-                data,
-                slice(*parameters["precursor_bounds"]),
-                "precursor_indices"
+            precursor_values = np.empty(
+                shape=(len(parameters["precursor_bounds"]), 3),
+                dtype=np.int64
             )
-            if precursor_values_[0, 0] < 1:
-                precursor_values_[0, 0] = 1
-            quad_values = np.vstack([quad_values, quad_values_])
-            precursor_values = np.vstack([precursor_values, precursor_values_])
-        tof_values = alphatims.bruker.convert_slice_key_to_int_array(
-            data, slice(*parameters["tof_mz_bounds"]), "tof_indices"
-        )
-        intensity_values = alphatims.bruker.convert_slice_key_to_float_array(
-            slice(*parameters["intensity_bounds"])
-        )
+        logging.info("Loading raw data.")
+        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
         logging.info("Filtering datapoints.")
+        for i, rt_bounds in enumerate(parameters["rt_bounds"]):
+            if (rt_bounds[0] is not None):
+                if (rt_bounds[0] < 0):
+                    rt_bounds = (
+                        int(-rt_bounds[0]),
+                        int(-rt_bounds[1]),
+                    )
+            frame_values[i] = alphatims.bruker.convert_slice_key_to_int_array(
+                data, slice(*rt_bounds), "frame_indices"
+            )[0]
+        for i, mobility_bounds in enumerate(parameters["mobility_bounds"]):
+            if (mobility_bounds[0] is not None):
+                if (mobility_bounds[0] < 0):
+                    mobility_bounds = (
+                        int(-mobility_bounds[0]),
+                        int(-mobility_bounds[1]),
+                    )
+            scan_values[i] = alphatims.bruker.convert_slice_key_to_int_array(
+                data, slice(*mobility_bounds), "scan_indices"
+            )[0]
+        for i, tof_mz_bounds in enumerate(parameters["tof_mz_bounds"]):
+            if (tof_mz_bounds[0] is not None):
+                if (tof_mz_bounds[0] < 0):
+                    tof_mz_bounds = (
+                        int(-tof_mz_bounds[0]),
+                        int(-tof_mz_bounds[1]),
+                    )
+            tof_values = alphatims.bruker.convert_slice_key_to_int_array(
+                data, slice(*tof_mz_bounds), "tof_indices"
+            )
+        for i, intensity_bounds in enumerate(parameters["intensity_bounds"]):
+            intensity_values[i] = alphatims.bruker.convert_slice_key_to_float_array(
+                slice(*intensity_bounds)
+            )
+        if "fragments" in parameters["ion_type"]:
+            for i, quad_mz_bounds in enumerate(parameters["quad_mz_bounds"]):
+                quad_values[i] = alphatims.bruker.convert_slice_key_to_float_array(
+                    slice(*quad_mz_bounds)
+                )
+            for i, precursor_bounds in enumerate(parameters["precursor_bounds"]):
+                precursor_values[i] = alphatims.bruker.convert_slice_key_to_int_array(
+                    data,
+                    slice(*precursor_bounds),
+                    "precursor_indices"
+                )
+                if precursor_values[i, 0] < 1:
+                    precursor_values[i, 0] = 1
         strike_indices = alphatims.bruker.filter_indices(
             frame_slices=frame_values,
             scan_slices=scan_values,
