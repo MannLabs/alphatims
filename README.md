@@ -354,7 +354,7 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
 ---
 ## Citing AlphaTims
 
-Check out the [paper](https://doi.org/10.1101/2021.07.23.453379).
+Check out the [paper](https://doi.org/10.1101/2021.07.27.453933).
 
 ---
 ## How to contribute
