@@ -248,6 +248,8 @@ Options:
 
 For this particular command, the line `Usage: alphatims export hdf [OPTIONS] BRUKER_D_FOLDER` shows that you always need to provide a path to a `BRUKER_D_FOLDER` and that all other options are optional (indicated by the brackets in `[OPTIONS]`). Each option can be called with a double dash `--` followed by a long name, while common options also can be called with a single dash `-` followed by their short name. It is indicated what type of parameter is expected, e.g. a `DIRECTORY` for `--output_folder` or nothing for `enable/disable` flags. Defaults are also shown and all parameters will be saved in a log file. Alternatively, all used parameters can be exported with the `--export_parameters` option and the non-required ones can be reused with the `--parameter_file`.
 
+***IMPORTANT: Please refer to the [CLI manual](alphatims/docs/cli_manual.pdf) for detailed instructions on the usage and troubleshooting of the stand-alone AlphaTims CLI.***
+
 ### Python and Jupyter notebooks
 
 AlphaTims can be imported as a Python package into any Python script or notebook with the command `import alphatims`. Documentation for all functions is available in the [Read the Docs API](https://alphatims.readthedocs.io/en/latest/index.html).
@@ -302,7 +304,7 @@ The basic workflow of AlphaTims looks as follows:
 
 Also checkout:
 
-* The [paper](https://doi.org/10.1101/2021.07.23.453379) for a complete overview.
+* The [paper](https://doi.org/10.1101/2021.07.27.453933) for a complete overview.
 * The [presentation](https://datashare.biochem.mpg.de/s/JlVKCvLHdQjsVZU) at [ISCB](https://www.iscb.org/ismbeccb2021) for a brief video.
 
 ### Bruker raw data

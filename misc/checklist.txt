@@ -12,9 +12,12 @@ No TODOs left?
 README updated?
   - Update CHANGELOG
 
-Manual updated?
+Manuals updated?
   if [ misc/gui_manual.docx -nt alphatims/docs/gui_manual.pdf ]; then
    echo "GUI manual was not updated"
+  fi
+  if [ misc/cli_manual.docx -nt alphatims/docs/cli_manual.pdf ]; then
+   echo "CLI manual was not updated"
   fi
 
 Tutorial and performance?
