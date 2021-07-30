@@ -377,7 +377,9 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FEAT: Show performance in README.
   * FIX: Move python-lzf dependancy (to decompress older Bruker files) to legacy requirements, as pip install on Windows requires visual c++ otherwise.
   * DOCS: BioRxiv paper link.
-  * FIX: RT in m in/sec conversion of the GUI.
+  * FEAT/FIX: RT in min column.
+  * FEAT: CLI manual.
+  * FEAT: Inlusion of more coordinates in CLI.
 
 ### 0.2.7
 
