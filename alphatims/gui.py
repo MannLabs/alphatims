@@ -269,7 +269,6 @@ quit_button = pn.widgets.Button(
 #         import urllib.error
 #         import zipfile
 #         import io
-#         print("start")
 #         with urllib.request.urlopen(
 #             alphatims.utils.DEMO_FILE_NAME_GITHUB
 #         ) as sample_file:
@@ -285,7 +284,6 @@ quit_button = pn.widgets.Button(
 #             width=100,
 #             margin=(34, 20, 0, 20)
 #         )
-#         print("DONE")
 
 
 gui_manual_button = pn.widgets.FileDownload(
@@ -1244,8 +1242,9 @@ def upload_data(*args):
     global DATAFRAME
     global SELECTED_INDICES
     global WHOLE_TITLE
-    if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
-        ext = os.path.splitext(upload_file.value)[-1]
+    global alphatims
+    ext = os.path.splitext(upload_file.value)[-1]
+    if ext in [".d", ".hdf", ".raw"]:
         save_hdf_message.object = ''
         save_sliced_data_message.object = ''
         upload_error.object = None
@@ -1263,10 +1262,17 @@ def upload_data(*args):
                 alphatims.utils.set_progress_callback(upload_progress)
                 upload_progress.value = 0
                 upload_spinner.value = True
-                DATASET = alphatims.bruker.TimsTOF(
-                    upload_file.value,
-                    slice_as_dataframe=False
-                )
+                if ext == ".raw":
+                    import alphatims.thermo
+                    DATASET = alphatims.thermo.Orbitrap(
+                        upload_file.value,
+                        slice_as_dataframe=False
+                    )
+                else:
+                    DATASET = alphatims.bruker.TimsTOF(
+                        upload_file.value,
+                        slice_as_dataframe=False
+                    )
                 alphatims.utils.set_progress_callback(True)
                 mode = ''
                 if 'DDA' in upload_file.value:
@@ -1437,7 +1443,6 @@ def init_settings(*args):
             precursor_end.start, precursor_end.end = STACK["precursors"]
 
             if DATASET.acquisition_mode == "diaPASEF":
-                print("QUE")
                 precursor_start.name = "Start window group"
                 precursor_end.name = "End window group"
             else:
