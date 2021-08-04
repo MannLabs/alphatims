@@ -159,9 +159,22 @@ def set_frags(
     peptide_offsets,
     decoy=False
 ):
-    seq = alphapept.fasta.parse(peptide_sequences[peptide_index])
+    seq_string = peptide_sequences[peptide_index]
+    seq = alphapept.fasta.parse(seq_string)
+    # if decoy:
+    #     seq[:-1] = seq[:-1][::-1]
     if decoy:
-        seq[:-1] = seq[:-1][::-1]
+        #diaNN style
+        original = "GAVLIFMPWSCTYHKRQEND"
+        mutated = "LLLVVLLLLTSSSSLLNDQE"
+        seq[1] = alphapept.fasta.parse(
+            mutated[original.index(seq[1][-1])]
+        )[0]
+        seq[-2] = alphapept.fasta.parse(
+            mutated[original.index(seq[-2][-1])]
+        )[0]
+    # if decoy:
+    #     seq[-2], seq[0] = seq[0], seq[-2]
     fragment_mzs, fragment_types = alphapept.fasta.get_fragmass(
         seq,
         alphapept.constants.mass_dict
