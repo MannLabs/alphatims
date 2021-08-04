@@ -36,6 +36,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
+    * [**0.3.0**](#300)
     * [**0.2.8**](#028)
     * [**0.2.7**](#027)
 
@@ -365,6 +366,10 @@ If you like AlphaTims you can give us a [star](stargazers) to boost our visibili
 ## Changelog
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
+
+### 0.3.0
+
+  * FEAT: introduction of global mz calibration.
 
 ### 0.2.8
 

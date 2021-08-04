@@ -506,7 +506,7 @@ def read_bruker_binary(
     tims_offset_values = frames.TimsId.values
     logging.info(
         f"Reading {frame_indptr.size - 2:,} frames with "
-        f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
+        f"{frame_indptr[-1]:,} detector events for {bruker_d_folder_name}"
     )
     if compression_type == 1:
         process_frame_func = alphatims.utils.threadpool(
@@ -734,7 +734,15 @@ class TimsTOF(object):
     @property
     def mz_values(self):
         """: np.ndarray : np.float64[:] : The mz values."""
-        return self._mz_values
+        if self._use_calibrated_mz_values_as_default:
+            return self._calibrated_mz_values
+        else:
+            return self._mz_values
+
+    @property
+    def calibrated_mz_values(self):
+        """: np.ndarray : np.float64[:] : The global calibrated mz values."""
+        return self._calibrated_mz_values
 
     @property
     def quad_mz_values(self):
@@ -769,12 +777,22 @@ class TimsTOF(object):
     @property
     def mz_min_value(self):
         """: float : The minimum mz value."""
-        return self._mz_min_value
+        return self.mz_values[0]
 
     @property
     def mz_max_value(self):
         """: float : The maximum mz value."""
-        return self._mz_max_value
+        return self.mz_values[-1]
+
+    @property
+    def calibrated_mz_min_value(self):
+        """: float : The minimum calibrated mz value."""
+        return self.calibrated_mz_values[0]
+
+    @property
+    def calibrated_mz_max_value(self):
+        """: float : The maximum calibrated mz value."""
+        return self.calibrated_mz_values[-1]
 
     @property
     def rt_max_value(self):
@@ -854,9 +872,11 @@ class TimsTOF(object):
     def __init__(
         self,
         bruker_d_folder_name: str,
+        *,
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
-        slice_as_dataframe: bool = True
+        slice_as_dataframe: bool = True,
+        use_calibrated_mz_values_as_default: bool = False
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -887,6 +907,9 @@ class TimsTOF(object):
             If False, slicing provides a np.int64[:] with raw indices.
             This value can also be modified after creation.
             Default is True.
+        use_calibrated_mz_values_as_default : bool
+            If True, the mz_values are overwritten with global
+            calibrated_mz_values.
         """
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
@@ -910,10 +933,13 @@ class TimsTOF(object):
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
-        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
         self.slice_as_dataframe = slice_as_dataframe
+        self.use_calibrated_mz_values_as_default(
+            use_calibrated_mz_values_as_default
+        )
         # Precompile
         self[0, "raw"]
+        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
 
     def __len__(self):
         return len(self.intensity_values)
@@ -946,6 +972,7 @@ class TimsTOF(object):
             int(self._meta_data["MaxNumPeaksPerScan"]),
         )
         logging.info(f"Indexing {bruker_d_folder_name}...")
+        self._use_calibrated_mz_values_as_default = False
         self._frame_max_index = self.frames.shape[0]
         self._scan_max_index = int(self.frames.NumScans.max()) + 1
         self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
@@ -979,14 +1006,18 @@ class TimsTOF(object):
                     self.scan_max_index
                 )
         else:
+            if (mobility_estimation_from_frame != 0):
+                logging.info(
+                    "Bruker DLL not available, estimating mobility values"
+                )
             self._mobility_values = self.mobility_max_value - (
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
-        self._mz_min_value = float(self.meta_data["MzAcqRangeLower"])
-        self._mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
-        tof_intercept = np.sqrt(self.mz_min_value)
+        mz_min_value = float(self.meta_data["MzAcqRangeLower"])
+        mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
+        tof_intercept = np.sqrt(mz_min_value)
         tof_slope = (
-            np.sqrt(self.mz_max_value) - tof_intercept
+            np.sqrt(mz_max_value) - tof_intercept
         ) / self.tof_max_index
         if (mz_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
@@ -1004,12 +1035,16 @@ class TimsTOF(object):
                     indices.ctypes.data_as(
                         ctypes.POINTER(ctypes.c_double)
                     ),
-                    self.mz_values.ctypes.data_as(
+                    self._mz_values.ctypes.data_as(
                         ctypes.POINTER(ctypes.c_double)
                     ),
                     self.tof_max_index
                 )
         else:
+            if (mz_estimation_from_frame != 0):
+                logging.info(
+                    "Bruker DLL not available, estimating mz values"
+                )
             self._mz_values = (
                 tof_intercept + tof_slope * np.arange(self.tof_max_index)
             )**2
@@ -1396,7 +1431,7 @@ class TimsTOF(object):
         tof_slices: np.ndarray,
         quad_slices: np.ndarray,
     ) -> int:
-        """Estimate the number of strike counts, given a set of slices.
+        """Estimate the number of detector events, given a set of slices.
 
         Parameters
         ----------
@@ -1430,7 +1465,7 @@ class TimsTOF(object):
         Returns
         -------
         int
-            The estimated number of strike counts given these slices.
+            The estimated number of detector events given these slices.
         """
         frame_count = 0
         for frame_start, frame_end, frame_stop in frame_slices:
@@ -1621,6 +1656,7 @@ class TimsTOF(object):
         )
 
     def _parse_quad_indptr(self) -> None:
+        logging.info("Indexing quadrupole dimension")
         frame_ids = self.fragment_frames.Frame.values + 1
         scan_begins = self.fragment_frames.ScanNumBegin.values
         scan_ends = self.fragment_frames.ScanNumEnd.values
@@ -1902,6 +1938,109 @@ class TimsTOF(object):
             f"spectra to {full_file_name}."
         )
         return full_file_name
+
+    def calculate_global_calibrated_mz_values(
+        self,
+        calibrant1: tuple = (922.009798, 1.1895),
+        calibrant2: tuple = (1221.990637, 1.3820),
+        mz_tolerance: float = 10,
+        mobility_tolerance: float = 0.1,
+    ) -> None:
+        """Calculate global calibrated_mz_values based on two calibrant ions.
+
+        Parameters
+        ----------
+        calibrant1 : tuple
+            The first calibrant ion.
+            This is a tuple with (mz, mobility) foat values.
+            Default is (922.009798, 1.1895).
+        calibrant2 : tuple
+            The first calibrant ion.
+            This is a tuple with (mz, mobility) foat values.
+            Default is (1221.990637, 1.3820).
+        mz_tolerance : float
+            The tolerance window with respect to the
+            uncalibrated mz_values. If this is too large,
+            the calibrant ion might not be the most intense ion anymore.
+            If this is too small, the calibrant ion might not be contained.
+            Default is 10.
+        mobility_tolerance : float
+            The tolerance window with respect to the
+            uncalibrated mobility_values. If this is too large,
+            the calibrant ion might not be the most intense ion anymore.
+            If this is too small, the calibrant ion might not be contained.
+            Default is 0.1.
+        """
+        logging.info("Calculating global calibrated mz values...")
+        if calibrant1[0] > calibrant2[0]:
+            calibrant1, calibrant2 = calibrant2, calibrant1
+        calibrant1_lower_mz = calibrant1[0] - mz_tolerance
+        calibrant1_upper_mz = calibrant1[0] + mz_tolerance
+        calibrant1_lower_mobility = calibrant1[1] - mobility_tolerance
+        calibrant1_upper_mobility = calibrant1[1] + mobility_tolerance
+        calibrant1_tof = np.argmax(
+            np.bincount(
+                self.tof_indices[
+                    self[
+                        :,
+                        calibrant1_lower_mobility: calibrant1_upper_mobility,
+                        0,
+                        calibrant1_lower_mz: calibrant1_upper_mz,
+                        "raw"
+                    ]
+                ]
+            )
+        )
+        calibrant2_lower_mz = calibrant2[0] - mz_tolerance
+        calibrant2_upper_mz = calibrant2[0] + mz_tolerance
+        calibrant2_lower_mobility = calibrant2[1] - mobility_tolerance
+        calibrant2_upper_mobility = calibrant2[1] + mobility_tolerance
+        calibrant2_tof = np.argmax(
+            np.bincount(
+                self.tof_indices[
+                    self[
+                        :,
+                        calibrant2_lower_mobility: calibrant2_upper_mobility,
+                        0,
+                        calibrant2_lower_mz: calibrant2_upper_mz,
+                        "raw"
+                    ]
+                ]
+            )
+        )
+        tof_slope = (
+            np.sqrt(calibrant2[0]) - np.sqrt(calibrant1[0])
+        ) / (calibrant2_tof - calibrant1_tof)
+        tof_intercept = np.sqrt(calibrant1[0]) - tof_slope * calibrant1_tof
+        self._calibrated_mz_values = (
+            tof_intercept + tof_slope * np.arange(self.tof_max_index)
+        )**2
+        ppms = 10**6 * (
+            self._mz_values - self._calibrated_mz_values
+        ) / self._mz_values
+        logging.info(
+            "Global calibration of mz values yielded differences between "
+            f"{np.min(ppms):.2f} and {np.max(ppms):.2f} ppm."
+        )
+
+    def use_calibrated_mz_values_as_default(
+        self,
+        use_calibrated_mz_values: bool
+    ) -> None:
+        """Override the default mz_values with the global calibrated_mz_values.
+
+        Calibrated_mz_values will be calculated if they do not exist yet.
+
+        Parameters
+        ----------
+        use_calibrated_mz_values : bool
+            If True, the mz_values are overwritten with global
+            calibrated_mz_values.
+        """
+        if use_calibrated_mz_values:
+            if not hasattr(self, "_calibrated_mz_values"):
+                self.calculate_global_calibrated_mz_values()
+        self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
 
 class PrecursorFloatError(TypeError):
