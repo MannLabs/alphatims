@@ -28,14 +28,17 @@ class Library(object):
 
     def convert_to_peptide_dict(self):
         self.peptide_dict = []
-        for rt, mz, im, z, seq_, frag_int, frag_mz in zip(
-            self.peptide_data.rt_apex,
-            self.peptide_data.mz,
-            self.peptide_data.mobility,
-            self.peptide_data.charge,
-            self.peptide_data.sequence,
-            self.peptide_data.ion_int,
-            self.peptide_data.ion_types,
+        for rt, mz, im, z, seq_, frag_int, frag_mz in alphatims.utils.progress_callback(
+            zip(
+                self.peptide_data.rt_apex,
+                self.peptide_data.mz,
+                self.peptide_data.mobility,
+                self.peptide_data.charge,
+                self.peptide_data.sequence,
+                self.peptide_data.ion_int,
+                self.peptide_data.ion_types,
+            ),
+            total=len(self.peptide_data.rt_apex)
         ):
             seq = alphapept.fasta.parse(seq_)
             if self.decoy:
