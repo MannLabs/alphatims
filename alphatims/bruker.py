@@ -869,6 +869,21 @@ class TimsTOF(object):
         """: np.ndarray : np.int64[:] : The precursor indices."""
         return self._precursor_indices
 
+    @property
+    def dia_precursor_cycle(self):
+        """: np.ndarray : np.int64[:] : The precursor indices of a DIA cycle."""
+        return self._dia_precursor_cycle
+
+    @property
+    def dia_mz_cycle(self):
+        """: np.ndarray : np.float64[:, 2] : The mz_values of a DIA cycle."""
+        return self._dia_mz_cycle
+
+    @property
+    def zeroth_frame(self):
+        """: bool : A blank zeroth frame is present so frames are 1-indexed."""
+        return self._zeroth_frame
+
     def __init__(
         self,
         bruker_d_folder_name: str,
@@ -951,13 +966,14 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int,
     ):
         self._version = alphatims.__version__
+        self._zeroth_frame = True
         (
             self._acquisition_mode,
             global_meta_data,
             self._frames,
             self._fragment_frames,
             self._precursors,
-        ) = read_bruker_sql(bruker_d_folder_name)
+        ) = read_bruker_sql(bruker_d_folder_name, self._zeroth_frame)
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -1664,13 +1680,18 @@ class TimsTOF(object):
         isolation_widths = self.fragment_frames.IsolationWidth.values
         precursors = self.fragment_frames.Precursor.values
         if (precursors[0] is None):
-            frame_groups = self.frames.MsMsType.values[1:]  # exc. zeroth frame
+            if self.zeroth_frame:
+                frame_groups = self.frames.MsMsType.values[1:]
+            else:
+                frame_groups = self.frames.MsMsType.values
             precursor_frames = np.flatnonzero(frame_groups == 0)
             group_sizes = np.diff(precursor_frames)
             group_size = group_sizes[0]
             if np.any(group_sizes != group_size):
                 raise ValueError("Sample type not understood")
             precursors = (1 + frame_ids - frame_ids[0]) % group_size
+            if self.zeroth_frame:
+                precursors[0] = 0
             self.fragment_frames.Precursor = precursors
             self._acquisition_mode = "diaPASEF"
         scan_max_index = self.scan_max_index
@@ -1724,6 +1745,34 @@ class TimsTOF(object):
             ]
         )
         self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
+        if self._acquisition_mode == "diaPASEF":
+            offset = int(self.zeroth_frame)
+            cycle_index = np.searchsorted(
+                self.raw_quad_indptr,
+                (self.scan_max_index) * (self.precursor_max_index + offset),
+                "r"
+            )
+            self._dia_mz_cycle = np.empty(
+                (
+                    self.scan_max_index * self.precursor_max_index,
+                    2
+                )
+            )
+            self._dia_mz_cycle[:, 0] = np.repeat(
+                self.quad_mz_values[offset: cycle_index, 0],
+                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+            )
+            self._dia_mz_cycle[:, 1] = np.repeat(
+                self.quad_mz_values[offset: cycle_index, 1],
+                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+            )
+            self._dia_precursor_cycle = np.repeat(
+                self.precursor_indices[offset: cycle_index],
+                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+            )
+        else:
+            self._dia_mz_cycle = np.empty((0, 2))
+            self._dia_precursor_cycle = np.empty(0, dtype=np.int64)
 
     def index_precursors(
         self,
@@ -1943,7 +1992,7 @@ class TimsTOF(object):
         self,
         calibrant1: tuple = (922.009798, 1.1895),
         calibrant2: tuple = (1221.990637, 1.3820),
-        mz_tolerance: float = 10,
+        mz_tolerance: float = 10,  # in Th
         mobility_tolerance: float = 0.1,
     ) -> None:
         """Calculate global calibrated_mz_values based on two calibrant ions.
@@ -1959,7 +2008,7 @@ class TimsTOF(object):
             This is a tuple with (mz, mobility) foat values.
             Default is (1221.990637, 1.3820).
         mz_tolerance : float
-            The tolerance window with respect to the
+            The tolerance window (in Th) with respect to the
             uncalibrated mz_values. If this is too large,
             the calibrant ion might not be the most intense ion anymore.
             If this is too small, the calibrant ion might not be contained.
@@ -2541,6 +2590,55 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
         return result[:, [1, 0, 2]]
     else:
         return result
+
+
+@alphatims.utils.njit
+def calculate_dia_cycle_mask(
+    dia_mz_cycle: np.ndarray,
+    quad_slices: np.ndarray,
+    *,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+):
+    """Calculate a boolean mask for cyclic push indices satisfying queries.
+
+    Parameters
+    ----------
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+
+    Returns
+    -------
+    : np.bool_[:]
+        A mask that determines if a cyclic push index is valid given the
+        requested slices.
+    """
+    mz_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+    for i, (mz_start, mz_stop) in enumerate(dia_mz_cycle):
+        for quad_mz_start, quad_mz_stop in quad_slices:
+            if (quad_mz_start <= mz_stop) and (quad_mz_stop >= mz_start):
+                mz_mask[i] = True
+                break
+    if precursor_slices is not None:
+        precursor_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+        for i, precursor_index in enumerate(dia_precursor_cycle):
+            for (start, stop, step) in precursor_slices:
+                if precursor_index in range(start, stop, step):
+                    precursor_mask[i] = True
+                    break
+        return mz_mask & precursor_mask
+    else:
+        return mz_mask
 
 
 @alphatims.utils.njit

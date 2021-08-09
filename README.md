@@ -261,6 +261,8 @@ A brief [Jupyter notebook tutorial](nbs/tutorial.ipynb) on how to use the API is
 
 * Initial exploration of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 * [HDF files](https://www.hdfgroup.org/solutions/hdf5/) can be explored with [HDF Compass](https://support.hdfgroup.org/projects/compass/) or [HDFView](https://www.hdfgroup.org/downloads/hdfview/).
+* Annotating Bruker TimsTOF data files can be done with [AlphaPept](https://github.com/MannLabs/alphapept)
+* Visualization of identified Bruker TimsTOF data files can be done with [AlphaViz](https://github.com/MannLabs/alphaviz)
 
 ---
 ## Performance
@@ -370,6 +372,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
 ### 0.3.0
 
   * FEAT: introduction of global mz calibration.
+  * FEAT: introduction of dia_cycle for diaPASEF.
 
 ### 0.2.8
 
