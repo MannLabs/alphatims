@@ -371,8 +371,10 @@ The following changes were introduced in the following versions of AlphaTims. Do
 
 ### 0.3.0
 
-  * FEAT: introduction of global mz calibration.
-  * FEAT: introduction of dia_cycle for diaPASEF.
+  * FEAT: Introduction of global mz calibration.
+  * FEAT: Introduction of dia_cycle for diaPASEF.
+  * FEAT: Introduction of library class.
+  * FEAT: Introduction of dummy Thermo class.
 
 ### 0.2.8
 
@@ -387,7 +389,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * DOCS: BioRxiv paper link.
   * FEAT/FIX: RT in min column.
   * FEAT: CLI manual.
-  * FEAT: Inlusion of more coordinates in CLI.
+  * FEAT: Inclusion of more coordinates in CLI.
 
 ### 0.2.7
 

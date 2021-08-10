@@ -1334,7 +1334,7 @@ class TimsTOF(object):
         side: str = "left",
         return_type: str = "",
     ):
-        """Convert selected values to a pd.DataFrame.
+        """Convert selected values to an array in the requested dimension.
 
         Parameters
         ----------
@@ -1717,6 +1717,7 @@ class TimsTOF(object):
             precursors
         ):
             low = frame_id * scan_max_index + scan_begin - 1
+            # TODO: CHECK?
             if low > high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
@@ -1752,23 +1753,23 @@ class TimsTOF(object):
                 (self.scan_max_index) * (self.precursor_max_index + offset),
                 "r"
             )
+            repeats = np.diff(self.raw_quad_indptr[: cycle_index])
+            if self.zeroth_frame:
+                repeats[0] -= self.scan_max_index - 1
             self._dia_mz_cycle = np.empty(
-                (
-                    self.scan_max_index * self.precursor_max_index,
-                    2
-                )
+                (self.scan_max_index * self.precursor_max_index, 2)
             )
             self._dia_mz_cycle[:, 0] = np.repeat(
-                self.quad_mz_values[offset: cycle_index, 0],
-                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+                self.quad_mz_values[: cycle_index - 1, 0],
+                repeats
             )
             self._dia_mz_cycle[:, 1] = np.repeat(
-                self.quad_mz_values[offset: cycle_index, 1],
-                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+                self.quad_mz_values[: cycle_index - 1, 1],
+                repeats
             )
             self._dia_precursor_cycle = np.repeat(
-                self.precursor_indices[offset: cycle_index],
-                np.diff(self.raw_quad_indptr[offset: cycle_index + 1])
+                self.precursor_indices[: cycle_index - 1],
+                repeats
             )
         else:
             self._dia_mz_cycle = np.empty((0, 2))
@@ -2596,7 +2597,6 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
 def calculate_dia_cycle_mask(
     dia_mz_cycle: np.ndarray,
     quad_slices: np.ndarray,
-    *,
     dia_precursor_cycle: np.ndarray = None,
     precursor_slices: np.ndarray = None,
 ):
@@ -2946,3 +2946,69 @@ def indptr_lookup(
                 target_index -= momentum
         hits[i] = target_index - 1
     return hits
+
+
+@alphatims.utils.njit(nogil=True)
+def get_dia_push_indices(
+    frame_slices: np.ndarray,
+    scan_slices: np.ndarray,
+    quad_slices: np.ndarray,
+    scan_max_index: int,
+    dia_mz_cycle: np.ndarray,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+    zeroth_frame: bool = True,
+):
+    """Filter DIA push indices by slices from LC, TIMS and QUAD.
+
+    Parameters
+    ----------
+    frame_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+    scan_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    scan_max_index : int
+        The maximum scan index of a TimsTOF object.
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+    zeroth_frame : bool
+        Indicates if a zeroth frame was used before a DIA cycle.
+
+    Returns
+    -------
+    : np.int64[:]
+        The raw push indices that satisfy all the slices.
+    """
+    result = []
+    quad_mask = calculate_dia_cycle_mask(
+        dia_mz_cycle=dia_mz_cycle,
+        quad_slices=quad_slices,
+        dia_precursor_cycle=dia_precursor_cycle,
+        precursor_slices=precursor_slices
+    )
+    for frame_start, frame_stop, frame_step in frame_slices:
+        for frame_index in range(frame_start, frame_stop, frame_step):
+            for scan_start, scan_stop, scan_step in scan_slices:
+                for scan_index in range(scan_start, scan_stop, scan_step):
+                    push_index = frame_index * scan_max_index + scan_index
+                    if zeroth_frame:
+                        cyclic_push_index = push_index - scan_max_index
+                    else:
+                        cyclic_push_index = push_index
+                    if quad_mask[cyclic_push_index % len(dia_mz_cycle)]:
+                        result.append(push_index)
+    return np.array(result)

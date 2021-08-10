@@ -26,6 +26,9 @@ class Library(object):
         else:
             self.convert_to_peptide_arrays()
 
+    def __len__(self):
+        return len(self.peptide_data)
+
     def convert_to_peptide_dict(self):
         self.peptide_dict = []
         for rt, mz, im, z, seq_, frag_int, frag_mz in alphatims.utils.progress_callback(
