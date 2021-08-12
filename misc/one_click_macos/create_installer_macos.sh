@@ -28,6 +28,7 @@ cp Info.plist dist/alphatims/Contents
 cp alphatims_terminal dist/alphatims/Contents/MacOS
 cp ../../LICENSE.txt Resources/LICENSE.txt
 cp ../alpha_logo.png Resources/alpha_logo.png
+chmod 777 scripts/*
 
 if false; then
   # https://scriptingosx.com/2019/09/notarize-a-command-line-tool/
