@@ -362,7 +362,8 @@ Check out the [paper](https://doi.org/10.1101/2021.07.27.453933).
 ---
 ## How to contribute
 
-If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](issues) or clone the repository and create a [pull request](pulls) with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md).
+If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](issues) or clone the repository and create a [pull request](pulls) with a new branch. For an even more interactive participation, check out the [discussions](discussions).
+For more information see [the Contributors License Agreement](misc/CLA.md).
 
 ---
 ## Changelog
