@@ -891,7 +891,7 @@ class TimsTOF(object):
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
-        use_calibrated_mz_values_as_default: bool = False
+        use_calibrated_mz_values_as_default: int = 0
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -922,9 +922,11 @@ class TimsTOF(object):
             If False, slicing provides a np.int64[:] with raw indices.
             This value can also be modified after creation.
             Default is True.
-        use_calibrated_mz_values_as_default : bool
-            If True, the mz_values are overwritten with global
+        use_calibrated_mz_values : int
+            If not 0, the mz_values are overwritten with global
             calibrated_mz_values.
+            If 1, calibration at the MS1 level is performed.
+            If 2, calibration at the MS2 level is performed.
         """
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
@@ -1993,10 +1995,10 @@ class TimsTOF(object):
 
     def calculate_global_calibrated_mz_values(
         self,
-        calibrant1: tuple = (922.009798, 1.1895),
-        calibrant2: tuple = (1221.990637, 1.3820),
+        calibrant1: tuple = (922.009798, 1.1895, slice(0, 1)),
+        calibrant2: tuple = (1221.990637, 1.3820, slice(0, 1)),
         mz_tolerance: float = 10,  # in Th
-        mobility_tolerance: float = 0.1  # in 1/k0,
+        mobility_tolerance: float = 0.1,  # in 1/k0,
     ) -> None:
         """Calculate global calibrated_mz_values based on two calibrant ions.
 
@@ -2004,12 +2006,12 @@ class TimsTOF(object):
         ----------
         calibrant1 : tuple
             The first calibrant ion.
-            This is a tuple with (mz, mobility) foat values.
-            Default is (922.009798, 1.1895).
+            This is a tuple with (mz, mobility, precursor_slice) foat values.
+            Default is (922.009798, 1.1895, slice(0, 1)).
         calibrant2 : tuple
             The first calibrant ion.
-            This is a tuple with (mz, mobility) foat values.
-            Default is (1221.990637, 1.3820).
+            This is a tuple with (mz, mobility, precursor_slice) foat values.
+            Default is (1221.990637, 1.3820, slice(0, 1)).
         mz_tolerance : float
             The tolerance window (in Th) with respect to the
             uncalibrated mz_values. If this is too large,
@@ -2036,7 +2038,7 @@ class TimsTOF(object):
                     self[
                         :,
                         calibrant1_lower_mobility: calibrant1_upper_mobility,
-                        0,
+                        calibrant1[2],
                         calibrant1_lower_mz: calibrant1_upper_mz,
                         "raw"
                     ]
@@ -2053,7 +2055,7 @@ class TimsTOF(object):
                     self[
                         :,
                         calibrant2_lower_mobility: calibrant2_upper_mobility,
-                        0,
+                        calibrant2[2],
                         calibrant2_lower_mz: calibrant2_upper_mz,
                         "raw"
                     ]
@@ -2077,7 +2079,7 @@ class TimsTOF(object):
 
     def use_calibrated_mz_values_as_default(
         self,
-        use_calibrated_mz_values: bool
+        use_calibrated_mz_values: int
     ) -> None:
         """Override the default mz_values with the global calibrated_mz_values.
 
@@ -2085,13 +2087,22 @@ class TimsTOF(object):
 
         Parameters
         ----------
-        use_calibrated_mz_values : bool
-            If True, the mz_values are overwritten with global
+        use_calibrated_mz_values : int
+            If not 0, the mz_values are overwritten with global
             calibrated_mz_values.
+            If 1, calibration at the MS1 level is performed.
+            If 2, calibration at the MS2 level is performed.
         """
-        if use_calibrated_mz_values:
+        if use_calibrated_mz_values != 0:
             if not hasattr(self, "_calibrated_mz_values"):
-                self.calculate_global_calibrated_mz_values()
+                if use_calibrated_mz_values == 1:
+                    ms_level = 0
+                if use_calibrated_mz_values == 2:
+                    ms_level = slice(1, None)
+                self.calculate_global_calibrated_mz_values(
+                    calibrant1=(922.009798, 1.1895, ms_level),
+                    calibrant2=(1221.990637, 1.3820, ms_level),
+                )
         self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
 
