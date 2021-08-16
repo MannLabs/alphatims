@@ -3012,3 +3012,54 @@ def get_dia_push_indices(
                     if quad_mask[cyclic_push_index % len(dia_mz_cycle)]:
                         result.append(push_index)
     return np.array(result)
+
+
+@alphatims.utils.njit(nogil=True)
+def get_fragment_csr(
+    tof_slices: np.ndarray,
+    push_indices: np.ndarray,
+    tof_indices: np.ndarray,
+    push_indptr: np.ndarray,
+):
+    """Get a CSR-matrix with raw indices satisfying push indices and tof slices.
+
+    Parameters
+    ----------
+    tof_slices : np.ndarray
+        Description of parameter `tof_slices`.
+    push_indices : np.ndarray
+        Description of parameter `push_indices`.
+    tof_indices : np.ndarray
+        Description of parameter `tof_indices`.
+    push_indptr : np.ndarray
+        Description of parameter `push_indptr`.
+
+    Returns
+    -------
+    (np.int64[:], np.int64[:], np.int64[:],)
+        An (indptr, values, columns) tuple, where indptr are push indices,
+        values raw indices, and columns the tof_slices.
+    """
+    indptr = [0]
+    values = []
+    if len(tof_slices) > 1:
+        columns = []
+    else:
+        columns = np.empty(0, dtype=np.int64)
+    for push_index in push_indices:
+        start = push_indptr[push_index]
+        end = push_indptr[push_index + 1]
+        idx = start
+        for i, (tof_start, tof_stop, tof_step) in enumerate(tof_slices):
+            idx += np.searchsorted(tof_indices[idx: end], tof_start)
+            tof_value = tof_indices[idx]
+            while (tof_value < tof_stop) and (idx < end):
+                if tof_value in range(tof_start, tof_stop, tof_step):
+                    values.append(idx)
+                    if len(tof_slices) > 1:
+                        columns.append(i)
+                    break  # TODO what if multiple hits?
+                idx += 1
+                tof_value = tof_indices[idx]
+        indptr.append(len(values))
+    return np.array(indptr), np.array(values), np.array(columns)
