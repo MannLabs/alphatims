@@ -1716,9 +1716,9 @@ class TimsTOF(object):
             isolation_widths / 2,
             precursors
         ):
-            low = frame_id * scan_max_index + scan_begin - 1
+            low = frame_id * scan_max_index + scan_begin
             # TODO: CHECK?
-            if low > high:
+            if low != high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
                 quad_high_values.append(-1)
@@ -1752,13 +1752,15 @@ class TimsTOF(object):
                 self.raw_quad_indptr,
                 (self.scan_max_index) * (self.precursor_max_index + offset),
                 "r"
-            )
+            ) + 1
             repeats = np.diff(self.raw_quad_indptr[: cycle_index])
             if self.zeroth_frame:
-                repeats[0] -= self.scan_max_index - 1
-            self._dia_mz_cycle = np.empty(
-                (self.scan_max_index * self.precursor_max_index, 2)
-            )
+                repeats[0] -= self.scan_max_index
+            cycle_length = self.scan_max_index * self.precursor_max_index
+            repeat_length = np.sum(repeats)
+            if repeat_length != cycle_length:
+                repeats[-1] -= repeat_length - cycle_length
+            self._dia_mz_cycle = np.empty((cycle_length, 2))
             self._dia_mz_cycle[:, 0] = np.repeat(
                 self.quad_mz_values[: cycle_index - 1, 0],
                 repeats
@@ -1994,7 +1996,7 @@ class TimsTOF(object):
         calibrant1: tuple = (922.009798, 1.1895),
         calibrant2: tuple = (1221.990637, 1.3820),
         mz_tolerance: float = 10,  # in Th
-        mobility_tolerance: float = 0.1,
+        mobility_tolerance: float = 0.1  # in 1/k0,
     ) -> None:
         """Calculate global calibrated_mz_values based on two calibrant ions.
 
