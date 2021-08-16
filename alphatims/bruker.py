@@ -2102,6 +2102,7 @@ class TimsTOF(object):
                 self.calculate_global_calibrated_mz_values(
                     calibrant1=(922.009798, 1.1895, ms_level),
                     calibrant2=(1221.990637, 1.3820, ms_level),
+                    mz_tolerance=1
                 )
         self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
@@ -3028,7 +3029,7 @@ def get_dia_push_indices(
 
 
 @alphatims.utils.njit(nogil=True)
-def get_fragment_csr(
+def filter_tof_to_csr(
     tof_slices: np.ndarray,
     push_indices: np.ndarray,
     tof_indices: np.ndarray,
@@ -3055,10 +3056,7 @@ def get_fragment_csr(
     """
     indptr = [0]
     values = []
-    if len(tof_slices) > 1:
-        columns = []
-    else:
-        columns = np.empty(0, dtype=np.int64)
+    columns = []
     for push_index in push_indices:
         start = push_indptr[push_index]
         end = push_indptr[push_index + 1]
@@ -3069,8 +3067,7 @@ def get_fragment_csr(
             while (tof_value < tof_stop) and (idx < end):
                 if tof_value in range(tof_start, tof_stop, tof_step):
                     values.append(idx)
-                    if len(tof_slices) > 1:
-                        columns.append(i)
+                    columns.append(i)
                     break  # TODO what if multiple hits?
                 idx += 1
                 tof_value = tof_indices[idx]
