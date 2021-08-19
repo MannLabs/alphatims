@@ -14,58 +14,45 @@ import sklearn.preprocessing
 import sklearn.ensemble
 import sklearn.pipeline
 import sklearn.model_selection
+import collections
+import functools
 
 
 class Library(object):
 
-    def __init__(
-        self,
-        file_name: str,
-        as_peptide_dict: bool = False,
-        decoy: bool = False,
-    ):
-        self.file_name = file_name
-        self.decoy = decoy
-        self.peptide_data = pd.read_csv(self.file_name)
-        if as_peptide_dict:
-            self.peptides = self.convert_to_peptide_dict()
-        else:
-            self.convert_to_peptide_arrays()
-
     def __len__(self):
         return len(self.peptide_data)
 
-        def convert_to_peptide_dict(self):
-            self.peptide_dict = []
-            for rt, mz, im, z, seq_ in alphatims.utils.progress_callback(
-                zip(
-                    self.peptide_data.rt_apex,
-                    self.peptide_data.mz,
-                    self.peptide_data.mobility,
-                    self.peptide_data.charge,
-                    self.peptide_data.sequence,
-                    # self.peptide_data.ion_int,
-                    # self.peptide_data.ion_types,
-                ),
-                total=len(self.peptide_data.rt_apex)
-            ):
-                seq = alphapept.fasta.parse(seq_)
-                if self.decoy:
-                    seq[:-1] = seq[:-1][::-1]
-                peptide = {
-                    "sequence": seq_,
-                    "mz": mz,
-                    "mobility": im,
-                    "rt": rt * 60,  # seconds
-                    "charge": z,
-                    "fragment_mzs": alphapept.fasta.get_frag_dict(
-                        seq,
-                        alphapept.constants.mass_dict
-                    )
-                }
-                self.peptide_dict.append(peptide)
+    def __init__(self, alphapept_hdf_file_name, decoy=False):
+        self.file_name = alphapept_hdf_file_name
+        ms_library = alphapept.io.MS_Data_File(alphapept_hdf_file_name)
+        ion_df = ms_library.read(dataset_name="ions")
+        pep_df = ms_library.read(dataset_name="peptide_fdr")
+        self.decoy = decoy
+        self.peptide_data = pep_df[pep_df.target_precursor]
+        self.convert_to_peptide_arrays(ion_df)
+        self.convert_to_peptide_dict()
 
-    def convert_to_peptide_arrays(self):
+    def convert_to_peptide_dict(self):
+        self.peptide_dict = []
+        for i, sequence in enumerate(self.peptide_sequences):
+            offset_start = self.peptide_offsets[i]
+            offset_end = self.peptide_offsets[i + 1]
+            peptide = {
+                "sequence": sequence,
+                "mz": self.peptide_mzs[i],
+                "mobility": self.peptide_mobilities[i],
+                "rt": self.peptide_rt_apex[i],  # seconds
+                "charge": self.peptide_charges[i],
+                "fragment_mzs": self.peptide_fragment_mzs[offset_start: offset_end],
+                "fragment_intensities": self.peptide_fragment_intensities[offset_start: offset_end],
+                "fragment_loss_types": self.peptide_fragment_loss_types[offset_start: offset_end],
+                "fragment_ion_types": self.peptide_fragment_ion_types[offset_start: offset_end],
+            }
+            self.peptide_dict.append(peptide)
+
+    def convert_to_peptide_arrays(self, ion_df):
+        self.peptide_data.reset_index(drop=True, inplace=True)
         self.peptide_rt_apex = self.peptide_data.rt_apex.values * 60
         self.peptide_mzs = self.peptide_data.mz.values
         self.peptide_mobilities = self.peptide_data.mobility.values
@@ -76,33 +63,71 @@ class Library(object):
             len(self.peptide_lens) + 1,
             dtype=np.int64
         )
+        self.ion_count = self.peptide_data.n_ions.values
         self.peptide_offsets[0] = 0
-        self.peptide_offsets[1:] = np.cumsum(self.peptide_lens)
+        self.peptide_offsets[1:] = np.cumsum(self.ion_count)
         self.peptide_fragment_mzs = np.empty(
             self.peptide_offsets[-1],
             dtype=np.float64
         )
-        self.peptide_fragment_types = np.empty(
+        self.peptide_fragment_ion_types = np.empty(
             self.peptide_offsets[-1],
             dtype=np.int8
         )
-        set_frags(
-            range(len(self.peptide_sequences)),
-            self.peptide_sequences,
-            self.peptide_fragment_mzs,
-            self.peptide_fragment_types,
-            self.peptide_offsets,
-            self.decoy
+        self.peptide_fragment_loss_types = np.empty(
+            self.peptide_offsets[-1],
+            dtype=np.int8
+        )
+        self.peptide_fragment_intensities = np.empty(
+            self.peptide_offsets[-1],
+            dtype=np.float64
         )
 
-    def set_tolerance_arrays(
+        loss_list = [0, 18.01056468346, 17.03052] #H2O, NH3
+        for i, sequence_string in alphatims.utils.progress_callback(
+            enumerate(self.peptide_sequences),
+            total=len(self.peptide_sequences)
+        ):
+            start = self.peptide_data.ion_idx.values[i]
+            end = start + self.ion_count[i]
+            offset_start = self.peptide_offsets[i]
+            offset_end = self.peptide_offsets[i + 1]
+            intensities = ion_df.ion_int.values[start: end]
+            loss_types = ion_df.ion_type.values[start: end].astype(np.int64)
+            ion_types = ion_df.ion_index.values[start: end].astype(np.int64)
+            if self.decoy:
+                decoy_sequence = alphapept.fasta.parse(sequence_string)
+                decoy_sequence[:-1] = decoy_sequence[:-1][::-1]
+                self.peptide_sequences[i] = "".join(decoy_sequence)
+                mzs_, types_ = alphapept.fasta.get_fragmass(
+                    decoy_sequence,
+                    alphapept.constants.mass_dict
+                )
+                mz_dict = dict(zip(types_, mzs_))
+                mzs = [
+                    mz_dict[ion_type] - loss_list[loss_type] for (
+                        loss_type,
+                        ion_type,
+                    ) in zip(loss_types, ion_types)
+                ]
+                mzs = np.array(mzs)
+            else:
+                mzs = ion_df.db_mass.values[start: end]
+            order = np.argsort(mzs)
+            self.peptide_fragment_mzs[offset_start: offset_end] = mzs[order]
+            self.peptide_fragment_intensities[offset_start: offset_end] = intensities[order]
+            self.peptide_fragment_loss_types[offset_start: offset_end] = loss_types[order]
+            self.peptide_fragment_ion_types[offset_start: offset_end] = ion_types[order]
+
+    @functools.lru_cache(2)
+    def get_tolerance_arrays(
         self,
         dia_data,
-        ppm=50,
-        rt_tolerance=30,  # seconds
-        mobility_tolerance=0.05,  # 1/k0
+        ppm,
+        rt_tolerance,  # seconds
+        mobility_tolerance,  # 1/k0
     ):
-        self.precursor_frame_slices = np.stack(
+        precursor_frame_slices = np.stack(
             [
                 dia_data.convert_to_indices(
                     self.peptide_rt_apex - rt_tolerance,
@@ -115,7 +140,7 @@ class Library(object):
                 np.repeat(1, len(self.peptide_rt_apex))
             ]
         ).T.astype(np.int64)
-        self.precursor_scan_slices = np.stack(
+        precursor_scan_slices = np.stack(
             [
                 dia_data.convert_to_indices(
                     self.peptide_mobilities + mobility_tolerance,
@@ -128,7 +153,7 @@ class Library(object):
                 np.repeat(1, len(self.peptide_mobilities))
             ]
         ).T.astype(np.int64)
-        self.precursor_tof_slices = np.stack(
+        precursor_tof_slices = np.stack(
             [
                 dia_data.convert_to_indices(
                     self.peptide_mzs / (1 + ppm / 10**6),
@@ -141,13 +166,13 @@ class Library(object):
                 np.repeat(1, len(self.peptide_mzs))
             ]
         ).T.astype(np.int64)
-        self.precursor_mz_slices = np.stack(
+        precursor_mz_slices = np.stack(
             [
                 self.peptide_mzs / (1 + ppm / 10**6),
                 self.peptide_mzs * (1 + ppm / 10**6),
             ]
         ).T
-        self.fragment_tof_slices = np.stack(
+        fragment_tof_slices = np.stack(
             [
                 dia_data.convert_to_indices(
                     self.peptide_fragment_mzs / (1 + ppm / 10**6),
@@ -160,6 +185,89 @@ class Library(object):
                 np.repeat(1, len(self.peptide_fragment_mzs))
             ]
         ).T.astype(np.int64)
+        return (
+            precursor_frame_slices,
+            precursor_scan_slices,
+            precursor_tof_slices,
+            precursor_mz_slices,
+            fragment_tof_slices,
+        )
+
+    def score(
+        self,
+        dia_data,
+        max_scan_difference=3,
+        max_cycle_difference=2,
+        ppm=50,
+        rt_tolerance=30,  # seconds
+        mobility_tolerance=0.05,  # 1/k0
+        selection: np.ndarray = None,
+        return_as_df: bool = True,
+    ):
+        score_features = collections.defaultdict(lambda: np.zeros(len(self)))
+        (
+            precursor_frame_slices,
+            precursor_scan_slices,
+            precursor_tof_slices,
+            precursor_mz_slices,
+            fragment_tof_slices,
+        ) = self.get_tolerance_arrays(
+            dia_data,
+            ppm=ppm,
+            rt_tolerance=rt_tolerance,  # seconds
+            mobility_tolerance=mobility_tolerance,  # 1/k0
+        )
+        if selection is None:
+            selection = range(len(self))
+            selection_slice = ...
+        else:
+            selection_slice = selection
+        process_library_peptide(
+            selection,
+            self,
+            score_features,
+            dia_data,
+            precursor_frame_slices,
+            precursor_scan_slices,
+            precursor_tof_slices,
+            precursor_mz_slices,
+            fragment_tof_slices,
+            max_scan_difference,
+            max_cycle_difference,
+        )
+        if not return_as_df:
+            return score_features
+        rts = dia_data.rt_values[
+            score_features["max_intensity_push"].astype(np.int64) // dia_data.scan_max_index
+        ]
+        mobilities = dia_data.mobility_values[
+            score_features["max_intensity_push"].astype(np.int64) % dia_data.scan_max_index
+        ]
+        score_df = pd.DataFrame(
+            {
+                "library_id": selection,
+                "peptide": self.peptide_sequences[selection_slice],
+                "mz": self.peptide_mzs[selection_slice],
+                "mobility": self.peptide_mobilities[selection_slice],
+                "rt_min": self.peptide_rt_apex[selection_slice] / 60,
+                "rt": self.peptide_rt_apex[selection_slice],
+                "length": self.peptide_lens[selection_slice] // 2 + 1,
+                "charge": self.peptide_charges[selection_slice],
+                "fragment_count": self.peptide_lens[selection_slice],
+                "mobility_error": self.peptide_mobilities[selection_slice] - mobilities,
+                "rt_error": self.peptide_rt_apex[selection_slice] - rts,
+                "absolute_mobility_error": np.abs(
+                    self.peptide_mobilities[selection_slice] - mobilities
+                ),
+                "absolute_rt_error": np.abs(
+                    self.peptide_rt_apex[selection_slice] - rts
+                ),
+                **score_features,
+            }
+        )
+        score_df["decoy"] = self.decoy,
+        score_df["target"] = not self.decoy,
+        return score_df
 
 
 @alphatims.utils.threadpool
@@ -847,6 +955,7 @@ def fdr_to_q_values(fdr_values):
         q_values[i] = min_q_value
     return q_values
 
+
 def get_q_values(_df, score_column, decoy_column):
     _df = _df.reset_index()
     _df = _df.sort_values([score_column,score_column], ascending=False)
@@ -857,39 +966,37 @@ def get_q_values(_df, score_column, decoy_column):
     _df['q_value'] = fdr_to_q_values(fdr_values)
     return _df
 
-def create_common_df(library, scores, decoy_library, decoy_scores):
+
+def create_common_df(
+    dia_data,
+    library,
+    score_features,
+    decoy_library,
+    decoy_score_features,
+):
     df = {}
-    for name, library_, scores_ in [
-        ("decoy", decoy_library, decoy_scores),
-        ("target", library, scores),
+    for name, library_, score_features_ in [
+        ("decoy", decoy_library, decoy_score_features),
+        ("target", library, score_features),
     ]:
         df[name] = pd.DataFrame(
             {
                 "library_id": np.arange(len(library_)),
                 "peptide": library_.peptide_sequences,
-                "charge": library_.peptide_charges,
                 "mz": library_.peptide_mzs,
                 "mobility": library_.peptide_mobilities,
-                "rt_min": library_.peptide_rt_apex/60,
+                "rt_min": library_.peptide_rt_apex / 60,
                 "rt": library_.peptide_rt_apex,
-                "decoy": int(library_.decoy),
-                "fragments": library_.peptide_lens,
+                "decoy": library_.decoy,
+                "target": not library_.decoy,
                 "length": library_.peptide_lens // 2 + 1,
-                "relative_peak_intensity": scores_[:, 2],
-                "push_count": scores_[:, 0].astype(np.int64),
-                "fragment_count": scores_[:, 1].astype(np.int64),
-                "mobility_error": library_.peptide_mobilities - dia_data.mobility_values[
-                    scores_[:, 3].astype(np.int64)%dia_data.scan_max_index
-                ],
-                "rt_error": library_.peptide_rt_apex - dia_data.rt_values[
-                    scores_[:, 3].astype(np.int64)//dia_data.scan_max_index
-                ],
-                "avg_fragments_per_push": scores_[:, 1] / scores_[:, 0],
-                "apex_fragment_enrichment": scores_[:, 2] * scores_[:, 0] / scores_[:, 1]
+                **score_features_,
             }
         )
     df = pd.concat(df.values())
-    df = df[np.isfinite(df["apex_fragment_enrichment"])]
+    df = df[df.ion_count > 0]
+#     df = df[np.isfinite(df.correlation_25)]
+#     df = df[np.isfinite(df["apex_fragment_enrichment"])]
     df.reset_index(drop=True, inplace=True)
     return df
 
@@ -905,7 +1012,7 @@ def train_RF(
     df: pd.DataFrame,
     features: list,
     train_fdr_level:  float = 0.1,
-    ini_score: str = 'relative_peak_intensity',
+    ini_score: str = None,
     min_train: int = 1000,
     test_size: float = 0.8,
     max_depth: list = [5,25,50],
@@ -936,7 +1043,7 @@ def train_RF(
         n_jobs=n_jobs
     )
     # Prepare target and decoy df
-    dfD = df[df.decoy]
+    dfD = df[df.decoy.values]
     # Select high scoring targets (<= train_fdr_level)
     # df_prescore = filter_score(df)
     # df_prescore = filter_precursor(df_prescore)
@@ -944,10 +1051,27 @@ def train_RF(
     # highT = scored[scored.decoy==False]
     # dfT_high = dfT[dfT['query_idx'].isin(highT.query_idx)]
     # dfT_high = dfT_high[dfT_high['db_idx'].isin(highT.db_idx)]
-    new_df = get_q_values(df, ini_score, 'decoy')
-    dfT_high = df[
-        (new_df['q_value'] <= train_fdr_level) & (new_df['decoy'] == 0)
-    ]
+    if ini_score is None:
+        selection = None
+        best_hit_count = 0
+        best_feature = ""
+        for feature in features:
+            new_df = get_q_values(df, feature, 'decoy')
+            hits = (new_df['q_value'] <= train_fdr_level) & (new_df['decoy'] == 0)
+            hit_count = np.sum(hits)
+            if hit_count > best_hit_count:
+                best_hit_count = hit_count
+                selection = hits
+                best_feature = feature
+        logging.info(f'Using optimal "{best_feature}" as initial_feature')
+        dfT_high = df[selection]
+    else:
+        logging.info(f'Using selected "{ini_score}" as initial_feature')
+        new_df = get_q_values(df, ini_score, 'decoy')
+        dfT_high = df[
+            (new_df['q_value'] <= train_fdr_level) & (new_df['decoy'] == 0)
+        ]
+
 
     # Determine the number of psms for semi-supervised learning
     n_train = int(dfT_high.shape[0])
@@ -1039,19 +1163,59 @@ def train_RF(
     return cv
 
 
+@alphatims.utils.njit(nogil=True)
+def cosine_similarity(v1, v2s):
+    scores = []
+    for v2 in v2s:
+        sumxx, sumxy, sumyy = 0, 0, 0
+        for i in range(len(v1)):
+            x = v1[i]
+            y = v2[i]
+            sumxx += x * x
+            sumyy += y * y
+            sumxy += x * y
+        if sumyy == 0:
+            score = 0
+        else:
+            score = sumxy / np.sqrt(sumxx * sumyy)
+        scores.append(score)
+    return np.array(scores)
+
+
+@alphatims.utils.njit(nogil=True)
+def find_correlations(
+    smooth_intensity_matrix,
+):
+    smoothed_push_intensities = np.sum(smooth_intensity_matrix, axis=1)
+    fwhm_pushes = np.flatnonzero(
+        (smoothed_push_intensities > np.max(smoothed_push_intensities) / 2) #& peak_mask
+    )
+    corrs = np.corrcoef(smooth_intensity_matrix[fwhm_pushes])
+    return (
+        smoothed_push_intensities,
+        fwhm_pushes,
+        corrs,
+    )
+
+
 @alphatims.utils.threadpool
 def process_library_peptide(
     peptide_index,
     library,
-    scores,
+    score_features,
     dia_data,
-    max_scan_difference=3,
-    max_cycle_difference=2,
+    precursor_frame_slices,
+    precursor_scan_slices,
+    precursor_tof_slices,  # unused
+    precursor_mz_slices,
+    fragment_tof_slices,
+    max_scan_difference,
+    max_cycle_difference,
 ):
     push_indices = alphatims.bruker.get_dia_push_indices(
-        library.precursor_frame_slices[peptide_index: peptide_index + 1],
-        library.precursor_scan_slices[peptide_index: peptide_index + 1],
-        library.precursor_mz_slices[peptide_index: peptide_index + 1],
+        precursor_frame_slices[peptide_index: peptide_index + 1],
+        precursor_scan_slices[peptide_index: peptide_index + 1],
+        precursor_mz_slices[peptide_index: peptide_index + 1],
         dia_data.scan_max_index,
         dia_data.dia_mz_cycle,
     )
@@ -1064,7 +1228,7 @@ def process_library_peptide(
         raw_indices,
         fragment_indices
     ) = alphatims.bruker.filter_tof_to_csr(
-        library.fragment_tof_slices[fragment_start: fragment_end],
+        fragment_tof_slices[fragment_start: fragment_end],
         push_indices,
         dia_data.tof_indices,
         dia_data.push_indptr,
@@ -1150,9 +1314,11 @@ def process_library_peptide(
         dia_data.precursor_max_index,
         1,
     )
-    smoothed_push_intensities = np.sum(smooth_intensity_matrix, axis=1)
-#     best_push = np.argmax(smoothed_push_intensities)
-#     peak_mask = np.zeros_like(push_indices, dtype=np.bool_)
+    (
+        smoothed_push_intensities,
+        fwhm_pushes,
+        corrs,
+    ) = find_correlations(smooth_intensity_matrix)
 #     alphatims.library.peak_descend(
 #         best_push,
 #         peak_mask,
@@ -1162,16 +1328,40 @@ def process_library_peptide(
 #         im_lim=1,
 #         im_cycle=dia_data.scan_max_index,
 #     )
-    fwhm_pushes = np.flatnonzero(
-        (smoothed_push_intensities > np.max(smoothed_push_intensities) / 2) #& peak_mask
-    )
-    corrs = np.corrcoef(smooth_intensity_matrix[fwhm_pushes])
-    scores[peptide_index, 0] = len(push_indices)
-    scores[peptide_index, 1] = len(raw_indices)
-    scores[peptide_index, 2:5] = np.percentile(corrs, [25,50,75])
-    scores[peptide_index, 5:8] = np.percentile(smoothed_push_intensities, [50,75, 100])
-    scores[peptide_index, 8] = len(fwhm_pushes)
-    scores[peptide_index, 9] = push_indices[np.argmax(smoothed_push_intensities)]
+    intensities = library.peptide_fragment_intensities[fragment_start: fragment_end]
+    cos_sims = cosine_similarity(intensities, intensity_matrix)
+    smooth_cos_sims = cosine_similarity(intensities, smooth_intensity_matrix)
+    # score_features[peptide_index, 0] = len(push_indices)
+    # score_features[peptide_index, 1] = len(raw_indices)
+    # score_features[peptide_index, 2:5] = np.percentile(corrs, [25, 50, 75])
+    # score_features[peptide_index, 5:8] = np.percentile(smoothed_push_intensities, [50, 75, 100])
+    # score_features[peptide_index, 8] = len(fwhm_pushes)
+    # score_features[peptide_index, 9] = push_indices[np.argmax(smoothed_push_intensities)]
+    # score_features[peptide_index, 10:13] = np.percentile(cos_sims, [90, 95, 100])
+    # score_features[peptide_index, 13:16] = np.percentile(smooth_cos_sims, [90, 95, 100])
+    cor_percentiles = np.percentile(corrs, [25, 50, 75])
+    relative_intensity_percentiles = np.percentile(smoothed_push_intensities, [50, 75, 100])
+    library_intensity_cos_percentiles = np.percentile(cos_sims, [90, 95, 100])
+    library_smooth_intensity_cos_percentiles = np.percentile(smooth_cos_sims, [90, 95, 100])
+    for feature, score in {
+        "push_indices_count": len(push_indices),
+        "raw_indices_count": len(raw_indices),
+        "fwhm_corr_25": cor_percentiles[0],
+        "fwhm_corr_50": cor_percentiles[1],
+        "fwhm_corr_75": cor_percentiles[2],
+        "fwhm_push_count": len(fwhm_pushes),
+        "relative_intensity_50": relative_intensity_percentiles[0],
+        "relative_intensity_75": relative_intensity_percentiles[1],
+        "relative_intensity_100": relative_intensity_percentiles[2],
+        "max_intensity_push": push_indices[np.argmax(smoothed_push_intensities)],
+        "library_intensity_cos_90": library_intensity_cos_percentiles[0],
+        "library_intensity_cos_95": library_intensity_cos_percentiles[1],
+        "library_intensity_cos_100": library_intensity_cos_percentiles[2],
+        "library_smooth_intensity_cos_90": library_smooth_intensity_cos_percentiles[0],
+        "library_smooth_intensity_cos_95": library_smooth_intensity_cos_percentiles[1],
+        "library_smooth_intensity_cos_100": library_smooth_intensity_cos_percentiles[2],
+    }.items():
+        score_features[feature][peptide_index] = score
     return {
         "push_indices": push_indices,
         "fragment_start": fragment_start,
@@ -1189,4 +1379,11 @@ def process_library_peptide(
         "smoothed_push_intensities": smoothed_push_intensities,
         "fwhm_pushes": fwhm_pushes,
         "corrs": corrs,
+        "intensities": intensities,
+        "cos_sims": cos_sims,
+        "smooth_cos_sims": smooth_cos_sims,
+        "cor_percentiles": cor_percentiles,
+        "relative_intensity_percentiles": relative_intensity_percentiles,
+        "library_intensity_cos_percentiles": library_intensity_cos_percentiles,
+        "library_smooth_intensity_cos_percentiles": library_smooth_intensity_cos_percentiles,
     }
