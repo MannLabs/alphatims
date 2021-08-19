@@ -961,6 +961,9 @@ class TimsTOF(object):
     def __len__(self):
         return len(self.intensity_values)
 
+    def __hash__(self):
+        return self.bruker_d_folder_name
+
     def _import_data_from_d_folder(
         self,
         bruker_d_folder_name: str,
