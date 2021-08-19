@@ -14,7 +14,6 @@ import sklearn.preprocessing
 import sklearn.ensemble
 import sklearn.pipeline
 import sklearn.model_selection
-import collections
 import functools
 
 
@@ -55,12 +54,16 @@ class Library(object):
         self.peptide_data.reset_index(drop=True, inplace=True)
         self.peptide_rt_apex = self.peptide_data.rt_apex.values * 60
         self.peptide_mzs = self.peptide_data.mz.values
-        self.peptide_mobilities = self.peptide_data.mobility.values
+        try:
+            self.peptide_mobilities = self.peptide_data.mobility.values
+        except AttributeError:
+            self.peptide_data["mobility"] = 0
+            self.peptide_mobilities = self.peptide_data.mobility.values
         self.peptide_charges = self.peptide_data.charge.values
         self.peptide_sequences = self.peptide_data.sequence.values
-        self.peptide_lens = self.peptide_data.n_AA.values * 2 - 2
+        self.peptide_lengths = self.peptide_data.n_AA.values
         self.peptide_offsets = np.empty(
-            len(self.peptide_lens) + 1,
+            len(self.peptide_data) + 1,
             dtype=np.int64
         )
         self.ion_count = self.peptide_data.n_ions.values
@@ -203,8 +206,25 @@ class Library(object):
         mobility_tolerance=0.05,  # 1/k0
         selection: np.ndarray = None,
         return_as_df: bool = True,
+        score_features: dict = {
+            "push_indices_count": None,
+            "raw_indices_count": None,
+            "fwhm_corr_25": None,
+            "fwhm_corr_50": None,
+            "fwhm_corr_75": None,
+            "fwhm_push_count": None,
+            "relative_intensity_50": None,
+            "relative_intensity_75": None,
+            "relative_intensity_100": None,
+            "max_intensity_push": None,
+            "library_intensity_cos_90": None,
+            "library_intensity_cos_95": None,
+            "library_intensity_cos_100": None,
+            "library_smooth_intensity_cos_90": None,
+            "library_smooth_intensity_cos_95": None,
+            "library_smooth_intensity_cos_100": None,
+        },
     ):
-        score_features = collections.defaultdict(lambda: np.zeros(len(self)))
         (
             precursor_frame_slices,
             precursor_scan_slices,
@@ -220,9 +240,24 @@ class Library(object):
         if selection is None:
             selection = range(len(self))
             selection_slice = ...
+            score_features = {
+                feature: np.zeros(len(selection)) for feature in score_features
+            }
         else:
             selection_slice = selection
-        process_library_peptide(
+            try:
+                score_features = {
+                    feature: {
+                        s: 0 for s in selection
+                    } for feature in score_features
+                }
+            except TypeError:
+                score_features = {
+                    feature: {
+                        selection: 0
+                    } for feature in score_features
+                }
+        result = process_library_peptide(
             selection,
             self,
             score_features,
@@ -236,7 +271,7 @@ class Library(object):
             max_cycle_difference,
         )
         if not return_as_df:
-            return score_features
+            return score_features, result
         rts = dia_data.rt_values[
             score_features["max_intensity_push"].astype(np.int64) // dia_data.scan_max_index
         ]
@@ -246,14 +281,14 @@ class Library(object):
         score_df = pd.DataFrame(
             {
                 "library_id": selection,
-                "peptide": self.peptide_sequences[selection_slice],
-                "mz": self.peptide_mzs[selection_slice],
-                "mobility": self.peptide_mobilities[selection_slice],
-                "rt_min": self.peptide_rt_apex[selection_slice] / 60,
-                "rt": self.peptide_rt_apex[selection_slice],
-                "length": self.peptide_lens[selection_slice] // 2 + 1,
-                "charge": self.peptide_charges[selection_slice],
-                "fragment_count": self.peptide_lens[selection_slice],
+                "peptide_sequence": self.peptide_sequences[selection_slice],
+                "peptide_mz": self.peptide_mzs[selection_slice],
+                "peptide_mobility": self.peptide_mobilities[selection_slice],
+                "peptide_rt_min": self.peptide_rt_apex[selection_slice] / 60,
+                "peptide_rt": self.peptide_rt_apex[selection_slice],
+                "peptide_length": self.peptide_lengths[selection_slice],
+                "peptide_charge": self.peptide_charges[selection_slice],
+                "fragment_count": self.ion_count[selection_slice],
                 "mobility_error": self.peptide_mobilities[selection_slice] - mobilities,
                 "rt_error": self.peptide_rt_apex[selection_slice] - rts,
                 "absolute_mobility_error": np.abs(
@@ -265,8 +300,10 @@ class Library(object):
                 **score_features,
             }
         )
-        score_df["decoy"] = self.decoy,
-        score_df["target"] = not self.decoy,
+        score_df["decoy"] = self.decoy
+        score_df["target"] = not self.decoy
+        score_df = score_df[score_df.push_indices_count > 0]
+        score_df.reset_index(drop=True, inplace=True)
         return score_df
 
 
@@ -989,7 +1026,7 @@ def create_common_df(
                 "rt": library_.peptide_rt_apex,
                 "decoy": library_.decoy,
                 "target": not library_.decoy,
-                "length": library_.peptide_lens // 2 + 1,
+                "length": library_.peptide_lengths,
                 **score_features_,
             }
         )
@@ -1021,7 +1058,6 @@ def train_RF(
     scoring: str = 'accuracy',
     plot: bool = False,
     random_state: int = 42,
-    **kwargs
 ) -> (sklearn.model_selection.GridSearchCV, list):
     # Setup ML pipeline
     scaler = sklearn.preprocessing.StandardScaler()
@@ -1196,6 +1232,60 @@ def find_correlations(
         fwhm_pushes,
         corrs,
     )
+
+
+def train_and_score(
+    scores_df,
+    decoy_scores_df,
+    features=None,
+    exclude_features=[
+        "decoy",
+        "target",
+        "library_id",
+        "peptide_sequence",
+        # "peptide_mz",
+        # "peptide_mobility",
+        # "peptide_rt_min",
+        # "peptide_rt",
+        "peptide_max_intensity_push",
+    ],
+    train_fdr_level: float = 0.1,
+    ini_score: str = None,
+    min_train: int = 1000,
+    test_size: float = 0.8,
+    max_depth: list = [5, 25, 50],
+    max_leaf_nodes: list = [150, 200, 250],
+    n_jobs: int = -1,
+    scoring: str = 'accuracy',
+    plot: bool = False,
+    random_state: int = 42,
+):
+    df = pd.concat([scores_df, decoy_scores_df])
+    # df = df[df.ion_count > 0]
+    #     df = df[np.isfinite(df.correlation_25)]
+    #     df = df[np.isfinite(df["apex_fragment_enrichment"])]
+    df.reset_index(drop=True, inplace=True)
+    if features is None:
+        features = [
+            feature for feature in df if feature not in exclude_features
+        ]
+    cv = alphatims.library.train_RF(
+        df,
+        features,
+        train_fdr_level=train_fdr_level,
+        ini_score=ini_score,
+        min_train=min_train,
+        test_size=test_size,
+        max_depth=max_depth,
+        max_leaf_nodes=max_leaf_nodes,
+        n_jobs=n_jobs,
+        scoring=scoring,
+        plot=plot,
+        random_state=random_state,
+    )
+    new_df = df.copy()
+    new_df['score'] = cv.predict_proba(new_df[features])[:, 1]
+    return alphatims.library.get_q_values(new_df, "score", 'decoy')
 
 
 @alphatims.utils.threadpool
