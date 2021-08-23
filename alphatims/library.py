@@ -50,7 +50,7 @@ class Library(object):
             }
             self.peptide_dict.append(peptide)
 
-    def convert_to_peptide_arrays(self, ion_df):
+    def convert_to_peptide_arrays(self, ion_df, decoy_style=""):
         self.peptide_data.reset_index(drop=True, inplace=True)
         self.peptide_rt_apex = self.peptide_data.rt_apex.values * 60
         self.peptide_mzs = self.peptide_data.mz.values
@@ -100,7 +100,17 @@ class Library(object):
             ion_types = ion_df.ion_index.values[start: end].astype(np.int64)
             if self.decoy:
                 decoy_sequence = alphapept.fasta.parse(sequence_string)
-                decoy_sequence[:-1] = decoy_sequence[:-1][::-1]
+                if decoy_style == "DIA-NN":
+                    original = "GAVLIFMPWSCTYHKRQEND"
+                    mutated = "LLLVVLLLLTSSSSLLNDQE"
+                    decoy_sequence[1] = alphapept.fasta.parse(
+                        mutated[original.index(sequence_string[1][-1])]
+                    )[0]
+                    decoy_sequence[-2] = alphapept.fasta.parse(
+                        mutated[original.index(sequence_string[-2][-1])]
+                    )[0]
+                else:
+                    decoy_sequence[:-1] = decoy_sequence[:-1][::-1]
                 self.peptide_sequences[i] = "".join(decoy_sequence)
                 mzs_, types_ = alphapept.fasta.get_fragmass(
                     decoy_sequence,
@@ -206,24 +216,119 @@ class Library(object):
         mobility_tolerance=0.05,  # 1/k0
         selection: np.ndarray = None,
         return_as_df: bool = True,
-        score_features: dict = {
-            "push_indices_count": None,
-            "raw_indices_count": None,
-            "fwhm_corr_25": None,
-            "fwhm_corr_50": None,
-            "fwhm_corr_75": None,
-            "fwhm_push_count": None,
-            "relative_intensity_50": None,
-            "relative_intensity_75": None,
-            "relative_intensity_100": None,
-            "max_intensity_push": None,
-            "library_intensity_cos_90": None,
-            "library_intensity_cos_95": None,
-            "library_intensity_cos_100": None,
-            "library_smooth_intensity_cos_90": None,
-            "library_smooth_intensity_cos_95": None,
-            "library_smooth_intensity_cos_100": None,
-        },
+        score_features=(
+            "push_apex",
+            "push_library_cosine_peak_mask_len",
+            "push_library_cosine_peak_mask_apex",
+            "push_library_cosine_peak_mask_push_library_cosine_best",
+            "push_library_cosine_peak_mask_push_library_cosine_worst",
+            "push_library_cosine_peak_mask_smooth_push_library_cosine_best",
+            "push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
+            "push_library_cosine_peak_mask_push_intensities_best",
+            "push_library_cosine_peak_mask_push_intensities_worst",
+            "push_library_cosine_peak_mask_smooth_push_intensities_best",
+            "push_library_cosine_peak_mask_smooth_push_intensities_worst",
+            "push_library_cosine_peak_mask_normalized_push_intensities_best",
+            "push_library_cosine_peak_mask_normalized_push_intensities_worst",
+            "push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
+            "push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
+            "push_library_cosine_peak_mask_push_weights_best",
+            "push_library_cosine_peak_mask_push_weights_worst",
+            "push_library_cosine_peak_mask_smooth_push_weights_best",
+            "push_library_cosine_peak_mask_smooth_push_weights_worst",
+            "smooth_push_library_cosine_peak_mask_len",
+            "smooth_push_library_cosine_peak_mask_apex",
+            "smooth_push_library_cosine_peak_mask_push_library_cosine_best",
+            "smooth_push_library_cosine_peak_mask_push_library_cosine_worst",
+            "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_best",
+            "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
+            "smooth_push_library_cosine_peak_mask_push_intensities_best",
+            "smooth_push_library_cosine_peak_mask_push_intensities_worst",
+            "smooth_push_library_cosine_peak_mask_smooth_push_intensities_best",
+            "smooth_push_library_cosine_peak_mask_smooth_push_intensities_worst",
+            "smooth_push_library_cosine_peak_mask_normalized_push_intensities_best",
+            "smooth_push_library_cosine_peak_mask_normalized_push_intensities_worst",
+            "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
+            "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
+            "smooth_push_library_cosine_peak_mask_push_weights_best",
+            "smooth_push_library_cosine_peak_mask_push_weights_worst",
+            "smooth_push_library_cosine_peak_mask_smooth_push_weights_best",
+            "smooth_push_library_cosine_peak_mask_smooth_push_weights_worst",
+            "push_intensities_peak_mask_len",
+            "push_intensities_peak_mask_apex",
+            "push_intensities_peak_mask_push_library_cosine_best",
+            "push_intensities_peak_mask_push_library_cosine_worst",
+            "push_intensities_peak_mask_smooth_push_library_cosine_best",
+            "push_intensities_peak_mask_smooth_push_library_cosine_worst",
+            "push_intensities_peak_mask_push_intensities_best",
+            "push_intensities_peak_mask_push_intensities_worst",
+            "push_intensities_peak_mask_smooth_push_intensities_best",
+            "push_intensities_peak_mask_smooth_push_intensities_worst",
+            "push_intensities_peak_mask_normalized_push_intensities_best",
+            "push_intensities_peak_mask_normalized_push_intensities_worst",
+            "push_intensities_peak_mask_normalized_smooth_push_intensities_best",
+            "push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
+            "push_intensities_peak_mask_push_weights_best",
+            "push_intensities_peak_mask_push_weights_worst",
+            "push_intensities_peak_mask_smooth_push_weights_best",
+            "push_intensities_peak_mask_smooth_push_weights_worst",
+            "smooth_push_intensities_peak_mask_len",
+            "smooth_push_intensities_peak_mask_apex",
+            "smooth_push_intensities_peak_mask_push_library_cosine_best",
+            "smooth_push_intensities_peak_mask_push_library_cosine_worst",
+            "smooth_push_intensities_peak_mask_smooth_push_library_cosine_best",
+            "smooth_push_intensities_peak_mask_smooth_push_library_cosine_worst",
+            "smooth_push_intensities_peak_mask_push_intensities_best",
+            "smooth_push_intensities_peak_mask_push_intensities_worst",
+            "smooth_push_intensities_peak_mask_smooth_push_intensities_best",
+            "smooth_push_intensities_peak_mask_smooth_push_intensities_worst",
+            "smooth_push_intensities_peak_mask_normalized_push_intensities_best",
+            "smooth_push_intensities_peak_mask_normalized_push_intensities_worst",
+            "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_best",
+            "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
+            "smooth_push_intensities_peak_mask_push_weights_best",
+            "smooth_push_intensities_peak_mask_push_weights_worst",
+            "smooth_push_intensities_peak_mask_smooth_push_weights_best",
+            "smooth_push_intensities_peak_mask_smooth_push_weights_worst",
+            "push_weights_peak_mask_len",
+            "push_weights_peak_mask_apex",
+            "push_weights_peak_mask_push_library_cosine_best",
+            "push_weights_peak_mask_push_library_cosine_worst",
+            "push_weights_peak_mask_smooth_push_library_cosine_best",
+            "push_weights_peak_mask_smooth_push_library_cosine_worst",
+            "push_weights_peak_mask_push_intensities_best",
+            "push_weights_peak_mask_push_intensities_worst",
+            "push_weights_peak_mask_smooth_push_intensities_best",
+            "push_weights_peak_mask_smooth_push_intensities_worst",
+            "push_weights_peak_mask_normalized_push_intensities_best",
+            "push_weights_peak_mask_normalized_push_intensities_worst",
+            "push_weights_peak_mask_normalized_smooth_push_intensities_best",
+            "push_weights_peak_mask_normalized_smooth_push_intensities_worst",
+            "push_weights_peak_mask_push_weights_best",
+            "push_weights_peak_mask_push_weights_worst",
+            "push_weights_peak_mask_smooth_push_weights_best",
+            "push_weights_peak_mask_smooth_push_weights_worst",
+            "smooth_push_weights_peak_mask_len",
+            "smooth_push_weights_peak_mask_apex",
+            "smooth_push_weights_peak_mask_push_library_cosine_best",
+            "smooth_push_weights_peak_mask_push_library_cosine_worst",
+            "smooth_push_weights_peak_mask_smooth_push_library_cosine_best",
+            "smooth_push_weights_peak_mask_smooth_push_library_cosine_worst",
+            "smooth_push_weights_peak_mask_push_intensities_best",
+            "smooth_push_weights_peak_mask_push_intensities_worst",
+            "smooth_push_weights_peak_mask_smooth_push_intensities_best",
+            "smooth_push_weights_peak_mask_smooth_push_intensities_worst",
+            "smooth_push_weights_peak_mask_normalized_push_intensities_best",
+            "smooth_push_weights_peak_mask_normalized_push_intensities_worst",
+            "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_best",
+            "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_worst",
+            "smooth_push_weights_peak_mask_push_weights_best",
+            "smooth_push_weights_peak_mask_push_weights_worst",
+            "smooth_push_weights_peak_mask_smooth_push_weights_best",
+            "smooth_push_weights_peak_mask_smooth_push_weights_worst",
+            "push_indices_count",
+            "raw_indices_count",
+        ),
     ):
         (
             precursor_frame_slices,
@@ -240,27 +345,30 @@ class Library(object):
         if selection is None:
             selection = range(len(self))
             selection_slice = ...
-            score_features = {
+            score_features_ = {
                 feature: np.zeros(len(selection)) for feature in score_features
             }
+            update_score_features = False
         else:
             selection_slice = selection
             try:
-                score_features = {
+                score_features_ = {
                     feature: {
                         s: 0 for s in selection
                     } for feature in score_features
                 }
+                update_score_features = 2
             except TypeError:
-                score_features = {
+                score_features_ = {
                     feature: {
                         selection: 0
                     } for feature in score_features
                 }
+                update_score_features = True
         result = process_library_peptide(
             selection,
             self,
-            score_features,
+            score_features_,
             dia_data,
             precursor_frame_slices,
             precursor_scan_slices,
@@ -271,12 +379,30 @@ class Library(object):
             max_cycle_difference,
         )
         if not return_as_df:
-            return score_features, result
+            if result is not None:
+                return result
+            else:
+                return score_features_
+        if update_score_features:
+            try:
+                score_features__ = {
+                    feature: np.zeros(len(selection)) for feature in score_features_
+                }
+                position_dict = {pos: i for i, pos in enumerate(selection)}
+            except TypeError:
+                score_features__ = {
+                    feature: np.zeros(1) for feature in score_features_
+                }
+                position_dict = {selection: 0}
+            for feature, score_dict in score_features_.items():
+                for position, score in score_dict.items():
+                    score_features__[feature][position_dict[position]] = score
+            score_features_ = score_features__
         rts = dia_data.rt_values[
-            score_features["max_intensity_push"].astype(np.int64) // dia_data.scan_max_index
+            score_features_["push_apex"].astype(np.int64) // dia_data.scan_max_index
         ]
         mobilities = dia_data.mobility_values[
-            score_features["max_intensity_push"].astype(np.int64) % dia_data.scan_max_index
+            score_features_["push_apex"].astype(np.int64) % dia_data.scan_max_index
         ]
         score_df = pd.DataFrame(
             {
@@ -297,7 +423,7 @@ class Library(object):
                 "absolute_rt_error": np.abs(
                     self.peptide_rt_apex[selection_slice] - rts
                 ),
-                **score_features,
+                **score_features_,
             }
         )
         score_df["decoy"] = self.decoy
@@ -306,41 +432,41 @@ class Library(object):
         score_df.reset_index(drop=True, inplace=True)
         return score_df
 
-
-@alphatims.utils.threadpool
-def set_frags(
-    peptide_index,
-    peptide_sequences,
-    peptide_fragment_mzs,
-    peptide_fragment_types,
-    peptide_offsets,
-    decoy=False
-):
-    seq_string = peptide_sequences[peptide_index]
-    seq = alphapept.fasta.parse(seq_string)
-    if decoy:
-        seq[:-1] = seq[:-1][::-1]
-    # if decoy:
-    #     #diaNN style
-    #     original = "GAVLIFMPWSCTYHKRQEND"
-    #     mutated = "LLLVVLLLLTSSSSLLNDQE"
-    #     seq[1] = alphapept.fasta.parse(
-    #         mutated[original.index(seq[1][-1])]
-    #     )[0]
-    #     seq[-2] = alphapept.fasta.parse(
-    #         mutated[original.index(seq[-2][-1])]
-    #     )[0]
-    # if decoy:
-    #     seq[-2], seq[0] = seq[0], seq[-2]
-    fragment_mzs, fragment_types = alphapept.fasta.get_fragmass(
-        seq,
-        alphapept.constants.mass_dict
-    )
-    start = peptide_offsets[peptide_index]
-    end = peptide_offsets[peptide_index + 1]
-    order = np.argsort(fragment_mzs)
-    peptide_fragment_mzs[start: end] = fragment_mzs[order]
-    peptide_fragment_types[start: end] = fragment_types[order]
+#
+# @alphatims.utils.threadpool
+# def set_frags(
+#     peptide_index,
+#     peptide_sequences,
+#     peptide_fragment_mzs,
+#     peptide_fragment_types,
+#     peptide_offsets,
+#     decoy=False
+# ):
+#     seq_string = peptide_sequences[peptide_index]
+#     seq = alphapept.fasta.parse(seq_string)
+#     if decoy:
+#         seq[:-1] = seq[:-1][::-1]
+#     # if decoy:
+#     #     #diaNN style
+#     #     original = "GAVLIFMPWSCTYHKRQEND"
+#     #     mutated = "LLLVVLLLLTSSSSLLNDQE"
+#     #     seq[1] = alphapept.fasta.parse(
+#     #         mutated[original.index(seq[1][-1])]
+#     #     )[0]
+#     #     seq[-2] = alphapept.fasta.parse(
+#     #         mutated[original.index(seq[-2][-1])]
+#     #     )[0]
+#     # if decoy:
+#     #     seq[-2], seq[0] = seq[0], seq[-2]
+#     fragment_mzs, fragment_types = alphapept.fasta.get_fragmass(
+#         seq,
+#         alphapept.constants.mass_dict
+#     )
+#     start = peptide_offsets[peptide_index]
+#     end = peptide_offsets[peptide_index + 1]
+#     order = np.argsort(fragment_mzs)
+#     peptide_fragment_mzs[start: end] = fragment_mzs[order]
+#     peptide_fragment_types[start: end] = fragment_types[order]
 
 
 # @alphatims.utils.threadpool
@@ -641,6 +767,8 @@ def visualize_peptide(
     precursor_mobility = peptide["mobility"]
     precursor_rt = peptide["rt"]
     fragment_mzs = peptide["fragment_mzs"]
+    fragment_ion_types = peptide["fragment_ion_types"]
+    fragment_loss_types = peptide["fragment_loss_types"]
     rt_slice = slice(
         precursor_rt - rt_tolerance,
         precursor_rt + rt_tolerance
@@ -680,7 +808,18 @@ def visualize_peptide(
             label="precursor"
         )
         overlay = precursor_xic
-    for fragment_name, mz in fragment_mzs.items():
+    for fragment_ion_type, mz, fragment_loss_type in zip(
+        fragment_ion_types,
+        fragment_mzs,
+        fragment_loss_types
+    ):
+        ion_type = f"{'y' if (np.sign(fragment_ion_type) > 0) else 'b'}"
+        ion_number = str(abs(fragment_ion_type))
+        loss_types = ["", "-H2O", "-NH3"]
+
+        fragment_name = (
+            f"{ion_type}{ion_number}{loss_types[fragment_loss_type]}"
+        )
         fragment_mz_slice = slice(
             mz / (1 + ppm / 10**6),
             mz * (1 + ppm / 10**6)
@@ -921,67 +1060,84 @@ def get_intensity_matrix(
 
 
 @alphatims.utils.njit(nogil=True)
-def smoothen_and_normalize_intensity_matrix(
+def smoothen_intensity_matrix(
     intensity_matrix: np.ndarray,
     push_connection_indptr: np.ndarray,
     push_connection_indices: np.ndarray,
+    multiplier: float = 2,
 ):
     smooth_intensity_matrix = np.empty_like(intensity_matrix)
     for push_index in range(intensity_matrix.shape[0]):
         start = push_connection_indptr[push_index]
         end = push_connection_indptr[push_index + 1]
         for fragment_index in range(intensity_matrix.shape[1]):
-            intensity = intensity_matrix[push_index, fragment_index]
+            intensity = multiplier * intensity_matrix[push_index, fragment_index]
             for connection in push_connection_indices[start: end]:
                 intensity += intensity_matrix[connection, fragment_index]
             smooth_intensity_matrix[
                 push_index,
                 fragment_index
-            ] = intensity / (1 + end - start)
-    for fragment_index in range(intensity_matrix.shape[1]):
-        max_intensity = np.max(smooth_intensity_matrix[:, fragment_index])
-        if max_intensity > 0:
-            smooth_intensity_matrix[:, fragment_index] /= max_intensity
+            ] = intensity / (multiplier + end - start)
     return smooth_intensity_matrix
 
 
 @alphatims.utils.njit(nogil=True)
-def peak_descend(
-    index,
-    peak_mask,
-    intensities,
-    push_indices,
-    rt_lim,
-    im_lim,
-    im_cycle,
+def normalize_intensity_matrix(
+    intensity_matrix: np.ndarray,
 ):
-    if peak_mask[index]:
-        return
-    peak_mask[index] = True
-    push_index = push_indices[index]
-    rt = push_index // im_cycle
-    im = push_index % im_cycle
-    intensity = intensities[index]
-    for i, other_index in enumerate(push_indices):
-        other_rt = other_index // im_cycle
-        other_im = other_index % im_cycle
-        if np.abs(other_rt - rt) > rt_lim:
-            continue
-        if np.abs(other_im - im) > im_lim:
-            continue
-        if intensities[i] < intensity:
-            peak_descend(
-                i,
-                peak_mask,
-                intensities,
-                push_indices,
-                rt_lim,
-                im_lim,
-                im_cycle,
-            )
+    for fragment_index in range(intensity_matrix.shape[1]):
+        max_intensity = np.max(intensity_matrix[:, fragment_index])
+        if max_intensity > 0:
+            intensity_matrix[:, fragment_index] /= max_intensity
+    return intensity_matrix
 
 
-@alphatims.utils.njit
+# alphatims.library.peak_descend(
+#     best_push,
+#     peak_mask,
+#     smoothed_push_intensities,
+#     push_indices,
+#     rt_lim=dia_data.precursor_max_index*1,
+#     im_lim=1,
+#     im_cycle=dia_data.scan_max_index,
+# )
+# @alphatims.utils.njit(nogil=True)
+# def peak_descend(
+#     index,
+#     peak_mask,
+#     intensities,
+#     push_indices,
+#     rt_lim,
+#     im_lim,
+#     im_cycle,
+# ):
+#     if peak_mask[index]:
+#         return
+#     peak_mask[index] = True
+#     push_index = push_indices[index]
+#     rt = push_index // im_cycle
+#     im = push_index % im_cycle
+#     intensity = intensities[index]
+#     for i, other_index in enumerate(push_indices):
+#         other_rt = other_index // im_cycle
+#         other_im = other_index % im_cycle
+#         if np.abs(other_rt - rt) > rt_lim:
+#             continue
+#         if np.abs(other_im - im) > im_lim:
+#             continue
+#         if intensities[i] < intensity:
+#             peak_descend(
+#                 i,
+#                 peak_mask,
+#                 intensities,
+#                 push_indices,
+#                 rt_lim,
+#                 im_lim,
+#                 im_cycle,
+#             )
+
+
+@alphatims.utils.njit(nogil=True)
 def fdr_to_q_values(fdr_values):
     q_values = np.zeros_like(fdr_values)
     min_q_value = np.max(fdr_values)
@@ -1218,20 +1374,46 @@ def cosine_similarity(v1, v2s):
     return np.array(scores)
 
 
+# @alphatims.utils.njit(nogil=True)
+# def find_correlations(
+#     smooth_intensity_matrix,
+# ):
+#     smoothed_push_intensities = np.sum(smooth_intensity_matrix, axis=1)
+#     fwhm_pushes = np.flatnonzero(
+#         (smoothed_push_intensities > np.max(smoothed_push_intensities) / 2) #& peak_mask
+#     )
+#     corrs = np.corrcoef(smooth_intensity_matrix[fwhm_pushes])
+#     return (
+#         smoothed_push_intensities,
+#         fwhm_pushes,
+#         corrs,
+#     )
+
+
 @alphatims.utils.njit(nogil=True)
-def find_correlations(
-    smooth_intensity_matrix,
+def sum_push_intensities(
+    intensity_matrix,
 ):
-    smoothed_push_intensities = np.sum(smooth_intensity_matrix, axis=1)
-    fwhm_pushes = np.flatnonzero(
-        (smoothed_push_intensities > np.max(smoothed_push_intensities) / 2) #& peak_mask
-    )
-    corrs = np.corrcoef(smooth_intensity_matrix[fwhm_pushes])
-    return (
-        smoothed_push_intensities,
-        fwhm_pushes,
-        corrs,
-    )
+    return np.sum(intensity_matrix, axis=1)
+
+
+@alphatims.utils.njit(nogil=True)
+def is_reachable_push(
+    push_value,
+    push_connection_indices,
+    push_connection_indptr,
+):
+    order = np.argsort(push_value)[::-1]
+    reachable = set([order[0]])
+    result = []
+    for push_index in order:
+        if push_index not in reachable:
+            break
+        result.append(push_index)
+        start = push_connection_indptr[push_index]
+        end = push_connection_indptr[push_index + 1]
+        reachable |= set(push_connection_indices[start: end])
+    return np.array(result)
 
 
 def train_and_score(
@@ -1247,7 +1429,7 @@ def train_and_score(
         # "peptide_mobility",
         # "peptide_rt_min",
         # "peptide_rt",
-        "peptide_max_intensity_push",
+        "max_intensity_push",
     ],
     train_fdr_level: float = 0.1,
     ini_score: str = None,
@@ -1260,7 +1442,7 @@ def train_and_score(
     plot: bool = False,
     random_state: int = 42,
 ):
-    df = pd.concat([scores_df, decoy_scores_df])
+    df = pd.concat([decoy_scores_df, scores_df])
     # df = df[df.ion_count > 0]
     #     df = df[np.isfinite(df.correlation_25)]
     #     df = df[np.isfinite(df["apex_fragment_enrichment"])]
@@ -1287,6 +1469,36 @@ def train_and_score(
     new_df['score'] = cv.predict_proba(new_df[features])[:, 1]
     return alphatims.library.get_q_values(new_df, "score", 'decoy')
 
+
+# def force_square_push_indptr(
+#     dia_data,
+#     push_indices,
+#     push_indptr,
+#     size=128,
+# ):
+#     push_indptr_ = np.zeros(size * size + 1, dtype=np.int64)
+#     scans = push_indices % dia_data.scan_max_index
+#     cycles = push_indices // len(dia_data.dia_mz_cycle)
+#     min_scan = scans[0]
+#     min_cycle = cycles[0]
+#     # min_frame = push_indices[0] // dia_data.scan_max_index
+#     inds = scans - min_scan + size * (cycles - min_cycle)
+#     push_indptr_[inds] = np.diff(push_indptr)
+#     push_indptr_[1:] = np.cumsum(push_indptr_[:-1])
+#     push_indptr_[0] = 0
+#     return push_indptr_
+
+
+@alphatims.utils.njit(nogil=True)
+def peak_percentile(
+    peak_mask,
+    peak_values,
+    percentiles=[0, 50, 100]
+):
+    return np.percentile(
+        peak_values[peak_mask],
+        percentile,
+    )
 
 @alphatims.utils.threadpool
 def process_library_peptide(
@@ -1325,58 +1537,6 @@ def process_library_peptide(
     )
     if len(raw_indices) == 0:
         return
-#     with h5py.File(f"sandbox_images/target_{peptide_index}.hdf", "w") as hdf:
-#         push_indptr_ = np.zeros(128 * 128 + 1, dtype=np.int64)
-#         scans = push_indices % dia_data.scan_max_index
-#         cycles = push_indices // len(dia_data.dia_mz_cycle)
-#         min_scan = scans[0]
-#         min_cycle = cycles[0]
-#         min_frame = push_indices[0] // dia_data.scan_max_index
-#         inds = scans - min_scan + 128*(cycles - min_cycle)
-#         push_indptr_[inds] = np.diff(push_indptr)
-#         push_indptr_[1:] = np.cumsum(push_indptr_[:-1])
-#         push_indptr_[0] = 0
-#         push_fragment_matrix = alphatims.library.make_dense_matrix(
-#             fragment_end - fragment_start,
-#             push_indptr_,
-#             fragment_indices,
-#             raw_indices,
-#         )
-#         intensity_matrix = alphatims.library.get_intensity_matrix(
-#             push_fragment_matrix,
-#             dia_data.intensity_values,
-#         )
-#         hdf.create_dataset(
-#             "intensities",
-#             data=intensity_matrix.astype(np.uint16),
-#             compression="lzf",
-#             shuffle=True,
-#         )
-#         hdf.create_dataset(
-#             "im",
-#             data=dia_data.mobility_values[min_scan: min_scan + 128],
-#             compression="lzf",
-#             shuffle=True,
-#         )
-#         hdf.create_dataset(
-#             "rt",
-#             data=dia_data.rt_values[min_frame: min_frame + 128: dia_data.precursor_max_index],
-#             compression="lzf",
-#             shuffle=True,
-#         )
-#         hdf.create_dataset(
-#             "mz",
-#             data=library.peptide_fragment_mzs[fragment_start: fragment_end],
-#             compression="lzf",
-#             shuffle=True,
-#         )
-#         hdf.create_dataset(
-#             "types",
-#             data=library.peptide_fragment_types[fragment_start: fragment_end],
-#             compression="lzf",
-#             shuffle=True,
-#         )
-#     return
     push_fragment_matrix = alphatims.library.make_dense_matrix(
         fragment_end - fragment_start,
         push_indptr,
@@ -1393,87 +1553,290 @@ def process_library_peptide(
         max_cycle_difference * dia_data.precursor_max_index,
         max_scan_difference,
     )
-    smooth_intensity_matrix = alphatims.library.smoothen_and_normalize_intensity_matrix(
+    smooth_intensity_matrix = smoothen_intensity_matrix(
         intensity_matrix,
         push_connection_indptr,
         push_connection_indices
     )
-    push_connection_indptr, push_connection_indices = alphatims.library.define_connections(
-        push_indices,
-        dia_data.scan_max_index,
-        dia_data.precursor_max_index,
-        1,
+    normalized_intensity_matrix = alphatims.library.normalize_intensity_matrix(
+        intensity_matrix,
     )
-    (
-        smoothed_push_intensities,
-        fwhm_pushes,
-        corrs,
-    ) = find_correlations(smooth_intensity_matrix)
-#     alphatims.library.peak_descend(
-#         best_push,
-#         peak_mask,
-#         smoothed_push_intensities,
-#         push_indices,
-#         rt_lim=dia_data.precursor_max_index*1,
-#         im_lim=1,
-#         im_cycle=dia_data.scan_max_index,
-#     )
-    intensities = library.peptide_fragment_intensities[fragment_start: fragment_end]
-    cos_sims = cosine_similarity(intensities, intensity_matrix)
-    smooth_cos_sims = cosine_similarity(intensities, smooth_intensity_matrix)
-    # score_features[peptide_index, 0] = len(push_indices)
-    # score_features[peptide_index, 1] = len(raw_indices)
-    # score_features[peptide_index, 2:5] = np.percentile(corrs, [25, 50, 75])
-    # score_features[peptide_index, 5:8] = np.percentile(smoothed_push_intensities, [50, 75, 100])
-    # score_features[peptide_index, 8] = len(fwhm_pushes)
-    # score_features[peptide_index, 9] = push_indices[np.argmax(smoothed_push_intensities)]
-    # score_features[peptide_index, 10:13] = np.percentile(cos_sims, [90, 95, 100])
-    # score_features[peptide_index, 13:16] = np.percentile(smooth_cos_sims, [90, 95, 100])
-    cor_percentiles = np.percentile(corrs, [25, 50, 75])
-    relative_intensity_percentiles = np.percentile(smoothed_push_intensities, [50, 75, 100])
-    library_intensity_cos_percentiles = np.percentile(cos_sims, [90, 95, 100])
-    library_smooth_intensity_cos_percentiles = np.percentile(smooth_cos_sims, [90, 95, 100])
-    for feature, score in {
-        "push_indices_count": len(push_indices),
-        "raw_indices_count": len(raw_indices),
-        "fwhm_corr_25": cor_percentiles[0],
-        "fwhm_corr_50": cor_percentiles[1],
-        "fwhm_corr_75": cor_percentiles[2],
-        "fwhm_push_count": len(fwhm_pushes),
-        "relative_intensity_50": relative_intensity_percentiles[0],
-        "relative_intensity_75": relative_intensity_percentiles[1],
-        "relative_intensity_100": relative_intensity_percentiles[2],
-        "max_intensity_push": push_indices[np.argmax(smoothed_push_intensities)],
-        "library_intensity_cos_90": library_intensity_cos_percentiles[0],
-        "library_intensity_cos_95": library_intensity_cos_percentiles[1],
-        "library_intensity_cos_100": library_intensity_cos_percentiles[2],
-        "library_smooth_intensity_cos_90": library_smooth_intensity_cos_percentiles[0],
-        "library_smooth_intensity_cos_95": library_smooth_intensity_cos_percentiles[1],
-        "library_smooth_intensity_cos_100": library_smooth_intensity_cos_percentiles[2],
-    }.items():
-        score_features[feature][peptide_index] = score
-    return {
-        "push_indices": push_indices,
-        "fragment_start": fragment_start,
-        "fragment_end": fragment_end,
-        "push_indptr": push_indptr,
-        "raw_indices": raw_indices,
-        "fragment_indices": fragment_indices,
-        "push_fragment_matrix": push_fragment_matrix,
-        "intensity_matrix": intensity_matrix,
-        "push_connection_indptr": push_connection_indptr,
-        "push_connection_indices": push_connection_indices,
-        "smooth_intensity_matrix": smooth_intensity_matrix,
-        "push_connection_indptr": push_connection_indptr,
-        "push_connection_indices": push_connection_indices,
-        "smoothed_push_intensities": smoothed_push_intensities,
-        "fwhm_pushes": fwhm_pushes,
-        "corrs": corrs,
-        "intensities": intensities,
-        "cos_sims": cos_sims,
-        "smooth_cos_sims": smooth_cos_sims,
-        "cor_percentiles": cor_percentiles,
-        "relative_intensity_percentiles": relative_intensity_percentiles,
-        "library_intensity_cos_percentiles": library_intensity_cos_percentiles,
-        "library_smooth_intensity_cos_percentiles": library_smooth_intensity_cos_percentiles,
-    }
+    normalized_smooth_intensity_matrix = alphatims.library.normalize_intensity_matrix(
+        smooth_intensity_matrix
+    )
+    library_intensities = library.peptide_fragment_intensities[
+        fragment_start: fragment_end
+    ]
+
+    push_library_cosine = cosine_similarity(
+        library_intensities,
+        intensity_matrix,
+    )
+    smooth_push_library_cosine = cosine_similarity(
+        library_intensities,
+        smooth_intensity_matrix,
+    )
+
+    push_intensities = sum_push_intensities(
+        intensity_matrix
+    )
+    smooth_push_intensities = sum_push_intensities(
+        smooth_intensity_matrix
+    )
+    normalized_push_intensities = sum_push_intensities(
+        normalized_intensity_matrix
+    )
+    normalized_smooth_push_intensities = sum_push_intensities(
+        normalized_smooth_intensity_matrix
+    )
+
+    # (
+    #     push_intensities,
+    #     fwhm_pushes,
+    #     corrs,
+    # ) = find_correlations(intensity_matrix)
+    # (
+    #     smooth_push_intensities,
+    #     smooth_fwhm_pushes,
+    #     smooth_corrs,
+    # ) = find_correlations(smooth_intensity_matrix)
+
+    push_library_cosine_peak_mask = is_reachable_push(
+        push_library_cosine,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+    smooth_push_library_cosine_peak_mask = is_reachable_push(
+        smooth_push_library_cosine,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+
+    push_intensities_peak_mask = is_reachable_push(
+        push_intensities,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+    smooth_push_intensities_peak_mask = is_reachable_push(
+        smooth_push_intensities,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+
+    push_weights = push_intensities * push_library_cosine
+    push_weights_peak_mask = is_reachable_push(
+        push_weights,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+    smooth_push_weights = smooth_push_intensities * smooth_push_library_cosine
+    smooth_push_weights_peak_mask = is_reachable_push(
+        smooth_push_weights,
+        push_connection_indices,
+        push_connection_indptr,
+    )
+
+    percentiles = [0, 50, 100]
+    import collections
+    # score_features = collections.defaultdict(lambda:{}) #TODELETE!!!!!!!!!!!!!!!!!!
+    for peak_mask_name, peak_mask in [
+        ("push_library_cosine_peak_mask", push_library_cosine_peak_mask),
+        ("smooth_push_library_cosine_peak_mask", smooth_push_library_cosine_peak_mask),
+        ("push_intensities_peak_mask", push_intensities_peak_mask),
+        ("smooth_push_intensities_peak_mask", smooth_push_intensities_peak_mask),
+        ("push_weights_peak_mask", push_weights_peak_mask),
+        ("smooth_push_weights_peak_mask", smooth_push_weights_peak_mask),
+    ]:
+        feature = f"{peak_mask_name}_len"
+        score_features[feature][peptide_index] = len(peak_mask)
+        feature = f"{peak_mask_name}_apex"
+        score_features[feature][peptide_index] = peak_mask[0]
+        for peak_values_name, peak_values in [
+            ("push_library_cosine", push_library_cosine),
+            ("smooth_push_library_cosine", smooth_push_library_cosine),
+            ("push_intensities", push_intensities),
+            ("smooth_push_intensities", smooth_push_intensities),
+            ("normalized_push_intensities", normalized_push_intensities),
+            ("normalized_smooth_push_intensities", normalized_smooth_push_intensities),
+            ("push_weights", push_weights),
+            ("smooth_push_weights", smooth_push_weights),
+        ]:
+            # peak_percentiles = peak_percentile(
+            #     peak_mask,
+            #     peak_values,
+            #     percentiles,
+            # )
+            # for i, percentile in enumerate(percentiles):
+            #     feature = f"{peak_mask_name}_{peak_values}_{percentile}"
+            #     score_features[feature][peptide_index] = percentile[i]
+            feature = f"{peak_mask_name}_{peak_values_name}_best"
+            score_features[feature][peptide_index] = peak_values[peak_mask[0]]
+            feature = f"{peak_mask_name}_{peak_values_name}_worst"
+            score_features[feature][peptide_index] = peak_values[peak_mask[-1]]
+
+    # cor_percentiles = np.percentile(corrs, [25, 50, 75])
+    # smooth_cor_percentiles = np.percentile(smooth_corrs, [25, 50, 75])
+    #
+    # library_intensity_cos_percentiles = np.percentile(
+    #     cos_sims,
+    #     [90, 95, 100],
+    # )
+    # smooth_library_intensity_cos_percentiles = np.percentile(
+    #     smooth_cos_sims,
+    #     [90, 95, 100],
+    # )
+    #
+    # smooth_relative_intensity_percentiles = np.percentile(
+    #     smooth_push_intensities,
+    #     [50, 75, 100],
+    # )
+    # relative_intensity_percentiles = np.percentile(
+    #     push_intensities,
+    #     [50, 75, 100],
+    # )
+
+    # for feature, score in {
+    #     "push_indices_count": len(push_indices),
+    #     "raw_indices_count": len(raw_indices),
+    #     #
+    #     # "fwhm_corr_25": cor_percentiles[0],
+    #     # "fwhm_corr_50": cor_percentiles[1],
+    #     # "fwhm_corr_75": cor_percentiles[2],
+    #     # "smooth_fwhm_corr_25": smooth_cor_percentiles[0],
+    #     # "smooth_fwhm_corr_50": smooth_cor_percentiles[1],
+    #     # "smooth_fwhm_corr_75": smooth_cor_percentiles[2],
+    #     #
+    #     # # "fwhm_push_count": len(fwhm_pushes),
+    #     # # "smooth_fwhm_push_count": len(smooth_fwhm_pushes),
+    #     #
+    #     # "relative_intensity_50": relative_intensity_percentiles[0],
+    #     # "relative_intensity_75": relative_intensity_percentiles[1],
+    #     # "relative_intensity_100": relative_intensity_percentiles[2],
+    #     "push_apex": push_indices[smooth_push_weights_peak_mask_apex],
+    #     # "library_intensity_cos_90": library_intensity_cos_percentiles[0],
+    #     # "library_intensity_cos_95": library_intensity_cos_percentiles[1],
+    #     # "library_intensity_cos_100": library_intensity_cos_percentiles[2],
+    #     # "smooth_library_intensity_cos_90": smooth_library_intensity_cos_percentiles[0],
+    #     # "smooth_library_intensity_cos_95": smooth_library_intensity_cos_percentiles[1],
+    #     # "smooth_library_intensity_cos_100": smooth_library_intensity_cos_percentiles[2],
+    # }.items():
+    #     score_features[feature][peptide_index] = score
+    score_features["push_indices_count"][peptide_index] = len(push_indices)
+    score_features["raw_indices_count"][peptide_index] = len(raw_indices)
+    score_features["push_apex"][peptide_index] = push_indices[smooth_push_weights_peak_mask[0]]
+    return locals()
+
+
+
+
+
+# "push_library_cosine_peak_mask_len",
+# "push_library_cosine_peak_mask_apex",
+# "push_library_cosine_peak_mask_push_library_cosine_best",
+# "push_library_cosine_peak_mask_push_library_cosine_worst",
+# "push_library_cosine_peak_mask_smooth_push_library_cosine_best",
+# "push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
+# "push_library_cosine_peak_mask_push_intensities_best",
+# "push_library_cosine_peak_mask_push_intensities_worst",
+# "push_library_cosine_peak_mask_smooth_push_intensities_best",
+# "push_library_cosine_peak_mask_smooth_push_intensities_worst",
+# "push_library_cosine_peak_mask_normalized_push_intensities_best",
+# "push_library_cosine_peak_mask_normalized_push_intensities_worst",
+# "push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
+# "push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
+# "push_library_cosine_peak_mask_push_weights_best",
+# "push_library_cosine_peak_mask_push_weights_worst",
+# "push_library_cosine_peak_mask_smooth_push_weights_best",
+# "push_library_cosine_peak_mask_smooth_push_weights_worst",
+# "smooth_push_library_cosine_peak_mask_len",
+# "smooth_push_library_cosine_peak_mask_apex",
+# "smooth_push_library_cosine_peak_mask_push_library_cosine_best",
+# "smooth_push_library_cosine_peak_mask_push_library_cosine_worst",
+# "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_best",
+# "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
+# "smooth_push_library_cosine_peak_mask_push_intensities_best",
+# "smooth_push_library_cosine_peak_mask_push_intensities_worst",
+# "smooth_push_library_cosine_peak_mask_smooth_push_intensities_best",
+# "smooth_push_library_cosine_peak_mask_smooth_push_intensities_worst",
+# "smooth_push_library_cosine_peak_mask_normalized_push_intensities_best",
+# "smooth_push_library_cosine_peak_mask_normalized_push_intensities_worst",
+# "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
+# "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
+# "smooth_push_library_cosine_peak_mask_push_weights_best",
+# "smooth_push_library_cosine_peak_mask_push_weights_worst",
+# "smooth_push_library_cosine_peak_mask_smooth_push_weights_best",
+# "smooth_push_library_cosine_peak_mask_smooth_push_weights_worst",
+# "push_intensities_peak_mask_len",
+# "push_intensities_peak_mask_apex",
+# "push_intensities_peak_mask_push_library_cosine_best",
+# "push_intensities_peak_mask_push_library_cosine_worst",
+# "push_intensities_peak_mask_smooth_push_library_cosine_best",
+# "push_intensities_peak_mask_smooth_push_library_cosine_worst",
+# "push_intensities_peak_mask_push_intensities_best",
+# "push_intensities_peak_mask_push_intensities_worst",
+# "push_intensities_peak_mask_smooth_push_intensities_best",
+# "push_intensities_peak_mask_smooth_push_intensities_worst",
+# "push_intensities_peak_mask_normalized_push_intensities_best",
+# "push_intensities_peak_mask_normalized_push_intensities_worst",
+# "push_intensities_peak_mask_normalized_smooth_push_intensities_best",
+# "push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
+# "push_intensities_peak_mask_push_weights_best",
+# "push_intensities_peak_mask_push_weights_worst",
+# "push_intensities_peak_mask_smooth_push_weights_best",
+# "push_intensities_peak_mask_smooth_push_weights_worst",
+# "smooth_push_intensities_peak_mask_len",
+# "smooth_push_intensities_peak_mask_apex",
+# "smooth_push_intensities_peak_mask_push_library_cosine_best",
+# "smooth_push_intensities_peak_mask_push_library_cosine_worst",
+# "smooth_push_intensities_peak_mask_smooth_push_library_cosine_best",
+# "smooth_push_intensities_peak_mask_smooth_push_library_cosine_worst",
+# "smooth_push_intensities_peak_mask_push_intensities_best",
+# "smooth_push_intensities_peak_mask_push_intensities_worst",
+# "smooth_push_intensities_peak_mask_smooth_push_intensities_best",
+# "smooth_push_intensities_peak_mask_smooth_push_intensities_worst",
+# "smooth_push_intensities_peak_mask_normalized_push_intensities_best",
+# "smooth_push_intensities_peak_mask_normalized_push_intensities_worst",
+# "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_best",
+# "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
+# "smooth_push_intensities_peak_mask_push_weights_best",
+# "smooth_push_intensities_peak_mask_push_weights_worst",
+# "smooth_push_intensities_peak_mask_smooth_push_weights_best",
+# "smooth_push_intensities_peak_mask_smooth_push_weights_worst",
+# "push_weights_peak_mask_len",
+# "push_weights_peak_mask_apex",
+# "push_weights_peak_mask_push_library_cosine_best",
+# "push_weights_peak_mask_push_library_cosine_worst",
+# "push_weights_peak_mask_smooth_push_library_cosine_best",
+# "push_weights_peak_mask_smooth_push_library_cosine_worst",
+# "push_weights_peak_mask_push_intensities_best",
+# "push_weights_peak_mask_push_intensities_worst",
+# "push_weights_peak_mask_smooth_push_intensities_best",
+# "push_weights_peak_mask_smooth_push_intensities_worst",
+# "push_weights_peak_mask_normalized_push_intensities_best",
+# "push_weights_peak_mask_normalized_push_intensities_worst",
+# "push_weights_peak_mask_normalized_smooth_push_intensities_best",
+# "push_weights_peak_mask_normalized_smooth_push_intensities_worst",
+# "push_weights_peak_mask_push_weights_best",
+# "push_weights_peak_mask_push_weights_worst",
+# "push_weights_peak_mask_smooth_push_weights_best",
+# "push_weights_peak_mask_smooth_push_weights_worst",
+# "smooth_push_weights_peak_mask_len",
+# "smooth_push_weights_peak_mask_apex",
+# "smooth_push_weights_peak_mask_push_library_cosine_best",
+# "smooth_push_weights_peak_mask_push_library_cosine_worst",
+# "smooth_push_weights_peak_mask_smooth_push_library_cosine_best",
+# "smooth_push_weights_peak_mask_smooth_push_library_cosine_worst",
+# "smooth_push_weights_peak_mask_push_intensities_best",
+# "smooth_push_weights_peak_mask_push_intensities_worst",
+# "smooth_push_weights_peak_mask_smooth_push_intensities_best",
+# "smooth_push_weights_peak_mask_smooth_push_intensities_worst",
+# "smooth_push_weights_peak_mask_normalized_push_intensities_best",
+# "smooth_push_weights_peak_mask_normalized_push_intensities_worst",
+# "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_best",
+# "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_worst",
+# "smooth_push_weights_peak_mask_push_weights_best",
+# "smooth_push_weights_peak_mask_push_weights_worst",
+# "smooth_push_weights_peak_mask_smooth_push_weights_best",
+# "smooth_push_weights_peak_mask_smooth_push_weights_worst",
+# "push_indices_count",
+# "raw_indices_count",
