@@ -17,7 +17,7 @@ __keywords__ = [
     "bioinformatics",
     "data indexing",
 ]
-__python_version__ = ">=3.8,<3.9"
+__python_version__ = ">=3.8,<3.10"
 __classifiers__ = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
