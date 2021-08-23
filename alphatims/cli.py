@@ -230,11 +230,13 @@ def run(ctx, **kwargs):
 
 
 @run.command("gui", help="Start graphical user interface.")
-def gui():
+@cli_option("port")
+@cli_option("bruker_raw_data", required=False)
+def gui(port, bruker_raw_data):
     with parse_cli_settings("gui"):
         logging.info("Loading GUI..")
         import alphatims.gui
-        alphatims.gui.run()
+        alphatims.gui.run(port, bruker_raw_data)
 
 
 @run.group("export", help="Export information.")

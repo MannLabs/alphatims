@@ -1244,6 +1244,10 @@ def upload_data(*args):
     global WHOLE_TITLE
     global alphatims
     ext = os.path.splitext(upload_file.value)[-1]
+    while upload_file.value.startswith("\""):
+        upload_file.value = upload_file.value[1:]
+    while upload_file.value.endswith("\""):
+        upload_file.value = upload_file.value[:-1]
     if ext in [".d", ".hdf", ".raw"]:
         save_hdf_message.object = ''
         save_sliced_data_message.object = ''
@@ -1665,7 +1669,7 @@ def update_selected_indices_and_dataframe():
         DATAFRAME = DATASET.as_dataframe(SELECTED_INDICES)
 
 
-def run():
+def run(port=None, bruker_raw_data=None):
     global LAYOUT
     global PLOTS
     global SERVER
@@ -1681,7 +1685,22 @@ def run():
     bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(
         original_on_close
     )
-    SERVER = LAYOUT.show(title='AlphaTims', threaded=True)
+    if port is not None:
+        import socket
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        websocket_origin = f"{ip_address}:{port}"
+    else:
+        websocket_origin = None
+    SERVER = LAYOUT.show(
+        title='AlphaTims',
+        threaded=True,
+        port=port,
+        websocket_origin=websocket_origin,
+    )
+    if bruker_raw_data is not None:
+        upload_file.value = bruker_raw_data
+        init_settings()
     SERVER.join()
 
 
