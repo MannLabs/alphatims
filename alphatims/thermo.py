@@ -525,9 +525,33 @@ class Orbitrap(object):
                 'Id': np.arange(len(self._rt_values)),
             }
         )
-        # data = timstof_data.frames.query('MsMsType == 0')[[
-        #     'Time', 'SummedIntensities', "Id"]
-        # ]
+        self._zeroth_frame = False
+        offset = int(self.zeroth_frame)
+        cycle_index = np.searchsorted(
+            self.raw_quad_indptr,
+            (self.scan_max_index) * (self.precursor_max_index + offset),
+            "r"
+        ) + 1
+        repeats = np.diff(self.raw_quad_indptr[: cycle_index])
+        if self.zeroth_frame:
+            repeats[0] -= self.scan_max_index
+        cycle_length = self.scan_max_index * self.precursor_max_index
+        repeat_length = np.sum(repeats)
+        if repeat_length != cycle_length:
+            repeats[-1] -= repeat_length - cycle_length
+        self._dia_mz_cycle = np.empty((cycle_length, 2))
+        self._dia_mz_cycle[:, 0] = np.repeat(
+            self.quad_mz_values[: cycle_index - 1, 0],
+            repeats
+        )
+        self._dia_mz_cycle[:, 1] = np.repeat(
+            self.quad_mz_values[: cycle_index - 1, 1],
+            repeats
+        )
+        self._dia_precursor_cycle = np.repeat(
+            self.precursor_indices[: cycle_index - 1],
+            repeats
+        )
 
 
     def save_as_hdf(
@@ -1132,112 +1156,6 @@ class Orbitrap(object):
                 raw_indices_sorted=raw_indices_sorted,
             )
         )
-
-    def _parse_quad_indptr(self) -> None:
-        logging.info("Indexing quadrupole dimension")
-        frame_ids = self.fragment_frames.Frame.values + 1
-        scan_begins = self.fragment_frames.ScanNumBegin.values
-        scan_ends = self.fragment_frames.ScanNumEnd.values
-        isolation_mzs = self.fragment_frames.IsolationMz.values
-        isolation_widths = self.fragment_frames.IsolationWidth.values
-        precursors = self.fragment_frames.Precursor.values
-        if (precursors[0] is None):
-            if self.zeroth_frame:
-                frame_groups = self.frames.MsMsType.values[1:]
-            else:
-                frame_groups = self.frames.MsMsType.values
-            precursor_frames = np.flatnonzero(frame_groups == 0)
-            group_sizes = np.diff(precursor_frames)
-            group_size = group_sizes[0]
-            if np.any(group_sizes != group_size):
-                raise ValueError("Sample type not understood")
-            precursors = (1 + frame_ids - frame_ids[0]) % group_size
-            if self.zeroth_frame:
-                precursors[0] = 0
-            self.fragment_frames.Precursor = precursors
-            self._acquisition_mode = "diaPASEF"
-        scan_max_index = self.scan_max_index
-        frame_max_index = self.frame_max_index
-        quad_indptr = [0]
-        quad_low_values = []
-        quad_high_values = []
-        precursor_indices = []
-        high = -1
-        for (
-            frame_id,
-            scan_begin,
-            scan_end,
-            isolation_mz,
-            isolation_width,
-            precursor
-        ) in zip(
-            frame_ids - 1,
-            scan_begins,
-            scan_ends,
-            isolation_mzs,
-            isolation_widths / 2,
-            precursors
-        ):
-            low = frame_id * scan_max_index + scan_begin
-            # TODO: CHECK?
-            if low != high:
-                quad_indptr.append(low)
-                quad_low_values.append(-1)
-                quad_high_values.append(-1)
-                precursor_indices.append(0)
-            high = frame_id * scan_max_index + scan_end
-            quad_indptr.append(high)
-            quad_low_values.append(isolation_mz - isolation_width)
-            quad_high_values.append(isolation_mz + isolation_width)
-            precursor_indices.append(precursor)
-        quad_max_index = scan_max_index * frame_max_index
-        if high < quad_max_index:
-            quad_indptr.append(quad_max_index)
-            quad_low_values.append(-1)
-            quad_high_values.append(-1)
-            precursor_indices.append(0)
-        self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
-        self._precursor_indices = np.array(precursor_indices)
-        self._raw_quad_indptr = np.array(quad_indptr)
-        self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
-        self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
-        self._quad_min_mz_value = np.min(
-            self.quad_mz_values[
-                self.quad_mz_values[:, 0] >= 0,
-                0
-            ]
-        )
-        self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
-        if self._acquisition_mode == "diaPASEF":
-            offset = int(self.zeroth_frame)
-            cycle_index = np.searchsorted(
-                self.raw_quad_indptr,
-                (self.scan_max_index) * (self.precursor_max_index + offset),
-                "r"
-            ) + 1
-            repeats = np.diff(self.raw_quad_indptr[: cycle_index])
-            if self.zeroth_frame:
-                repeats[0] -= self.scan_max_index
-            cycle_length = self.scan_max_index * self.precursor_max_index
-            repeat_length = np.sum(repeats)
-            if repeat_length != cycle_length:
-                repeats[-1] -= repeat_length - cycle_length
-            self._dia_mz_cycle = np.empty((cycle_length, 2))
-            self._dia_mz_cycle[:, 0] = np.repeat(
-                self.quad_mz_values[: cycle_index - 1, 0],
-                repeats
-            )
-            self._dia_mz_cycle[:, 1] = np.repeat(
-                self.quad_mz_values[: cycle_index - 1, 1],
-                repeats
-            )
-            self._dia_precursor_cycle = np.repeat(
-                self.precursor_indices[: cycle_index - 1],
-                repeats
-            )
-        else:
-            self._dia_mz_cycle = np.empty((0, 2))
-            self._dia_precursor_cycle = np.empty(0, dtype=np.int64)
 
     def index_precursors(
         self,
