@@ -404,6 +404,21 @@ class Orbitrap(object):
         """: np.ndarray : np.int64[:] : The precursor indices."""
         return self._precursor_indices
 
+    @property
+    def dia_precursor_cycle(self):
+        """: np.ndarray : np.int64[:] : The precursor indices of a DIA cycle."""
+        return self._dia_precursor_cycle
+
+    @property
+    def dia_mz_cycle(self):
+        """: np.ndarray : np.float64[:, 2] : The mz_values of a DIA cycle."""
+        return self._dia_mz_cycle
+
+    @property
+    def zeroth_frame(self):
+        """: bool : A blank zeroth frame is present so frames are 1-indexed."""
+        return self._zeroth_frame
+
     def __init__(
         self,
         thermo_raw_file_name: str,
@@ -781,7 +796,7 @@ class Orbitrap(object):
         side: str = "left",
         return_type: str = "",
     ):
-        """Convert selected values to a pd.DataFrame.
+        """Convert selected values to an array in the requested dimension.
 
         Parameters
         ----------
@@ -894,7 +909,7 @@ class Orbitrap(object):
         tof_slices: np.ndarray,
         quad_slices: np.ndarray,
     ) -> int:
-        """Estimate the number of strike counts, given a set of slices.
+        """Estimate the number of detector events, given a set of slices.
 
         Parameters
         ----------
@@ -928,7 +943,7 @@ class Orbitrap(object):
         Returns
         -------
         int
-            The estimated number of strike counts given these slices.
+            The estimated number of detector events given these slices.
         """
         frame_count = 0
         for frame_start, frame_end, frame_stop in frame_slices:
@@ -1117,6 +1132,112 @@ class Orbitrap(object):
                 raw_indices_sorted=raw_indices_sorted,
             )
         )
+
+    def _parse_quad_indptr(self) -> None:
+        logging.info("Indexing quadrupole dimension")
+        frame_ids = self.fragment_frames.Frame.values + 1
+        scan_begins = self.fragment_frames.ScanNumBegin.values
+        scan_ends = self.fragment_frames.ScanNumEnd.values
+        isolation_mzs = self.fragment_frames.IsolationMz.values
+        isolation_widths = self.fragment_frames.IsolationWidth.values
+        precursors = self.fragment_frames.Precursor.values
+        if (precursors[0] is None):
+            if self.zeroth_frame:
+                frame_groups = self.frames.MsMsType.values[1:]
+            else:
+                frame_groups = self.frames.MsMsType.values
+            precursor_frames = np.flatnonzero(frame_groups == 0)
+            group_sizes = np.diff(precursor_frames)
+            group_size = group_sizes[0]
+            if np.any(group_sizes != group_size):
+                raise ValueError("Sample type not understood")
+            precursors = (1 + frame_ids - frame_ids[0]) % group_size
+            if self.zeroth_frame:
+                precursors[0] = 0
+            self.fragment_frames.Precursor = precursors
+            self._acquisition_mode = "diaPASEF"
+        scan_max_index = self.scan_max_index
+        frame_max_index = self.frame_max_index
+        quad_indptr = [0]
+        quad_low_values = []
+        quad_high_values = []
+        precursor_indices = []
+        high = -1
+        for (
+            frame_id,
+            scan_begin,
+            scan_end,
+            isolation_mz,
+            isolation_width,
+            precursor
+        ) in zip(
+            frame_ids - 1,
+            scan_begins,
+            scan_ends,
+            isolation_mzs,
+            isolation_widths / 2,
+            precursors
+        ):
+            low = frame_id * scan_max_index + scan_begin
+            # TODO: CHECK?
+            if low != high:
+                quad_indptr.append(low)
+                quad_low_values.append(-1)
+                quad_high_values.append(-1)
+                precursor_indices.append(0)
+            high = frame_id * scan_max_index + scan_end
+            quad_indptr.append(high)
+            quad_low_values.append(isolation_mz - isolation_width)
+            quad_high_values.append(isolation_mz + isolation_width)
+            precursor_indices.append(precursor)
+        quad_max_index = scan_max_index * frame_max_index
+        if high < quad_max_index:
+            quad_indptr.append(quad_max_index)
+            quad_low_values.append(-1)
+            quad_high_values.append(-1)
+            precursor_indices.append(0)
+        self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
+        self._precursor_indices = np.array(precursor_indices)
+        self._raw_quad_indptr = np.array(quad_indptr)
+        self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
+        self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
+        self._quad_min_mz_value = np.min(
+            self.quad_mz_values[
+                self.quad_mz_values[:, 0] >= 0,
+                0
+            ]
+        )
+        self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
+        if self._acquisition_mode == "diaPASEF":
+            offset = int(self.zeroth_frame)
+            cycle_index = np.searchsorted(
+                self.raw_quad_indptr,
+                (self.scan_max_index) * (self.precursor_max_index + offset),
+                "r"
+            ) + 1
+            repeats = np.diff(self.raw_quad_indptr[: cycle_index])
+            if self.zeroth_frame:
+                repeats[0] -= self.scan_max_index
+            cycle_length = self.scan_max_index * self.precursor_max_index
+            repeat_length = np.sum(repeats)
+            if repeat_length != cycle_length:
+                repeats[-1] -= repeat_length - cycle_length
+            self._dia_mz_cycle = np.empty((cycle_length, 2))
+            self._dia_mz_cycle[:, 0] = np.repeat(
+                self.quad_mz_values[: cycle_index - 1, 0],
+                repeats
+            )
+            self._dia_mz_cycle[:, 1] = np.repeat(
+                self.quad_mz_values[: cycle_index - 1, 1],
+                repeats
+            )
+            self._dia_precursor_cycle = np.repeat(
+                self.precursor_indices[: cycle_index - 1],
+                repeats
+            )
+        else:
+            self._dia_mz_cycle = np.empty((0, 2))
+            self._dia_precursor_cycle = np.empty(0, dtype=np.int64)
 
     def index_precursors(
         self,
@@ -1834,6 +1955,54 @@ def convert_slice_key_to_int_array(data: Orbitrap, key, dimension: str):
 
 
 @alphatims.utils.njit
+def calculate_dia_cycle_mask(
+    dia_mz_cycle: np.ndarray,
+    quad_slices: np.ndarray,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+):
+    """Calculate a boolean mask for cyclic push indices satisfying queries.
+
+    Parameters
+    ----------
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+
+    Returns
+    -------
+    : np.bool_[:]
+        A mask that determines if a cyclic push index is valid given the
+        requested slices.
+    """
+    mz_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+    for i, (mz_start, mz_stop) in enumerate(dia_mz_cycle):
+        for quad_mz_start, quad_mz_stop in quad_slices:
+            if (quad_mz_start <= mz_stop) and (quad_mz_stop >= mz_start):
+                mz_mask[i] = True
+                break
+    if precursor_slices is not None:
+        precursor_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+        for i, precursor_index in enumerate(dia_precursor_cycle):
+            for (start, stop, step) in precursor_slices:
+                if precursor_index in range(start, stop, step):
+                    precursor_mask[i] = True
+                    break
+        return mz_mask & precursor_mask
+    else:
+        return mz_mask
+
+
+@alphatims.utils.njit
 def valid_quad_mz_values(
     low_mz_value: float,
     high_mz_value: float,
@@ -2138,3 +2307,116 @@ def indptr_lookup(
                 target_index -= momentum
         hits[i] = target_index - 1
     return hits
+
+
+@alphatims.utils.njit(nogil=True)
+def get_dia_push_indices(
+    frame_slices: np.ndarray,
+    scan_slices: np.ndarray,
+    quad_slices: np.ndarray,
+    scan_max_index: int,
+    dia_mz_cycle: np.ndarray,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+    zeroth_frame: bool = True,
+):
+    """Filter DIA push indices by slices from LC, TIMS and QUAD.
+
+    Parameters
+    ----------
+    frame_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+    scan_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    scan_max_index : int
+        The maximum scan index of a TimsTOF object.
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+    zeroth_frame : bool
+        Indicates if a zeroth frame was used before a DIA cycle.
+
+    Returns
+    -------
+    : np.int64[:]
+        The raw push indices that satisfy all the slices.
+    """
+    result = []
+    quad_mask = calculate_dia_cycle_mask(
+        dia_mz_cycle=dia_mz_cycle,
+        quad_slices=quad_slices,
+        dia_precursor_cycle=dia_precursor_cycle,
+        precursor_slices=precursor_slices
+    )
+    for frame_start, frame_stop, frame_step in frame_slices:
+        for frame_index in range(frame_start, frame_stop, frame_step):
+            for scan_start, scan_stop, scan_step in scan_slices:
+                for scan_index in range(scan_start, scan_stop, scan_step):
+                    push_index = frame_index * scan_max_index + scan_index
+                    if zeroth_frame:
+                        cyclic_push_index = push_index - scan_max_index
+                    else:
+                        cyclic_push_index = push_index
+                    if quad_mask[cyclic_push_index % len(dia_mz_cycle)]:
+                        result.append(push_index)
+    return np.array(result)
+
+
+@alphatims.utils.njit(nogil=True)
+def filter_tof_to_csr(
+    tof_slices: np.ndarray,
+    push_indices: np.ndarray,
+    tof_indices: np.ndarray,
+    push_indptr: np.ndarray,
+):
+    """Get a CSR-matrix with raw indices satisfying push indices and tof slices.
+
+    Parameters
+    ----------
+    tof_slices : np.ndarray
+        Description of parameter `tof_slices`.
+    push_indices : np.ndarray
+        Description of parameter `push_indices`.
+    tof_indices : np.ndarray
+        Description of parameter `tof_indices`.
+    push_indptr : np.ndarray
+        Description of parameter `push_indptr`.
+
+    Returns
+    -------
+    (np.int64[:], np.int64[:], np.int64[:],)
+        An (indptr, values, columns) tuple, where indptr are push indices,
+        values raw indices, and columns the tof_slices.
+    """
+    indptr = [0]
+    values = []
+    columns = []
+    for push_index in push_indices:
+        start = push_indptr[push_index]
+        end = push_indptr[push_index + 1]
+        idx = start
+        for i, (tof_start, tof_stop, tof_step) in enumerate(tof_slices):
+            idx += np.searchsorted(tof_indices[idx: end], tof_start)
+            tof_value = tof_indices[idx]
+            while (tof_value < tof_stop) and (idx < end):
+                if tof_value in range(tof_start, tof_stop, tof_step):
+                    values.append(idx)
+                    columns.append(i)
+                    break  # TODO what if multiple hits?
+                idx += 1
+                tof_value = tof_indices[idx]
+        indptr.append(len(values))
+    return np.array(indptr), np.array(values), np.array(columns)
