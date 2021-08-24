@@ -2,6 +2,7 @@
 
 # builtin
 import setuptools
+import re
 # local
 import alphatims as package2install
 
@@ -12,20 +13,17 @@ with open("README.md", "r") as readme_file:
 extra_requirements = {}
 for extra, requirement_file_name in package2install.__requirements__.items():
     with open(requirement_file_name) as requirements_file:
+        if extra != "":
+            extra_stable = f"{extra}-stable"
+        else:
+            extra_stable = "stable"
+        extra_requirements[extra_stable] = []
         extra_requirements[extra] = []
         for line in requirements_file:
-            if package2install.__requirements_style__ is None:
-                extra_requirements[extra].append(line)
-            else:
-                requirement, version = line.split("==")
-                requirement == requirement.strip()
-                version == version.strip()
-                if package2install.__requirements_style__ != "":
-                    requirement = (
-                        f"{requirement}"
-                        f"{package2install.__requirements_style__}{version}"
-                    )
-                extra_requirements[extra].append(requirement)
+            extra_requirements[extra_stable].append(line)
+            requirement, *comparison = re.split("[><=~!]", line)
+            requirement == requirement.strip()
+            extra_requirements[extra].append(requirement)
 
 requirements = extra_requirements.pop("")
 

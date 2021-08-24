@@ -24,6 +24,7 @@ __classifiers__ = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 __console_scripts__ = [
@@ -38,9 +39,7 @@ __urls__ = {
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
-    "stable": "requirements/requirements_stable.txt",
     "plotting": "requirements/requirements_plotting.txt",
     "development": "requirements/requirements_development.txt",
     "legacy": "requirements/requirements_legacy.txt",
 }
-__requirements_style__ = None

@@ -108,6 +108,16 @@ When a new version of AlphaTims becomes available, the old version can easily be
 pip install "alphatims[plotting,legacy,stable]" --upgrade
 ```
 
+The following extra options are available:
+
+* `stable`
+* `plotting`
+* `plotting-stable`
+* `legacy`
+* `legacy-stable`
+* `development`
+* `development-stable`
+
 NOTE: Multiple dependancy packs can be installed by comma-separation. Note however that this only works without spaces!
 
 ### Developer
@@ -139,7 +149,7 @@ Alternatively, a new conda environment can manually be created or AlphaTims can 
 ```bash
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
-pip install -e "./alphatims[plotting,development]"
+pip install -e "./alphatims[plotting-stable,development]"
 ```
 
 ***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
@@ -288,13 +298,13 @@ Common installation/usage issues include:
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading or upgrading pip to version 20.2 or 21.0 with `pip install pip==20.2` or `pip install pip==21.0` (before running `pip install alphatims`) could solve dependancy conflicts.
-* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting,development]"`.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting-stable,development]"`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
 * **Exporting PNG images with the CLI or Python package might not work out-of-the-box**. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
 * **GUI does not open.** In some cases this can be simply because of using an incompatible (default) browser. AlphaTims has been tested with Google Chrome and Mozilla Firefox. Windows IE and Windows Edge compatibility is not guaranteed.
 * **When older Bruker files need to be processed as well,** the [legacy dependencies](requirements/requirements_legacy.txt) are also needed. However, note that this requires [Microsoft Visual C++](https://visualstudio.microsoft.com/visual-cpp-build-tools) to be manually installed (on Windows machines) prior to AlphaTims installation! To include the legacy dependencies, install AlphaTims with `pip install "alphatims[legacy]"` or `pip install "alphatims[legacy]" --upgrade` if already pre-installed.
-* **When installed through `pip`, the GUI cannot be started.** Make sure you install AlphaTims with `pip install "alphatims[plotting]"` to include the GUI. If this was done and it still fails to run the GUI, a possible fic might be to run `pip install panel==0.10.3` after AlphaTims was installed.
+* **When installed through `pip`, the GUI cannot be started.** Make sure you install AlphaTims with `pip install "alphatims[plotting-stable]"` to include the GUI with stable dependancies. If this was done and it still fails to run the GUI, a possible fix might be to run `pip install panel==0.10.3` after AlphaTims was installed.
 
 ---
 ## How it works
@@ -380,7 +390,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FEAT: Included option to open Bruker raw data when starting the GUI.
   * FEAT: Provided hash for TimsTOF objects.
   * FEAT: Filter push indices.
-
+  * CHORE: included stable and loose versions for all dependancies
 
 ### 0.2.8
 
