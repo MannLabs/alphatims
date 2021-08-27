@@ -1497,8 +1497,9 @@ def peak_percentile(
 ):
     return np.percentile(
         peak_values[peak_mask],
-        percentile,
+        percentiles,
     )
+
 
 @alphatims.utils.threadpool
 def process_library_peptide(
@@ -1520,6 +1521,7 @@ def process_library_peptide(
         precursor_mz_slices[peptide_index: peptide_index + 1],
         dia_data.scan_max_index,
         dia_data.dia_mz_cycle,
+        zeroth_frame=dia_data.zeroth_frame,
     )
     if len(push_indices) == 0:
         return  # Outside quad region?
