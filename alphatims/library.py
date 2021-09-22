@@ -1046,8 +1046,9 @@ def make_dense_matrix(
 def get_intensity_matrix(
     matrix: np.ndarray,
     intensity_values: np.ndarray,
+    impute_value: float = 0,
 ):
-    intensity_matrix = np.zeros(matrix.shape, dtype=np.float64)
+    intensity_matrix = np.full(matrix.shape, impute_value, dtype=np.float64)
     for push_index in range(matrix.shape[0]):
         for fragment_index in range(matrix.shape[1]):
             raw_index = matrix[push_index, fragment_index]
@@ -1085,11 +1086,12 @@ def smoothen_intensity_matrix(
 def normalize_intensity_matrix(
     intensity_matrix: np.ndarray,
 ):
+    normalized_intensity_matrix = intensity_matrix.copy()
     for fragment_index in range(intensity_matrix.shape[1]):
         max_intensity = np.max(intensity_matrix[:, fragment_index])
         if max_intensity > 0:
-            intensity_matrix[:, fragment_index] /= max_intensity
-    return intensity_matrix
+            normalized_intensity_matrix[:, fragment_index] /= max_intensity
+    return normalized_intensity_matrix
 
 
 # alphatims.library.peak_descend(
@@ -1727,118 +1729,3 @@ def process_library_peptide(
     score_features["raw_indices_count"][peptide_index] = len(raw_indices)
     score_features["push_apex"][peptide_index] = push_indices[smooth_push_weights_peak_mask[0]]
     return locals()
-
-
-
-
-
-# "push_library_cosine_peak_mask_len",
-# "push_library_cosine_peak_mask_apex",
-# "push_library_cosine_peak_mask_push_library_cosine_best",
-# "push_library_cosine_peak_mask_push_library_cosine_worst",
-# "push_library_cosine_peak_mask_smooth_push_library_cosine_best",
-# "push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
-# "push_library_cosine_peak_mask_push_intensities_best",
-# "push_library_cosine_peak_mask_push_intensities_worst",
-# "push_library_cosine_peak_mask_smooth_push_intensities_best",
-# "push_library_cosine_peak_mask_smooth_push_intensities_worst",
-# "push_library_cosine_peak_mask_normalized_push_intensities_best",
-# "push_library_cosine_peak_mask_normalized_push_intensities_worst",
-# "push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
-# "push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
-# "push_library_cosine_peak_mask_push_weights_best",
-# "push_library_cosine_peak_mask_push_weights_worst",
-# "push_library_cosine_peak_mask_smooth_push_weights_best",
-# "push_library_cosine_peak_mask_smooth_push_weights_worst",
-# "smooth_push_library_cosine_peak_mask_len",
-# "smooth_push_library_cosine_peak_mask_apex",
-# "smooth_push_library_cosine_peak_mask_push_library_cosine_best",
-# "smooth_push_library_cosine_peak_mask_push_library_cosine_worst",
-# "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_best",
-# "smooth_push_library_cosine_peak_mask_smooth_push_library_cosine_worst",
-# "smooth_push_library_cosine_peak_mask_push_intensities_best",
-# "smooth_push_library_cosine_peak_mask_push_intensities_worst",
-# "smooth_push_library_cosine_peak_mask_smooth_push_intensities_best",
-# "smooth_push_library_cosine_peak_mask_smooth_push_intensities_worst",
-# "smooth_push_library_cosine_peak_mask_normalized_push_intensities_best",
-# "smooth_push_library_cosine_peak_mask_normalized_push_intensities_worst",
-# "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_best",
-# "smooth_push_library_cosine_peak_mask_normalized_smooth_push_intensities_worst",
-# "smooth_push_library_cosine_peak_mask_push_weights_best",
-# "smooth_push_library_cosine_peak_mask_push_weights_worst",
-# "smooth_push_library_cosine_peak_mask_smooth_push_weights_best",
-# "smooth_push_library_cosine_peak_mask_smooth_push_weights_worst",
-# "push_intensities_peak_mask_len",
-# "push_intensities_peak_mask_apex",
-# "push_intensities_peak_mask_push_library_cosine_best",
-# "push_intensities_peak_mask_push_library_cosine_worst",
-# "push_intensities_peak_mask_smooth_push_library_cosine_best",
-# "push_intensities_peak_mask_smooth_push_library_cosine_worst",
-# "push_intensities_peak_mask_push_intensities_best",
-# "push_intensities_peak_mask_push_intensities_worst",
-# "push_intensities_peak_mask_smooth_push_intensities_best",
-# "push_intensities_peak_mask_smooth_push_intensities_worst",
-# "push_intensities_peak_mask_normalized_push_intensities_best",
-# "push_intensities_peak_mask_normalized_push_intensities_worst",
-# "push_intensities_peak_mask_normalized_smooth_push_intensities_best",
-# "push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
-# "push_intensities_peak_mask_push_weights_best",
-# "push_intensities_peak_mask_push_weights_worst",
-# "push_intensities_peak_mask_smooth_push_weights_best",
-# "push_intensities_peak_mask_smooth_push_weights_worst",
-# "smooth_push_intensities_peak_mask_len",
-# "smooth_push_intensities_peak_mask_apex",
-# "smooth_push_intensities_peak_mask_push_library_cosine_best",
-# "smooth_push_intensities_peak_mask_push_library_cosine_worst",
-# "smooth_push_intensities_peak_mask_smooth_push_library_cosine_best",
-# "smooth_push_intensities_peak_mask_smooth_push_library_cosine_worst",
-# "smooth_push_intensities_peak_mask_push_intensities_best",
-# "smooth_push_intensities_peak_mask_push_intensities_worst",
-# "smooth_push_intensities_peak_mask_smooth_push_intensities_best",
-# "smooth_push_intensities_peak_mask_smooth_push_intensities_worst",
-# "smooth_push_intensities_peak_mask_normalized_push_intensities_best",
-# "smooth_push_intensities_peak_mask_normalized_push_intensities_worst",
-# "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_best",
-# "smooth_push_intensities_peak_mask_normalized_smooth_push_intensities_worst",
-# "smooth_push_intensities_peak_mask_push_weights_best",
-# "smooth_push_intensities_peak_mask_push_weights_worst",
-# "smooth_push_intensities_peak_mask_smooth_push_weights_best",
-# "smooth_push_intensities_peak_mask_smooth_push_weights_worst",
-# "push_weights_peak_mask_len",
-# "push_weights_peak_mask_apex",
-# "push_weights_peak_mask_push_library_cosine_best",
-# "push_weights_peak_mask_push_library_cosine_worst",
-# "push_weights_peak_mask_smooth_push_library_cosine_best",
-# "push_weights_peak_mask_smooth_push_library_cosine_worst",
-# "push_weights_peak_mask_push_intensities_best",
-# "push_weights_peak_mask_push_intensities_worst",
-# "push_weights_peak_mask_smooth_push_intensities_best",
-# "push_weights_peak_mask_smooth_push_intensities_worst",
-# "push_weights_peak_mask_normalized_push_intensities_best",
-# "push_weights_peak_mask_normalized_push_intensities_worst",
-# "push_weights_peak_mask_normalized_smooth_push_intensities_best",
-# "push_weights_peak_mask_normalized_smooth_push_intensities_worst",
-# "push_weights_peak_mask_push_weights_best",
-# "push_weights_peak_mask_push_weights_worst",
-# "push_weights_peak_mask_smooth_push_weights_best",
-# "push_weights_peak_mask_smooth_push_weights_worst",
-# "smooth_push_weights_peak_mask_len",
-# "smooth_push_weights_peak_mask_apex",
-# "smooth_push_weights_peak_mask_push_library_cosine_best",
-# "smooth_push_weights_peak_mask_push_library_cosine_worst",
-# "smooth_push_weights_peak_mask_smooth_push_library_cosine_best",
-# "smooth_push_weights_peak_mask_smooth_push_library_cosine_worst",
-# "smooth_push_weights_peak_mask_push_intensities_best",
-# "smooth_push_weights_peak_mask_push_intensities_worst",
-# "smooth_push_weights_peak_mask_smooth_push_intensities_best",
-# "smooth_push_weights_peak_mask_smooth_push_intensities_worst",
-# "smooth_push_weights_peak_mask_normalized_push_intensities_best",
-# "smooth_push_weights_peak_mask_normalized_push_intensities_worst",
-# "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_best",
-# "smooth_push_weights_peak_mask_normalized_smooth_push_intensities_worst",
-# "smooth_push_weights_peak_mask_push_weights_best",
-# "smooth_push_weights_peak_mask_push_weights_worst",
-# "smooth_push_weights_peak_mask_smooth_push_weights_best",
-# "smooth_push_weights_peak_mask_smooth_push_weights_worst",
-# "push_indices_count",
-# "raw_indices_count",

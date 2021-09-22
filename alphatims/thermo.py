@@ -156,8 +156,7 @@ class RawFile(alphatims.bruker.TimsTOF):
         self._acquisition_mode = "ddaPASEF" # TODO
         self._mz_min_value = int(np.min(mz_values))
         self._mz_max_value = int(np.max(mz_values)) + 1
-        self._decimals = 5
-        self.yar_mz = mz_values
+        self._decimals = 4
         self._mz_values = np.arange(
             10**self._decimals * self._mz_min_value,
             10**self._decimals * (self._mz_max_value + 1)
