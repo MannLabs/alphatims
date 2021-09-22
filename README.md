@@ -375,7 +375,7 @@ Check out the [paper](https://doi.org/10.1016/j.mcpro.2021.100149).
 ---
 ## How to contribute
 
-If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](https://github.com/MannLabs/alphabase/issues) or clone the repository and create a [pull request](pulls) with a new branch. For an even more interactive participation, check out the [discussions](https://github.com/MannLabs/alphabase/discussions).
+If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](https://github.com/MannLabs/alphabase/issues) or clone the repository and create a [pull request](https://github.com/MannLabs/alphabase/pulls) with a new branch. For an even more interactive participation, check out the [discussions](https://github.com/MannLabs/alphabase/discussions).
 For more information see [the Contributors License Agreement](misc/CLA.md).
 
 ---
