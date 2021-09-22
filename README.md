@@ -387,8 +387,6 @@ The following changes were introduced in the following versions of AlphaTims. Do
 
   * FEAT: Introduction of global mz calibration.
   * FEAT: Introduction of dia_cycle for diaPASEF.
-  * FEAT: Introduction of library class.
-  * FEAT: Introduction of dummy Thermo class.
   * CHORE: Verified Python 3.9 compatibility.
   * FEAT: Included option to open Bruker raw data when starting the GUI.
   * FEAT: Provided hash for TimsTOF objects.
