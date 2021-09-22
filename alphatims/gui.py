@@ -1248,7 +1248,7 @@ def upload_data(*args):
         upload_file.value = upload_file.value[1:]
     while upload_file.value.endswith("\""):
         upload_file.value = upload_file.value[:-1]
-    if ext in [".d", ".hdf", ".raw"]:
+    if ext in [".d", ".hdf"]:
         save_hdf_message.object = ''
         save_sliced_data_message.object = ''
         upload_error.object = None
@@ -1266,17 +1266,10 @@ def upload_data(*args):
                 alphatims.utils.set_progress_callback(upload_progress)
                 upload_progress.value = 0
                 upload_spinner.value = True
-                if ext == ".raw":
-                    import alphatims.thermo
-                    DATASET = alphatims.thermo.Orbitrap(
-                        upload_file.value,
-                        slice_as_dataframe=False
-                    )
-                else:
-                    DATASET = alphatims.bruker.TimsTOF(
-                        upload_file.value,
-                        slice_as_dataframe=False
-                    )
+                DATASET = alphatims.bruker.TimsTOF(
+                    upload_file.value,
+                    slice_as_dataframe=False
+                )
                 alphatims.utils.set_progress_callback(True)
                 mode = ''
                 if 'DDA' in upload_file.value:
