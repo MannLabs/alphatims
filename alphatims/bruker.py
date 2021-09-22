@@ -1314,7 +1314,10 @@ class TimsTOF(object):
         if return_rt_values:
             result["rt_values"] = self.rt_values[frame_indices]
         if return_rt_values_min:
-            result['rt_values_min'] = result["rt_values"] / 60
+            if "rt_values" in result:
+                result['rt_values_min'] = result["rt_values"] / 60
+            else:
+                result['rt_values_min'] = self.rt_values[frame_indices] / 60
         if return_mobility_values:
             result["mobility_values"] = self.mobility_values[scan_indices]
         if return_quad_mz_values:
@@ -3037,19 +3040,21 @@ def filter_tof_to_csr(
     push_indices: np.ndarray,
     tof_indices: np.ndarray,
     push_indptr: np.ndarray,
-):
+) -> tuple:
     """Get a CSR-matrix with raw indices satisfying push indices and tof slices.
 
     Parameters
     ----------
-    tof_slices : np.ndarray
-        Description of parameter `tof_slices`.
-    push_indices : np.ndarray
-        Description of parameter `push_indices`.
-    tof_indices : np.ndarray
-        Description of parameter `tof_indices`.
-    push_indptr : np.ndarray
-        Description of parameter `push_indptr`.
+    tof_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
+    push_indices : np.int64[:]
+        The push indices from where to retrieve the TOF slices.
+    tof_indices : np.uint32[:]
+        The self.tof_indices array of a TimsTOF object.
+    push_indptr : np.int64[:]
+        The self.push_indptr array of a TimsTOF object.
 
     Returns
     -------
@@ -3076,3 +3081,5 @@ def filter_tof_to_csr(
                 tof_value = tof_indices[idx]
         indptr.append(len(values))
     return np.array(indptr), np.array(values), np.array(columns)
+
+def test():pass

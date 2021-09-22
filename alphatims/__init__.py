@@ -32,10 +32,11 @@ __console_scripts__ = [
 ]
 __urls__ = {
     "Mann Labs at MPIB": "https://www.biochem.mpg.de/mann",
+    "Mann Labs at CPR": "https://www.cpr.ku.dk/research/proteomics/mann/",
     "GitHub": __github__,
     "ReadTheDocs": "https://alphatims.readthedocs.io/en/latest/",
     "PyPi": "https://pypi.org/project/alphatims/",
-    "Scientific paper": "https://doi.org/10.1101/2021.07.27.453933",
+    "Scientific paper": "https://doi.org/10.1016/j.mcpro.2021.100149",
 }
 __requirements__ = {
     "": "requirements/requirements.txt",
