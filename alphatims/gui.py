@@ -269,7 +269,6 @@ quit_button = pn.widgets.Button(
 #         import urllib.error
 #         import zipfile
 #         import io
-#         print("start")
 #         with urllib.request.urlopen(
 #             alphatims.utils.DEMO_FILE_NAME_GITHUB
 #         ) as sample_file:
@@ -285,7 +284,6 @@ quit_button = pn.widgets.Button(
 #             width=100,
 #             margin=(34, 20, 0, 20)
 #         )
-#         print("DONE")
 
 
 gui_manual_button = pn.widgets.FileDownload(
@@ -1244,8 +1242,13 @@ def upload_data(*args):
     global DATAFRAME
     global SELECTED_INDICES
     global WHOLE_TITLE
-    if upload_file.value.endswith(".d") or upload_file.value.endswith(".hdf"):
-        ext = os.path.splitext(upload_file.value)[-1]
+    global alphatims
+    ext = os.path.splitext(upload_file.value)[-1]
+    while upload_file.value.startswith("\""):
+        upload_file.value = upload_file.value[1:]
+    while upload_file.value.endswith("\""):
+        upload_file.value = upload_file.value[:-1]
+    if ext in [".d", ".hdf"]:
         save_hdf_message.object = ''
         save_sliced_data_message.object = ''
         upload_error.object = None
@@ -1437,7 +1440,6 @@ def init_settings(*args):
             precursor_end.start, precursor_end.end = STACK["precursors"]
 
             if DATASET.acquisition_mode == "diaPASEF":
-                print("QUE")
                 precursor_start.name = "Start window group"
                 precursor_end.name = "End window group"
             else:
@@ -1660,7 +1662,7 @@ def update_selected_indices_and_dataframe():
         DATAFRAME = DATASET.as_dataframe(SELECTED_INDICES)
 
 
-def run():
+def run(port=None, bruker_raw_data=None):
     global LAYOUT
     global PLOTS
     global SERVER
@@ -1676,7 +1678,22 @@ def run():
     bokeh.server.views.ws.WSHandler.on_close = close_browser_tab(
         original_on_close
     )
-    SERVER = LAYOUT.show(title='AlphaTims', threaded=True)
+    if port is not None:
+        import socket
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        websocket_origin = f"{ip_address}:{port}"
+    else:
+        websocket_origin = None
+    SERVER = LAYOUT.show(
+        title='AlphaTims',
+        threaded=True,
+        port=port,
+        websocket_origin=websocket_origin,
+    )
+    if bruker_raw_data is not None:
+        upload_file.value = bruker_raw_data
+        init_settings()
     SERVER.join()
 
 

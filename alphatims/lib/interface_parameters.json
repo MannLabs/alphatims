@@ -56,6 +56,11 @@
     },
     "required": false
   },
+  "port": {
+    "help": "The port to use if enabling network access. WARNING!!!! This feature opens up a port to your system, which might be extremely unsafe!!! Anyone can access the running AlphaTims via 'ip_address:port'.",
+    "type": "int",
+    "required": false
+  },
   "centroiding_window": {
     "help": "The smoothing factor to centroid ddaPASEF spectra. A value of 0 means no smoothing/centroiding.",
     "default": 5,

@@ -506,7 +506,7 @@ def read_bruker_binary(
     tims_offset_values = frames.TimsId.values
     logging.info(
         f"Reading {frame_indptr.size - 2:,} frames with "
-        f"{frame_indptr[-1]:,} detector strikes for {bruker_d_folder_name}"
+        f"{frame_indptr[-1]:,} detector events for {bruker_d_folder_name}"
     )
     if compression_type == 1:
         process_frame_func = alphatims.utils.threadpool(
@@ -734,7 +734,15 @@ class TimsTOF(object):
     @property
     def mz_values(self):
         """: np.ndarray : np.float64[:] : The mz values."""
-        return self._mz_values
+        if self._use_calibrated_mz_values_as_default:
+            return self._calibrated_mz_values
+        else:
+            return self._mz_values
+
+    @property
+    def calibrated_mz_values(self):
+        """: np.ndarray : np.float64[:] : The global calibrated mz values."""
+        return self._calibrated_mz_values
 
     @property
     def quad_mz_values(self):
@@ -769,12 +777,22 @@ class TimsTOF(object):
     @property
     def mz_min_value(self):
         """: float : The minimum mz value."""
-        return self._mz_min_value
+        return self.mz_values[0]
 
     @property
     def mz_max_value(self):
         """: float : The maximum mz value."""
-        return self._mz_max_value
+        return self.mz_values[-1]
+
+    @property
+    def calibrated_mz_min_value(self):
+        """: float : The minimum calibrated mz value."""
+        return self.calibrated_mz_values[0]
+
+    @property
+    def calibrated_mz_max_value(self):
+        """: float : The maximum calibrated mz value."""
+        return self.calibrated_mz_values[-1]
 
     @property
     def rt_max_value(self):
@@ -851,12 +869,29 @@ class TimsTOF(object):
         """: np.ndarray : np.int64[:] : The precursor indices."""
         return self._precursor_indices
 
+    @property
+    def dia_precursor_cycle(self):
+        """: np.ndarray : np.int64[:] : The precursor indices of a DIA cycle."""
+        return self._dia_precursor_cycle
+
+    @property
+    def dia_mz_cycle(self):
+        """: np.ndarray : np.float64[:, 2] : The mz_values of a DIA cycle."""
+        return self._dia_mz_cycle
+
+    @property
+    def zeroth_frame(self):
+        """: bool : A blank zeroth frame is present so frames are 1-indexed."""
+        return self._zeroth_frame
+
     def __init__(
         self,
         bruker_d_folder_name: str,
+        *,
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
-        slice_as_dataframe: bool = True
+        slice_as_dataframe: bool = True,
+        use_calibrated_mz_values_as_default: int = 0
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -887,6 +922,11 @@ class TimsTOF(object):
             If False, slicing provides a np.int64[:] with raw indices.
             This value can also be modified after creation.
             Default is True.
+        use_calibrated_mz_values : int
+            If not 0, the mz_values are overwritten with global
+            calibrated_mz_values.
+            If 1, calibration at the MS1 level is performed.
+            If 2, calibration at the MS2 level is performed.
         """
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
@@ -910,13 +950,19 @@ class TimsTOF(object):
                 f"{bruker_d_folder_name}, while the current version of "
                 f"AlphaTims is {alphatims.__version__}."
             )
-        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
         self.slice_as_dataframe = slice_as_dataframe
+        self.use_calibrated_mz_values_as_default(
+            use_calibrated_mz_values_as_default
+        )
         # Precompile
         self[0, "raw"]
+        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
 
     def __len__(self):
         return len(self.intensity_values)
+
+    def __hash__(self):
+        return hash(self.bruker_d_folder_name)
 
     def _import_data_from_d_folder(
         self,
@@ -925,13 +971,14 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int,
     ):
         self._version = alphatims.__version__
+        self._zeroth_frame = True
         (
             self._acquisition_mode,
             global_meta_data,
             self._frames,
             self._fragment_frames,
             self._precursors,
-        ) = read_bruker_sql(bruker_d_folder_name)
+        ) = read_bruker_sql(bruker_d_folder_name, self._zeroth_frame)
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -946,6 +993,7 @@ class TimsTOF(object):
             int(self._meta_data["MaxNumPeaksPerScan"]),
         )
         logging.info(f"Indexing {bruker_d_folder_name}...")
+        self._use_calibrated_mz_values_as_default = False
         self._frame_max_index = self.frames.shape[0]
         self._scan_max_index = int(self.frames.NumScans.max()) + 1
         self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
@@ -979,14 +1027,18 @@ class TimsTOF(object):
                     self.scan_max_index
                 )
         else:
+            if (mobility_estimation_from_frame != 0):
+                logging.info(
+                    "Bruker DLL not available, estimating mobility values"
+                )
             self._mobility_values = self.mobility_max_value - (
                 self.mobility_max_value - self.mobility_min_value
             ) / self.scan_max_index * np.arange(self.scan_max_index)
-        self._mz_min_value = float(self.meta_data["MzAcqRangeLower"])
-        self._mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
-        tof_intercept = np.sqrt(self.mz_min_value)
+        mz_min_value = float(self.meta_data["MzAcqRangeLower"])
+        mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
+        tof_intercept = np.sqrt(mz_min_value)
         tof_slope = (
-            np.sqrt(self.mz_max_value) - tof_intercept
+            np.sqrt(mz_max_value) - tof_intercept
         ) / self.tof_max_index
         if (mz_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
@@ -1004,12 +1056,16 @@ class TimsTOF(object):
                     indices.ctypes.data_as(
                         ctypes.POINTER(ctypes.c_double)
                     ),
-                    self.mz_values.ctypes.data_as(
+                    self._mz_values.ctypes.data_as(
                         ctypes.POINTER(ctypes.c_double)
                     ),
                     self.tof_max_index
                 )
         else:
+            if (mz_estimation_from_frame != 0):
+                logging.info(
+                    "Bruker DLL not available, estimating mz values"
+                )
             self._mz_values = (
                 tof_intercept + tof_slope * np.arange(self.tof_max_index)
             )**2
@@ -1258,7 +1314,10 @@ class TimsTOF(object):
         if return_rt_values:
             result["rt_values"] = self.rt_values[frame_indices]
         if return_rt_values_min:
-            result['rt_values_min'] = result["rt_values"] / 60
+            if "rt_values" in result:
+                result['rt_values_min'] = result["rt_values"] / 60
+            else:
+                result['rt_values_min'] = self.rt_values[frame_indices] / 60
         if return_mobility_values:
             result["mobility_values"] = self.mobility_values[scan_indices]
         if return_quad_mz_values:
@@ -1283,7 +1342,7 @@ class TimsTOF(object):
         side: str = "left",
         return_type: str = "",
     ):
-        """Convert selected values to a pd.DataFrame.
+        """Convert selected values to an array in the requested dimension.
 
         Parameters
         ----------
@@ -1396,7 +1455,7 @@ class TimsTOF(object):
         tof_slices: np.ndarray,
         quad_slices: np.ndarray,
     ) -> int:
-        """Estimate the number of strike counts, given a set of slices.
+        """Estimate the number of detector events, given a set of slices.
 
         Parameters
         ----------
@@ -1430,7 +1489,7 @@ class TimsTOF(object):
         Returns
         -------
         int
-            The estimated number of strike counts given these slices.
+            The estimated number of detector events given these slices.
         """
         frame_count = 0
         for frame_start, frame_end, frame_stop in frame_slices:
@@ -1621,6 +1680,7 @@ class TimsTOF(object):
         )
 
     def _parse_quad_indptr(self) -> None:
+        logging.info("Indexing quadrupole dimension")
         frame_ids = self.fragment_frames.Frame.values + 1
         scan_begins = self.fragment_frames.ScanNumBegin.values
         scan_ends = self.fragment_frames.ScanNumEnd.values
@@ -1628,13 +1688,18 @@ class TimsTOF(object):
         isolation_widths = self.fragment_frames.IsolationWidth.values
         precursors = self.fragment_frames.Precursor.values
         if (precursors[0] is None):
-            frame_groups = self.frames.MsMsType.values[1:]  # exc. zeroth frame
+            if self.zeroth_frame:
+                frame_groups = self.frames.MsMsType.values[1:]
+            else:
+                frame_groups = self.frames.MsMsType.values
             precursor_frames = np.flatnonzero(frame_groups == 0)
             group_sizes = np.diff(precursor_frames)
             group_size = group_sizes[0]
             if np.any(group_sizes != group_size):
                 raise ValueError("Sample type not understood")
             precursors = (1 + frame_ids - frame_ids[0]) % group_size
+            if self.zeroth_frame:
+                precursors[0] = 0
             self.fragment_frames.Precursor = precursors
             self._acquisition_mode = "diaPASEF"
         scan_max_index = self.scan_max_index
@@ -1659,8 +1724,9 @@ class TimsTOF(object):
             isolation_widths / 2,
             precursors
         ):
-            low = frame_id * scan_max_index + scan_begin - 1
-            if low > high:
+            low = frame_id * scan_max_index + scan_begin
+            # TODO: CHECK?
+            if low != high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
                 quad_high_values.append(-1)
@@ -1688,6 +1754,36 @@ class TimsTOF(object):
             ]
         )
         self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
+        if self._acquisition_mode == "diaPASEF":
+            offset = int(self.zeroth_frame)
+            cycle_index = np.searchsorted(
+                self.raw_quad_indptr,
+                (self.scan_max_index) * (self.precursor_max_index + offset),
+                "r"
+            ) + 1
+            repeats = np.diff(self.raw_quad_indptr[: cycle_index])
+            if self.zeroth_frame:
+                repeats[0] -= self.scan_max_index
+            cycle_length = self.scan_max_index * self.precursor_max_index
+            repeat_length = np.sum(repeats)
+            if repeat_length != cycle_length:
+                repeats[-1] -= repeat_length - cycle_length
+            self._dia_mz_cycle = np.empty((cycle_length, 2))
+            self._dia_mz_cycle[:, 0] = np.repeat(
+                self.quad_mz_values[: cycle_index - 1, 0],
+                repeats
+            )
+            self._dia_mz_cycle[:, 1] = np.repeat(
+                self.quad_mz_values[: cycle_index - 1, 1],
+                repeats
+            )
+            self._dia_precursor_cycle = np.repeat(
+                self.precursor_indices[: cycle_index - 1],
+                repeats
+            )
+        else:
+            self._dia_mz_cycle = np.empty((0, 2))
+            self._dia_precursor_cycle = np.empty(0, dtype=np.int64)
 
     def index_precursors(
         self,
@@ -1902,6 +1998,119 @@ class TimsTOF(object):
             f"spectra to {full_file_name}."
         )
         return full_file_name
+
+    def calculate_global_calibrated_mz_values(
+        self,
+        calibrant1: tuple = (922.009798, 1.1895, slice(0, 1)),
+        calibrant2: tuple = (1221.990637, 1.3820, slice(0, 1)),
+        mz_tolerance: float = 10,  # in Th
+        mobility_tolerance: float = 0.1,  # in 1/k0,
+    ) -> None:
+        """Calculate global calibrated_mz_values based on two calibrant ions.
+
+        Parameters
+        ----------
+        calibrant1 : tuple
+            The first calibrant ion.
+            This is a tuple with (mz, mobility, precursor_slice) foat values.
+            Default is (922.009798, 1.1895, slice(0, 1)).
+        calibrant2 : tuple
+            The first calibrant ion.
+            This is a tuple with (mz, mobility, precursor_slice) foat values.
+            Default is (1221.990637, 1.3820, slice(0, 1)).
+        mz_tolerance : float
+            The tolerance window (in Th) with respect to the
+            uncalibrated mz_values. If this is too large,
+            the calibrant ion might not be the most intense ion anymore.
+            If this is too small, the calibrant ion might not be contained.
+            Default is 10.
+        mobility_tolerance : float
+            The tolerance window with respect to the
+            uncalibrated mobility_values. If this is too large,
+            the calibrant ion might not be the most intense ion anymore.
+            If this is too small, the calibrant ion might not be contained.
+            Default is 0.1.
+        """
+        logging.info("Calculating global calibrated mz values...")
+        if calibrant1[0] > calibrant2[0]:
+            calibrant1, calibrant2 = calibrant2, calibrant1
+        calibrant1_lower_mz = calibrant1[0] - mz_tolerance
+        calibrant1_upper_mz = calibrant1[0] + mz_tolerance
+        calibrant1_lower_mobility = calibrant1[1] - mobility_tolerance
+        calibrant1_upper_mobility = calibrant1[1] + mobility_tolerance
+        calibrant1_tof = np.argmax(
+            np.bincount(
+                self.tof_indices[
+                    self[
+                        :,
+                        calibrant1_lower_mobility: calibrant1_upper_mobility,
+                        calibrant1[2],
+                        calibrant1_lower_mz: calibrant1_upper_mz,
+                        "raw"
+                    ]
+                ]
+            )
+        )
+        calibrant2_lower_mz = calibrant2[0] - mz_tolerance
+        calibrant2_upper_mz = calibrant2[0] + mz_tolerance
+        calibrant2_lower_mobility = calibrant2[1] - mobility_tolerance
+        calibrant2_upper_mobility = calibrant2[1] + mobility_tolerance
+        calibrant2_tof = np.argmax(
+            np.bincount(
+                self.tof_indices[
+                    self[
+                        :,
+                        calibrant2_lower_mobility: calibrant2_upper_mobility,
+                        calibrant2[2],
+                        calibrant2_lower_mz: calibrant2_upper_mz,
+                        "raw"
+                    ]
+                ]
+            )
+        )
+        tof_slope = (
+            np.sqrt(calibrant2[0]) - np.sqrt(calibrant1[0])
+        ) / (calibrant2_tof - calibrant1_tof)
+        tof_intercept = np.sqrt(calibrant1[0]) - tof_slope * calibrant1_tof
+        self._calibrated_mz_values = (
+            tof_intercept + tof_slope * np.arange(self.tof_max_index)
+        )**2
+        ppms = 10**6 * (
+            self._mz_values - self._calibrated_mz_values
+        ) / self._mz_values
+        logging.info(
+            "Global calibration of mz values yielded differences between "
+            f"{np.min(ppms):.2f} and {np.max(ppms):.2f} ppm."
+        )
+
+    def use_calibrated_mz_values_as_default(
+        self,
+        use_calibrated_mz_values: int
+    ) -> None:
+        """Override the default mz_values with the global calibrated_mz_values.
+
+        Calibrated_mz_values will be calculated if they do not exist yet.
+
+        Parameters
+        ----------
+        use_calibrated_mz_values : int
+            If not 0, the mz_values are overwritten with global
+            calibrated_mz_values.
+            If 1, calibration at the MS1 level is performed.
+            If 2, calibration at the MS2 level is performed.
+        """
+        if use_calibrated_mz_values != 0:
+            if not hasattr(self, "_calibrated_mz_values"):
+                if use_calibrated_mz_values == 1:
+                    ms_level = 0
+                if use_calibrated_mz_values == 2:
+                    ms_level = slice(1, None)
+                self.calculate_global_calibrated_mz_values(
+                    calibrant1=(922.009798, 1.1895, ms_level),
+                    calibrant2=(1221.990637, 1.3820, ms_level),
+                    mz_tolerance=1
+                )
+        self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
 
 class PrecursorFloatError(TypeError):
@@ -2405,6 +2614,54 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
 
 
 @alphatims.utils.njit
+def calculate_dia_cycle_mask(
+    dia_mz_cycle: np.ndarray,
+    quad_slices: np.ndarray,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+):
+    """Calculate a boolean mask for cyclic push indices satisfying queries.
+
+    Parameters
+    ----------
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+
+    Returns
+    -------
+    : np.bool_[:]
+        A mask that determines if a cyclic push index is valid given the
+        requested slices.
+    """
+    mz_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+    for i, (mz_start, mz_stop) in enumerate(dia_mz_cycle):
+        for quad_mz_start, quad_mz_stop in quad_slices:
+            if (quad_mz_start <= mz_stop) and (quad_mz_stop >= mz_start):
+                mz_mask[i] = True
+                break
+    if precursor_slices is not None:
+        precursor_mask = np.zeros(len(dia_mz_cycle), dtype=np.bool_)
+        for i, precursor_index in enumerate(dia_precursor_cycle):
+            for (start, stop, step) in precursor_slices:
+                if precursor_index in range(start, stop, step):
+                    precursor_mask[i] = True
+                    break
+        return mz_mask & precursor_mask
+    else:
+        return mz_mask
+
+
+@alphatims.utils.njit
 def valid_quad_mz_values(
     low_mz_value: float,
     high_mz_value: float,
@@ -2709,3 +2966,120 @@ def indptr_lookup(
                 target_index -= momentum
         hits[i] = target_index - 1
     return hits
+
+
+@alphatims.utils.njit(nogil=True)
+def get_dia_push_indices(
+    frame_slices: np.ndarray,
+    scan_slices: np.ndarray,
+    quad_slices: np.ndarray,
+    scan_max_index: int,
+    dia_mz_cycle: np.ndarray,
+    dia_precursor_cycle: np.ndarray = None,
+    precursor_slices: np.ndarray = None,
+    zeroth_frame: bool = True,
+):
+    """Filter DIA push indices by slices from LC, TIMS and QUAD.
+
+    Parameters
+    ----------
+    frame_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(frame_slices[:, :2].ravel()) >= 0) = True).
+    scan_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(scan_slices[:, :2].ravel()) >= 0) = True).
+    quad_slices : np.float64[:, 2]
+        Each row of the array is assumed to be (lower_mz, upper_mz) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(quad_slices.ravel()) >= 0) = True).
+    scan_max_index : int
+        The maximum scan index of a TimsTOF object.
+    dia_mz_cycle : np.float64[:, 2]
+        An array with (upper, lower) mz values of a DIA cycle (per push).
+    dia_precursor_cycle : np.int64[:]
+        An array with precursor indices of a DIA cycle (per push).
+    precursor_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(precursor_slices[:, :2].ravel()) >= 0) = True).
+    zeroth_frame : bool
+        Indicates if a zeroth frame was used before a DIA cycle.
+
+    Returns
+    -------
+    : np.int64[:]
+        The raw push indices that satisfy all the slices.
+    """
+    result = []
+    quad_mask = calculate_dia_cycle_mask(
+        dia_mz_cycle=dia_mz_cycle,
+        quad_slices=quad_slices,
+        dia_precursor_cycle=dia_precursor_cycle,
+        precursor_slices=precursor_slices
+    )
+    for frame_start, frame_stop, frame_step in frame_slices:
+        for frame_index in range(frame_start, frame_stop, frame_step):
+            for scan_start, scan_stop, scan_step in scan_slices:
+                for scan_index in range(scan_start, scan_stop, scan_step):
+                    push_index = frame_index * scan_max_index + scan_index
+                    if zeroth_frame:
+                        cyclic_push_index = push_index - scan_max_index
+                    else:
+                        cyclic_push_index = push_index
+                    if quad_mask[cyclic_push_index % len(dia_mz_cycle)]:
+                        result.append(push_index)
+    return np.array(result)
+
+
+@alphatims.utils.njit(nogil=True)
+def filter_tof_to_csr(
+    tof_slices: np.ndarray,
+    push_indices: np.ndarray,
+    tof_indices: np.ndarray,
+    push_indptr: np.ndarray,
+) -> tuple:
+    """Get a CSR-matrix with raw indices satisfying push indices and tof slices.
+
+    Parameters
+    ----------
+    tof_slices : np.int64[:, 3]
+        Each row of the array is assumed to be a (start, stop, step) tuple.
+        This array is assumed to be sorted, disjunct and strictly increasing
+        (i.e. np.all(np.diff(tof_slices[:, :2].ravel()) >= 0) = True).
+    push_indices : np.int64[:]
+        The push indices from where to retrieve the TOF slices.
+    tof_indices : np.uint32[:]
+        The self.tof_indices array of a TimsTOF object.
+    push_indptr : np.int64[:]
+        The self.push_indptr array of a TimsTOF object.
+
+    Returns
+    -------
+    (np.int64[:], np.int64[:], np.int64[:],)
+        An (indptr, values, columns) tuple, where indptr are push indices,
+        values raw indices, and columns the tof_slices.
+    """
+    indptr = [0]
+    values = []
+    columns = []
+    for push_index in push_indices:
+        start = push_indptr[push_index]
+        end = push_indptr[push_index + 1]
+        idx = start
+        for i, (tof_start, tof_stop, tof_step) in enumerate(tof_slices):
+            idx += np.searchsorted(tof_indices[idx: end], tof_start)
+            tof_value = tof_indices[idx]
+            while (tof_value < tof_stop) and (idx < end):
+                if tof_value in range(tof_start, tof_stop, tof_step):
+                    values.append(idx)
+                    columns.append(i)
+                    break  # TODO what if multiple hits?
+                idx += 1
+                tof_value = tof_indices[idx]
+        indptr.append(len(values))
+    return np.array(indptr), np.array(values), np.array(columns)
+
+def test():pass

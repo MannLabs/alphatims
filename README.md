@@ -1,5 +1,8 @@
 ![Pip installation](https://github.com/MannLabs/alphatims/workflows/Default%20installation%20and%20tests/badge.svg)
 ![GUI and PyPi releases](https://github.com/MannLabs/alphatims/workflows/Publish%20on%20PyPi%20and%20release%20on%20GitHub/badge.svg)
+[![Downloads](https://pepy.tech/badge/alphatims)](https://pepy.tech/project/alphatims)
+[![Downloads](https://pepy.tech/badge/alphatims/month)](https://pepy.tech/project/alphatims)
+[![Downloads](https://pepy.tech/badge/alphatims/week)](https://pepy.tech/project/alphatims)
 
 ---
 # AlphaTims
@@ -36,6 +39,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
+    * [**0.3.0**](#300)
     * [**0.2.8**](#028)
     * [**0.2.7**](#027)
 
@@ -107,6 +111,16 @@ When a new version of AlphaTims becomes available, the old version can easily be
 pip install "alphatims[plotting,legacy,stable]" --upgrade
 ```
 
+The following extra options are available:
+
+* `stable`
+* `plotting`
+* `plotting-stable`
+* `legacy`
+* `legacy-stable`
+* `development`
+* `development-stable`
+
 NOTE: Multiple dependancy packs can be installed by comma-separation. Note however that this only works without spaces!
 
 ### Developer
@@ -138,7 +152,7 @@ Alternatively, a new conda environment can manually be created or AlphaTims can 
 ```bash
 conda create -n alphatims python=3.8 -y
 conda activate alphatims
-pip install -e "./alphatims[plotting,development]"
+pip install -e "./alphatims[plotting-stable,development]"
 ```
 
 ***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
@@ -260,6 +274,8 @@ A brief [Jupyter notebook tutorial](nbs/tutorial.ipynb) on how to use the API is
 
 * Initial exploration of Bruker TimsTOF data files can be done by opening the .tdf file in the .d folder with an [SQL browser](https://sqlitebrowser.org/).
 * [HDF files](https://www.hdfgroup.org/solutions/hdf5/) can be explored with [HDF Compass](https://support.hdfgroup.org/projects/compass/) or [HDFView](https://www.hdfgroup.org/downloads/hdfview/).
+* Annotating Bruker TimsTOF data files can be done with [AlphaPept](https://github.com/MannLabs/alphapept)
+* Visualization of identified Bruker TimsTOF data files can be done with [AlphaViz](https://github.com/MannLabs/alphaviz)
 
 ---
 ## Performance
@@ -285,13 +301,13 @@ Common installation/usage issues include:
 * **No `git` command**. Make sure [git](https://git-scm.com/downloads) is installed. In a notebook `!conda install git -y` might work.
 * **Wrong Python version.** AlphaTims is only guaranteed to be compatible with Python 3.8. You can check if you have the right version with the command `python --version` (or `!python --version` in a notebook). If not, reinstall the AlphaTims environment with `conda create -n alphatims python=3.8`.
 * **Dependancy conflicts/issues.** Pip changed their dependancy resolver with [pip version 20.3](https://pip.pypa.io/en/stable/news/). Downgrading or upgrading pip to version 20.2 or 21.0 with `pip install pip==20.2` or `pip install pip==21.0` (before running `pip install alphatims`) could solve dependancy conflicts.
-* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting,development]"`.
+* **AlphaTims is not found.** Make sure you use the right folder. Local folders are best called by prefixing them with `./` (e.g. `pip install "./alphatims"`). On some systems, installation specifically requires (not) to use single quotes `'` around the AlphaTims folder, e.g. `pip install "./alphatims[plotting-stable,development]"`.
 * **Modifications to the AlphaTims source code are not reflected.** Make sure you use the `-e` flag when using `pip install -e alphatims`.
 * **Numpy does not work properly.** On Windows, `numpy==1.19.4` has some issues. After installing AlphaTims, downgrade NumPy with `pip install numpy==1.19.3`.
 * **Exporting PNG images with the CLI or Python package might not work out-of-the-box**. If a conda environment is used, this can be fixed by running `conda install -c conda-forge firefox geckodriver` in the AlphaTims conda environment. Alternatively, a file can be exported as html and opened in a browser. From the browser there is a `save as png` button available.
 * **GUI does not open.** In some cases this can be simply because of using an incompatible (default) browser. AlphaTims has been tested with Google Chrome and Mozilla Firefox. Windows IE and Windows Edge compatibility is not guaranteed.
 * **When older Bruker files need to be processed as well,** the [legacy dependencies](requirements/requirements_legacy.txt) are also needed. However, note that this requires [Microsoft Visual C++](https://visualstudio.microsoft.com/visual-cpp-build-tools) to be manually installed (on Windows machines) prior to AlphaTims installation! To include the legacy dependencies, install AlphaTims with `pip install "alphatims[legacy]"` or `pip install "alphatims[legacy]" --upgrade` if already pre-installed.
-* **When installed through `pip`, the GUI cannot be started.** Make sure you install AlphaTims with `pip install "alphatims[plotting]"` to include the GUI. If this was done and it still fails to run the GUI, a possible fic might be to run `pip install panel==0.10.3` after AlphaTims was installed.
+* **When installed through `pip`, the GUI cannot be started.** Make sure you install AlphaTims with `pip install "alphatims[plotting-stable]"` to include the GUI with stable dependancies. If this was done and it still fails to run the GUI, a possible fix might be to run `pip install panel==0.10.3` after AlphaTims was installed.
 
 ---
 ## How it works
@@ -304,7 +320,7 @@ The basic workflow of AlphaTims looks as follows:
 
 Also checkout:
 
-* The [paper](https://doi.org/10.1101/2021.07.27.453933) for a complete overview.
+* The [paper](https://doi.org/10.1016/j.mcpro.2021.100149) for a complete overview.
 * The [presentation](https://datashare.biochem.mpg.de/s/JlVKCvLHdQjsVZU) at [ISCB](https://www.iscb.org/ismbeccb2021) for a brief video.
 
 ### Bruker raw data
@@ -354,17 +370,28 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
 ---
 ## Citing AlphaTims
 
-Check out the [paper](https://doi.org/10.1101/2021.07.27.453933).
+Check out the [paper](https://doi.org/10.1016/j.mcpro.2021.100149).
 
 ---
 ## How to contribute
 
-If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](issues) or clone the repository and create a [pull request](pulls) with a new branch. For more information see [the Contributors License Agreement](misc/CLA.md).
+If you like AlphaTims you can give us a [star](stargazers) to boost our visibility! All direct contributions are also welcome. Feel free to post a new [issue](https://github.com/MannLabs/alphabase/issues) or clone the repository and create a [pull request](https://github.com/MannLabs/alphabase/pulls) with a new branch. For an even more interactive participation, check out the [discussions](https://github.com/MannLabs/alphabase/discussions).
+For more information see [the Contributors License Agreement](misc/CLA.md).
 
 ---
 ## Changelog
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
+
+### 0.3.0
+
+  * FEAT: Introduction of global mz calibration.
+  * FEAT: Introduction of dia_cycle for diaPASEF.
+  * CHORE: Verified Python 3.9 compatibility.
+  * FEAT: Included option to open Bruker raw data when starting the GUI.
+  * FEAT: Provided hash for TimsTOF objects.
+  * FEAT: Filter push indices.
+  * CHORE: included stable and loose versions for all dependancies
 
 ### 0.2.8
 
@@ -379,7 +406,7 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * DOCS: BioRxiv paper link.
   * FEAT/FIX: RT in min column.
   * FEAT: CLI manual.
-  * FEAT: Inlusion of more coordinates in CLI.
+  * FEAT: Inclusion of more coordinates in CLI.
 
 ### 0.2.7
 

@@ -184,7 +184,7 @@ jobs:
         run: |
           conda create -n alphatims_pip_test python=3.8 -y
           conda activate alphatims_pip_test
-          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple "alphatims[plotting,legacy]"
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple "alphatims[stable,plotting-stable,legacy-stable]"
           alphatims
           conda deactivate
       - name: Publish distribution to PyPI
@@ -212,6 +212,6 @@ jobs:
         run: |
           conda create -n alphatims_pip_test python=3.8 -y
           conda activate alphatims_pip_test
-          pip install "alphatims[plotting,legacy]"
+          pip install "alphatims[stable,plotting-stable,legacy-stable]"
           alphatims
           conda deactivate

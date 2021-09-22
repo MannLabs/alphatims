@@ -71,5 +71,5 @@ PyPi up-to-date?
   conda create -n alphatims_pip_test python=3.8 -y
   conda activate alphatims_pip_test
   # WARNING!!!!! Test on all OS
-  pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple "alphatims[plotting]"
+  pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple "alphatims[plotting-stable]"
   twine upload dist/*
