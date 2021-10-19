@@ -243,20 +243,55 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
+        polarity = frames.pop("Polarity")
         frames = pd.DataFrame(
             {
                 col: pd.to_numeric(
                     frames[col]
-                ) for col in frames if col != "Polarity"
+                ) for col in frames
             }
         )
-        return (
-            acquisition_mode,
-            global_meta_data,
-            frames,
-            fragment_frames,
-            precursors
+        frames["Polarity"] = polarity
+        property_definitions = pd.read_sql_query(
+            "SELECT * from PropertyDefinitions",
+            sql_database_connection
         )
+        property_names = dict(
+            zip(
+                property_definitions.Id,
+                property_definitions.PermanentName
+            )
+        )
+        properties = pd.read_sql_query(
+            "SELECT * from Properties",
+            sql_database_connection
+        )
+        properties.sort_values(by="Property", inplace=True)
+        counts = np.bincount(properties.Property.values)
+        indices = np.empty(len(counts) + 1, dtype=np.int64)
+        indices[0] = 0
+        indices[1:] = np.cumsum(counts)
+        frame_count = np.max(properties.Frame)
+        for i, start in enumerate(indices[:-1]):
+            end = indices[i + 1]
+            if start != end:
+                name = property_names[i]
+                try:
+                    values = pd.to_numeric(properties[start: end].Value.values)
+                except ValueError:
+                    values = properties[start: end].Value.values
+                array = np.full(frame_count + 1, np.nan, dtype=values.dtype)
+                array[properties[start: end].Frame.values] = values
+                if not add_zeroth_frame:
+                    array = array[1:]
+                frames[name] = array
+    return (
+        acquisition_mode,
+        global_meta_data,
+        frames,
+        fragment_frames,
+        precursors
+    )
 
 
 @alphatims.utils.njit(nogil=True)

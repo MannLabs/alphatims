@@ -737,6 +737,7 @@ def create_hdf_group_from_dict(
             )
         elif isinstance(value, (np.ndarray, pd.core.series.Series)):
             if isinstance(value, (pd.core.series.Series)):
+                value_ = value
                 value = value.values
             if overwrite and (key in hdf_group):
                 del hdf_group[key]
@@ -744,11 +745,21 @@ def create_hdf_group_from_dict(
                 if value.dtype.type == np.str_:
                     value = value.astype(np.dtype('O'))
                 if value.dtype == np.dtype('O'):
-                    hdf_group.create_dataset(
-                        key,
-                        data=value,
-                        dtype=h5py.string_dtype()
-                    )
+                    try:
+                        hdf_group.create_dataset(
+                            key,
+                            data=value,
+                            dtype=h5py.string_dtype(encoding='utf-8')
+                            # dtype=h5py.vlen_dtype(),
+                        )
+                    except TypeError:
+                        del hdf_group[key]
+                        hdf_group.create_dataset(
+                            key,
+                            data=value_.astype(str).values,
+                            # dtype=h5py.string_dtype(encoding='utf-8')
+                            dtype=h5py.vlen_dtype(str),
+                        )
                 else:
                     hdf_group.create_dataset(
                         key,
