@@ -144,6 +144,7 @@ def read_bruker_sql(
     bruker_d_folder_name: str,
     add_zeroth_frame: bool = True,
     drop_polarity: bool = True,
+    more_metadata: bool = False,
 ) -> tuple:
     """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
 
@@ -165,6 +166,10 @@ def read_bruker_sql(
         If False, this column is kept, resulting in a pd.DataFrame with
         dtype=object.
         Default is True.
+    more_metadata : bool
+        If True, more metadata is retrieved for the frames.
+        Note that this can slow down AlphaTims significantly.
+        Default is False.
 
     Returns
     -------
@@ -251,40 +256,42 @@ def read_bruker_sql(
                 ) for col in frames
             }
         )
-        frames["Polarity"] = polarity
-        property_definitions = pd.read_sql_query(
-            "SELECT * from PropertyDefinitions",
-            sql_database_connection
-        )
-        property_names = dict(
-            zip(
-                property_definitions.Id,
-                property_definitions.PermanentName
+        if not drop_polarity:
+            frames["Polarity"] = polarity
+        if more_metadata:
+            property_definitions = pd.read_sql_query(
+                "SELECT * from PropertyDefinitions",
+                sql_database_connection
             )
-        )
-        properties = pd.read_sql_query(
-            "SELECT * from Properties",
-            sql_database_connection
-        )
-        properties.sort_values(by="Property", inplace=True)
-        counts = np.bincount(properties.Property.values)
-        indices = np.empty(len(counts) + 1, dtype=np.int64)
-        indices[0] = 0
-        indices[1:] = np.cumsum(counts)
-        frame_count = np.max(properties.Frame)
-        for i, start in enumerate(indices[:-1]):
-            end = indices[i + 1]
-            if start != end:
-                name = property_names[i]
-                try:
-                    values = pd.to_numeric(properties[start: end].Value.values)
-                except ValueError:
-                    values = properties[start: end].Value.values
-                array = np.full(frame_count + 1, np.nan, dtype=values.dtype)
-                array[properties[start: end].Frame.values] = values
-                if not add_zeroth_frame:
-                    array = array[1:]
-                frames[name] = array
+            property_names = dict(
+                zip(
+                    property_definitions.Id,
+                    property_definitions.PermanentName
+                )
+            )
+            properties = pd.read_sql_query(
+                "SELECT * from Properties",
+                sql_database_connection
+            )
+            properties.sort_values(by="Property", inplace=True)
+            counts = np.bincount(properties.Property.values)
+            indices = np.empty(len(counts) + 1, dtype=np.int64)
+            indices[0] = 0
+            indices[1:] = np.cumsum(counts)
+            frame_count = np.max(properties.Frame)
+            for i, start in enumerate(indices[:-1]):
+                end = indices[i + 1]
+                if start != end:
+                    name = property_names[i]
+                    try:
+                        values = pd.to_numeric(properties[start: end].Value.values)
+                    except ValueError:
+                        values = properties[start: end].Value.values
+                    array = np.full(frame_count + 1, np.nan, dtype=values.dtype)
+                    array[properties[start: end].Frame.values] = values
+                    if not add_zeroth_frame:
+                        array = array[1:]
+                    frames[name] = array
     return (
         acquisition_mode,
         global_meta_data,
@@ -926,7 +933,8 @@ class TimsTOF(object):
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
-        use_calibrated_mz_values_as_default: int = 0
+        use_calibrated_mz_values_as_default: int = 0,
+        more_metadata: bool = False,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -962,6 +970,10 @@ class TimsTOF(object):
             calibrated_mz_values.
             If 1, calibration at the MS1 level is performed.
             If 2, calibration at the MS2 level is performed.
+        more_metadata : bool
+            If True, more metadata is retrieved for the frames.
+            Note that this can slow down AlphaTims significantly.
+            Default is False.
         """
         self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
@@ -970,6 +982,7 @@ class TimsTOF(object):
                 bruker_d_folder_name,
                 mz_estimation_from_frame,
                 mobility_estimation_from_frame,
+                more_metadata
             )
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
@@ -1004,6 +1017,7 @@ class TimsTOF(object):
         bruker_d_folder_name: str,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
+        more_metadata: bool,
     ):
         self._version = alphatims.__version__
         self._zeroth_frame = True
@@ -1013,7 +1027,11 @@ class TimsTOF(object):
             self._frames,
             self._fragment_frames,
             self._precursors,
-        ) = read_bruker_sql(bruker_d_folder_name, self._zeroth_frame)
+        ) = read_bruker_sql(
+            bruker_d_folder_name,
+            self._zeroth_frame,
+            more_metadata=more_metadata,
+        )
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
