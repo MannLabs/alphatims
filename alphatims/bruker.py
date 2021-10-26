@@ -941,6 +941,10 @@ class TimsTOF(object):
                 bruker_d_folder_name,
             )
             self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+        else:
+            raise NotImplementedError(
+                "WARNING: file extension not understood"
+            )
         if not hasattr(self, "version"):
             self._version = "none"
         if self.version != alphatims.__version__:
@@ -2547,7 +2551,10 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
             key = slice(None)
         if isinstance(key, slice):
             if dimension == "scan_indices":
-                if isinstance(key.start, (np.inexact, float)) or isinstance(key.stop, (np.inexact, float)):
+                if isinstance(key.start, (np.inexact, float)) or isinstance(
+                    key.stop,
+                    (np.inexact, float)
+                ):
                     key = slice(key.stop, key.start, key.step)
             start = key.start
             if not isinstance(start, (np.integer, int)):
@@ -3081,5 +3088,3 @@ def filter_tof_to_csr(
                 tof_value = tof_indices[idx]
         indptr.append(len(values))
     return np.array(indptr), np.array(values), np.array(columns)
-
-def test():pass
