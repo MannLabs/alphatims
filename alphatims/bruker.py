@@ -17,6 +17,12 @@ import h5py
 import alphatims
 import alphatims.utils
 
+logging.warning(
+    "WARNING: Intensities are unprocessed. "
+    "While they are often a good representation and directly usable, "
+    "preprocessing might be essential before downstream analysis!"
+)
+
 if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = os.path.join(
         alphatims.utils.EXT_PATH,
@@ -31,8 +37,7 @@ else:
     logging.warning(
         "WARNING: "
         "No Bruker libraries are available for this operating system. "
-        "Intensities are uncalibrated, resulting in (very) small differences. "
-        "However, mobility and m/z values need to be estimated. "
+        "Mobility and m/z values need to be estimated. "
         "While this estimation often returns acceptable results with errors "
         "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
         "observed for some samples!"
