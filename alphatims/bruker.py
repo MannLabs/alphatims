@@ -889,6 +889,21 @@ class TimsTOF(object):
         """: bool : A blank zeroth frame is present so frames are 1-indexed."""
         return self._zeroth_frame
 
+    @property
+    def max_accumulation_time(self):
+        """: float : The maximum accumulation time of all frames."""
+        return self._max_accumulation_time
+
+    @property
+    def accumulation_times(self):
+        """: np.ndarray : The accumulation times of all frames."""
+        return self._accumulation_times
+
+    @property
+    def intensity_corrections(self):
+        """: np.ndarray : The intensity_correction per frame."""
+        return self._intensity_corrections
+
     def __init__(
         self,
         bruker_d_folder_name: str,
@@ -1013,6 +1028,11 @@ class TimsTOF(object):
         self._mobility_max_value = float(
             self.meta_data["OneOverK0AcqRangeUpper"]
         )
+        self._accumulation_times = self.frames.AccumulationTime.values.astype(
+            np.float64
+        )
+        self._max_accumulation_time = np.max(self._accumulation_times)
+        self._intensity_corrections = self._max_accumulation_time / self._accumulation_times
         bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
         if (mobility_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
@@ -1185,6 +1205,7 @@ class TimsTOF(object):
         return_push_indices: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
+        return_corrected_intensity_values: bool = False,
         raw_indices_sorted: bool = True,
     ) -> dict:
         """Convert selected indices to a dict.
@@ -1241,6 +1262,9 @@ class TimsTOF(object):
         return_intensity_values : bool
             If True, include "intensity_values" in the dict.
             Default is False.
+        return_corrected_intensity_values : bool
+            If True, include "corrected_intensity_values" in the dict.
+            Default is False.
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
@@ -1263,6 +1287,7 @@ class TimsTOF(object):
                 return_quad_mz_values,
                 return_precursor_indices,
                 return_push_indices,
+                return_corrected_intensity_values,
             ]
         ):
             if raw_indices_sorted:
@@ -1276,7 +1301,16 @@ class TimsTOF(object):
                     raw_indices,
                     "right"
                 ) - 1
-        if (return_frame_indices or return_rt_values or return_rt_values_min) and (
+        if (
+            any(
+                [
+                    return_frame_indices,
+                    return_rt_values,
+                    return_rt_values_min,
+                    return_corrected_intensity_values,
+                ]
+            )
+        ) and (
             frame_indices is None
         ):
             frame_indices = push_indices // self.scan_max_index
@@ -1339,6 +1373,10 @@ class TimsTOF(object):
             result["mz_values"] = self.mz_values[tof_indices]
         if return_intensity_values:
             result["intensity_values"] = self.intensity_values[raw_indices]
+        if return_corrected_intensity_values:
+            result["corrected_intensity_values"] = (
+                self.intensity_values[raw_indices] * self.intensity_corrections[frame_indices]
+            ).astype(np.uint32)
         return result
 
     def convert_to_indices(
@@ -1610,6 +1648,7 @@ class TimsTOF(object):
         push_indices: bool = True,
         mz_values: bool = True,
         intensity_values: bool = True,
+        corrected_intensity_values: bool = True,
         raw_indices_sorted: bool = True,
     ):
         """Convert raw indices to a pd.DataFrame.
@@ -1658,6 +1697,9 @@ class TimsTOF(object):
         intensity_values : bool
             If True, include "intensity_values" in the dataframe.
             Default is True.
+        corrected_intensity_values : bool
+            If True, include "corrected_intensity_values" in the dataframe.
+            Default is True.
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
@@ -1684,6 +1726,7 @@ class TimsTOF(object):
                 return_push_indices=push_indices,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
+                return_corrected_intensity_values=corrected_intensity_values,
                 raw_indices_sorted=raw_indices_sorted,
             )
         )
