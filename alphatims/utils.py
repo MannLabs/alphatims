@@ -780,13 +780,16 @@ def create_hdf_group_from_dict(
             )
 
 
-def create_dict_from_hdf_group(hdf_group) -> dict:
+def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
     """Convert the contents of an HDF group and return as normal Python dict.
 
     Parameters
     ----------
     hdf_group : h5py.File.group
         An open and readable HDF group.
+    memmap_arrays : iterable
+        These array will be memmapped instead of pre-loaded.
+        Default is None
 
     Returns
     -------
@@ -823,7 +826,10 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
     for key in hdf_group:
         subgroup = hdf_group[key]
         if isinstance(subgroup, h5py.Dataset):
-            result[key] = subgroup[:]
+            if (memmap_arrays is not None) and (subgroup.name in memmap_arrays):
+                pass # TODO
+            else:
+                result[key] = subgroup[:]
         else:
             if "is_pd_dataframe" in subgroup.attrs:
                 result[key] = pd.DataFrame(
@@ -834,7 +840,10 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
                     }
                 )
             else:
-                result[key] = create_dict_from_hdf_group(hdf_group[key])
+                result[key] = create_dict_from_hdf_group(
+                    hdf_group[key],
+                    memmap_arrays,
+                )
     return result
 
 

@@ -911,7 +911,9 @@ class TimsTOF(object):
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
-        use_calibrated_mz_values_as_default: int = 0
+        use_calibrated_mz_values_as_default: int = 0,
+        use_hdf_if_available: bool = False,
+        memmap_detector_events: bool = False,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -947,20 +949,60 @@ class TimsTOF(object):
             calibrated_mz_values.
             If 1, calibration at the MS1 level is performed.
             If 2, calibration at the MS2 level is performed.
+            Default is 0.
+        use_hdf_if_available : bool
+            If an HDF file is available, use this instead of the
+            .d folder.
+            Default is False.
+        memmap_detector_events : bool
+            Do not save the intensity_values and tof_indices in memory,
+            but use an memmap instead. If no .hdf file is available to use for
+            memmapping, one will be created automatically.
+            Default is False.
         """
-        self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
-            self._import_data_from_d_folder(
-                bruker_d_folder_name,
-                mz_estimation_from_frame,
-                mobility_estimation_from_frame,
-            )
+            bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
+            hdf_file_exists = os.path.exists(bruker_hdf_file_name)
+            if use_hdf_if_available and hdf_file_exists:
+                self._import_data_from_hdf_file(
+                    bruker_hdf_file_name,
+                    memmap_detector_events,
+                )
+                self.bruker_hdf_file_name = bruker_hdf_file_name
+            else:
+                self.bruker_d_folder_name = os.path.abspath(
+                    bruker_d_folder_name
+                )
+                if memmap_detector_events and hdf_file_exists:
+                    raise IOError(
+                        f"Can only use memmap from .hdf files. "
+                        f"Since {bruker_hdf_file_name} already exists, "
+                        f"and the option use_hdf_if_available=True "
+                        f"is not explicitly used, this would result in "
+                        f"overwriting the .hdf file which could lead to "
+                        f"unexpected data losses. "
+                        f"Either use the .hdf file as input, "
+                        "allow to use the existing .hdf, "
+                        "or remove the existing .hdf file."
+                    )
+                self._import_data_from_d_folder(
+                    bruker_d_folder_name,
+                    mz_estimation_from_frame,
+                    mobility_estimation_from_frame,
+                )
+                if memmap_detector_events:
+                    self._import_data_from_hdf_file(
+                        bruker_d_folder_name,
+                        memmap_detector_events,
+                    )
+                    self.bruker_hdf_file_name = bruker_hdf_file_name
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
+                memmap_detector_events,
             )
-            self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+            self.bruker_hdf_file_name = bruker_hdf_file_name
         else:
             raise NotImplementedError(
                 "WARNING: file extension not understood"
@@ -1178,10 +1220,16 @@ class TimsTOF(object):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
+        memmap_detector_events: bool = False,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
+            memmap_arrays = {}
+            if memmap_detector_events:
+                memmap_arrays.append("_tof_indices")
+                memmap_arrays.append("_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
-                hdf_root["raw"]
+                hdf_root["raw"],
+                memmap_arrays,
             )
 
     def convert_from_indices(
@@ -1778,6 +1826,8 @@ class TimsTOF(object):
         ):
             low = frame_id * scan_max_index + scan_begin
             # TODO: CHECK?
+            # if low < high:
+            #     print(frame_id, low, frame_id * scan_max_index + scan_end, high, low - high)
             if low != high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
