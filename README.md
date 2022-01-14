@@ -39,8 +39,8 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
-    * [**0.3.1**](#301)
-    * [**0.3.0**](#300)
+    * [**0.3.1**](#031)
+    * [**0.3.0**](#030)
     * [**0.2.8**](#028)
     * [**0.2.7**](#027)
 
