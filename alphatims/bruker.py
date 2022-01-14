@@ -31,8 +31,7 @@ else:
     logging.warning(
         "WARNING: "
         "No Bruker libraries are available for this operating system. "
-        "Intensities are uncalibrated, resulting in (very) small differences. "
-        "However, mobility and m/z values need to be estimated. "
+        "Mobility and m/z values need to be estimated. "
         "While this estimation often returns acceptable results with errors "
         "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
         "observed for some samples!"
@@ -884,6 +883,21 @@ class TimsTOF(object):
         """: bool : A blank zeroth frame is present so frames are 1-indexed."""
         return self._zeroth_frame
 
+    @property
+    def max_accumulation_time(self):
+        """: float : The maximum accumulation time of all frames."""
+        return self._max_accumulation_time
+
+    @property
+    def accumulation_times(self):
+        """: np.ndarray : The accumulation times of all frames."""
+        return self._accumulation_times
+
+    @property
+    def intensity_corrections(self):
+        """: np.ndarray : The intensity_correction per frame."""
+        return self._intensity_corrections
+
     def __init__(
         self,
         bruker_d_folder_name: str,
@@ -891,7 +905,9 @@ class TimsTOF(object):
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
-        use_calibrated_mz_values_as_default: int = 0
+        use_calibrated_mz_values_as_default: int = 0,
+        use_hdf_if_available: bool = False,
+        mmap_detector_events: bool = None,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -927,20 +943,66 @@ class TimsTOF(object):
             calibrated_mz_values.
             If 1, calibration at the MS1 level is performed.
             If 2, calibration at the MS2 level is performed.
+            Default is 0.
+        use_hdf_if_available : bool
+            If an HDF file is available, use this instead of the
+            .d folder.
+            Default is False.
+        mmap_detector_events : bool
+            Do not save the intensity_values and tof_indices in memory,
+            but use an mmap instead. If no .hdf file is available to use for
+            mmapping, one will be created automatically.
+            Default is False for .d folders and True for .hdf files.
         """
-        self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
+        if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
+            mmap_detector_events = True
         if bruker_d_folder_name.endswith(".d"):
-            self._import_data_from_d_folder(
-                bruker_d_folder_name,
-                mz_estimation_from_frame,
-                mobility_estimation_from_frame,
-            )
+            bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
+            hdf_file_exists = os.path.exists(bruker_hdf_file_name)
+            if use_hdf_if_available and hdf_file_exists:
+                self._import_data_from_hdf_file(
+                    bruker_hdf_file_name,
+                    mmap_detector_events,
+                )
+                self.bruker_hdf_file_name = bruker_hdf_file_name
+            else:
+                self.bruker_d_folder_name = os.path.abspath(
+                    bruker_d_folder_name
+                )
+                if mmap_detector_events and hdf_file_exists:
+                    raise IOError(
+                        f"Can only use mmap from .hdf files. "
+                        f"Since {bruker_hdf_file_name} already exists, "
+                        f"and the option use_hdf_if_available=True "
+                        f"is not explicitly used, this would result in "
+                        f"overwriting the .hdf file which could lead to "
+                        f"unexpected data losses. "
+                        f"Either use the .hdf file as input, "
+                        "allow to use the existing .hdf, "
+                        "or remove the existing .hdf file."
+                    )
+                self._import_data_from_d_folder(
+                    bruker_d_folder_name,
+                    mz_estimation_from_frame,
+                    mobility_estimation_from_frame,
+                )
+                if mmap_detector_events:
+                    self._import_data_from_hdf_file(
+                        bruker_d_folder_name,
+                        mmap_detector_events,
+                    )
+                    self.bruker_hdf_file_name = bruker_hdf_file_name
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
+                mmap_detector_events,
             )
-            self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+            self.bruker_hdf_file_name = bruker_d_folder_name
+        else:
+            raise NotImplementedError(
+                "WARNING: file extension not understood"
+            )
         if not hasattr(self, "version"):
             self._version = "none"
         if self.version != alphatims.__version__:
@@ -1004,6 +1066,11 @@ class TimsTOF(object):
         self._mobility_max_value = float(
             self.meta_data["OneOverK0AcqRangeUpper"]
         )
+        self._accumulation_times = self.frames.AccumulationTime.values.astype(
+            np.float64
+        )
+        self._max_accumulation_time = np.max(self._accumulation_times)
+        self._intensity_corrections = self._max_accumulation_time / self._accumulation_times
         bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
         if (mobility_estimation_from_frame != 0) and bruker_dll_available:
             import ctypes
@@ -1149,10 +1216,17 @@ class TimsTOF(object):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
+        mmap_detector_events: bool = False,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
+            mmap_arrays = []
+            if mmap_detector_events:
+                mmap_arrays.append("/raw/_tof_indices")
+                mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
-                hdf_root["raw"]
+                hdf_root["raw"],
+                mmap_arrays,
+                bruker_d_folder_name,
             )
 
     def convert_from_indices(
@@ -1176,6 +1250,7 @@ class TimsTOF(object):
         return_push_indices: bool = False,
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
+        return_corrected_intensity_values: bool = False,
         raw_indices_sorted: bool = True,
     ) -> dict:
         """Convert selected indices to a dict.
@@ -1232,6 +1307,9 @@ class TimsTOF(object):
         return_intensity_values : bool
             If True, include "intensity_values" in the dict.
             Default is False.
+        return_corrected_intensity_values : bool
+            If True, include "corrected_intensity_values" in the dict.
+            Default is False.
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
@@ -1254,6 +1332,7 @@ class TimsTOF(object):
                 return_quad_mz_values,
                 return_precursor_indices,
                 return_push_indices,
+                return_corrected_intensity_values,
             ]
         ):
             if raw_indices_sorted:
@@ -1267,7 +1346,16 @@ class TimsTOF(object):
                     raw_indices,
                     "right"
                 ) - 1
-        if (return_frame_indices or return_rt_values or return_rt_values_min) and (
+        if (
+            any(
+                [
+                    return_frame_indices,
+                    return_rt_values,
+                    return_rt_values_min,
+                    return_corrected_intensity_values,
+                ]
+            )
+        ) and (
             frame_indices is None
         ):
             frame_indices = push_indices // self.scan_max_index
@@ -1330,6 +1418,10 @@ class TimsTOF(object):
             result["mz_values"] = self.mz_values[tof_indices]
         if return_intensity_values:
             result["intensity_values"] = self.intensity_values[raw_indices]
+        if return_corrected_intensity_values:
+            result["corrected_intensity_values"] = (
+                self.intensity_values[raw_indices] * self.intensity_corrections[frame_indices]
+            ).astype(np.uint32)
         return result
 
     def convert_to_indices(
@@ -1601,6 +1693,7 @@ class TimsTOF(object):
         push_indices: bool = True,
         mz_values: bool = True,
         intensity_values: bool = True,
+        corrected_intensity_values: bool = True,
         raw_indices_sorted: bool = True,
     ):
         """Convert raw indices to a pd.DataFrame.
@@ -1649,6 +1742,9 @@ class TimsTOF(object):
         intensity_values : bool
             If True, include "intensity_values" in the dataframe.
             Default is True.
+        corrected_intensity_values : bool
+            If True, include "corrected_intensity_values" in the dataframe.
+            Default is True.
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
@@ -1675,6 +1771,7 @@ class TimsTOF(object):
                 return_push_indices=push_indices,
                 return_mz_values=mz_values,
                 return_intensity_values=intensity_values,
+                return_corrected_intensity_values=corrected_intensity_values,
                 raw_indices_sorted=raw_indices_sorted,
             )
         )
@@ -1726,6 +1823,8 @@ class TimsTOF(object):
         ):
             low = frame_id * scan_max_index + scan_begin
             # TODO: CHECK?
+            # if low < high:
+            #     print(frame_id, low, frame_id * scan_max_index + scan_end, high, low - high)
             if low != high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
@@ -2547,7 +2646,10 @@ def convert_slice_key_to_int_array(data: TimsTOF, key, dimension: str):
             key = slice(None)
         if isinstance(key, slice):
             if dimension == "scan_indices":
-                if isinstance(key.start, (np.inexact, float)) or isinstance(key.stop, (np.inexact, float)):
+                if isinstance(key.start, (np.inexact, float)) or isinstance(
+                    key.stop,
+                    (np.inexact, float)
+                ):
                     key = slice(key.stop, key.start, key.step)
             start = key.start
             if not isinstance(start, (np.integer, int)):
@@ -3081,5 +3183,3 @@ def filter_tof_to_csr(
                 tof_value = tof_indices[idx]
         indptr.append(len(values))
     return np.array(indptr), np.array(values), np.array(columns)
-
-def test():pass

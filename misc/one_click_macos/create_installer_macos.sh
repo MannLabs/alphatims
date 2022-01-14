@@ -17,7 +17,7 @@ rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_macos
 pip install pyinstaller==4.2
-pip install "../../dist/alphatims-0.3.0-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
+pip install "../../dist/alphatims-0.3.1-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
 conda list
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
@@ -34,7 +34,7 @@ if false; then
   # https://scriptingosx.com/2019/09/notarize-a-command-line-tool/
   for f in $(find dist/alphatims -name '*.so' -or -name '*.dylib'); do codesign --sign "Developer ID Application: Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (7QSY5527AQ)" $f; done
   codesign --sign "Developer ID Application: Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (7QSY5527AQ)" dist/alphatims/Contents/MacOS/alphatims_gui --force --options=runtime --entitlements entitlements.xml
-  pkgbuild --root dist/alphatims --identifier de.mpg.biochem.alphatims.app --version 0.3.0 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg --sign "Developer ID Installer: Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (7QSY5527AQ)"
+  pkgbuild --root dist/alphatims --identifier de.mpg.biochem.alphatims.app --version 0.3.1 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg --sign "Developer ID Installer: Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (7QSY5527AQ)"
   productbuild --distribution distribution.xml --resources Resources --package-path alphatims.pkg dist/alphatims_gui_installer_macos.pkg --sign "Developer ID Installer: Max-Planck-Gesellschaft zur Förderung der Wissenschaften e.V. (7QSY5527AQ)"
   requestUUID=$(xcrun altool --notarize-app --primary-bundle-id "de.mpg.biochem.alphatims.app" --username "willems@biochem.mpg.de" --password "@keychain:Alphatims-develop" --asc-provider 7QSY5527AQ --file dist/alphatims_gui_installer_macos.pkg 2>&1 | awk '/RequestUUID/ { print $NF; }')
   request_status="in progress"
@@ -46,6 +46,6 @@ if false; then
   xcrun altool --notarization-info "$requestUUID" --username "willems@biochem.mpg.de" --password "@keychain:Alphatims-develop"
   xcrun stapler staple dist/alphatims_gui_installer_macos.pkg
 else
-  pkgbuild --root dist/alphatims --identifier de.mpg.biochem.alphatims.app --version 0.3.0 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg
+  pkgbuild --root dist/alphatims --identifier de.mpg.biochem.alphatims.app --version 0.3.1 --install-location /Applications/AlphaTims.app --scripts scripts alphatims.pkg
   productbuild --distribution distribution.xml --resources Resources --package-path alphatims.pkg dist/alphatims_gui_installer_macos.pkg
 fi

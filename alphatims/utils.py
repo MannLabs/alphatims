@@ -16,6 +16,8 @@ import json
 import contextlib
 # local
 import alphatims
+# external
+import numpy as np
 
 
 BASE_PATH = os.path.dirname(__file__)
@@ -715,7 +717,6 @@ def create_hdf_group_from_dict(
         When a key of data_dict is not a string.
     """
     import pandas as pd
-    import numpy as np
     import h5py
     if recursed:
         iterable_dict = data_dict.items()
@@ -780,13 +781,23 @@ def create_hdf_group_from_dict(
             )
 
 
-def create_dict_from_hdf_group(hdf_group) -> dict:
+def create_dict_from_hdf_group(
+    hdf_group,
+    mmap_arrays=None,
+    parent_file_name: str = None,
+) -> dict:
     """Convert the contents of an HDF group and return as normal Python dict.
 
     Parameters
     ----------
     hdf_group : h5py.File.group
         An open and readable HDF group.
+    mmap_arrays : iterable
+        These array will be mmapped instead of pre-loaded.
+        Default is None
+    parent_file_name : str
+        The parent_file_name. This is required when mmap_arrays is not None.
+        Default is None.
 
     Returns
     -------
@@ -805,7 +816,6 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
     """
     import h5py
     import pandas as pd
-    import numpy as np
     result = {}
     for key in hdf_group.attrs:
         value = hdf_group.attrs[key]
@@ -823,7 +833,31 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
     for key in hdf_group:
         subgroup = hdf_group[key]
         if isinstance(subgroup, h5py.Dataset):
-            result[key] = subgroup[:]
+            if (mmap_arrays is not None) and (subgroup.name in mmap_arrays):
+                offset = subgroup.id.get_offset()
+                if offset is not None:
+                    import mmap
+                    with open(parent_file_name, "rb") as raw_hdf_file:
+                        mmap_obj = mmap.mmap(
+                            raw_hdf_file.fileno(),
+                            0,
+                            access=mmap.ACCESS_READ
+                        )
+                        shape = subgroup.shape
+                        result[key] = np.frombuffer(
+                            mmap_obj,
+                            dtype=subgroup.dtype,
+                            count=np.prod(shape),
+                            offset=offset
+                        ).reshape(shape)
+                        # TODO WARNING: mmap is not closed!
+                else:
+                    raise IOError(
+                        f"Array {subgroup.name} cannot be mmapped. "
+                        "Perhaps it is compressed or chunked?"
+                    )
+            else:
+                result[key] = subgroup[:]
         else:
             if "is_pd_dataframe" in subgroup.attrs:
                 result[key] = pd.DataFrame(
@@ -834,7 +868,11 @@ def create_dict_from_hdf_group(hdf_group) -> dict:
                     }
                 )
             else:
-                result[key] = create_dict_from_hdf_group(hdf_group[key])
+                result[key] = create_dict_from_hdf_group(
+                    hdf_group[key],
+                    mmap_arrays,
+                    parent_file_name,
+                )
     return result
 
 

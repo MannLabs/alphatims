@@ -1,46 +1,46 @@
-2021-09-22 09:31:45> Platform information:
-2021-09-22 09:31:45> system        - Darwin
-2021-09-22 09:31:45> release       - 19.6.0
-2021-09-22 09:31:45> version       - 10.15.7
-2021-09-22 09:31:45> machine       - x86_64
-2021-09-22 09:31:45> processor     - i386
-2021-09-22 09:31:45> cpu count     - 8
-2021-09-22 09:31:45> cpu frequency - 2300.00 Mhz
-2021-09-22 09:31:45> ram           - 18.9/32.0 Gb (available/total)
-2021-09-22 09:31:45> 
-2021-09-22 09:31:45> Python information:
-2021-09-22 09:31:45> alphatims  - 0.3.0
-2021-09-22 09:31:45> bokeh      - 2.2.3
-2021-09-22 09:31:45> click      - 8.0.1
-2021-09-22 09:31:45> datashader - 0.12.1
-2021-09-22 09:31:45> h5py       - 3.2.1
-2021-09-22 09:31:45> hvplot     - 0.7.1
-2021-09-22 09:31:45> numba      - 0.53.1
-2021-09-22 09:31:45> pandas     - 1.2.4
-2021-09-22 09:31:45> psutil     - 5.8.0
-2021-09-22 09:31:45> python     - 3.8.10
-2021-09-22 09:31:45> python-lzf - 0.2.4
-2021-09-22 09:31:45> pyzstd     - 0.15.0
-2021-09-22 09:31:45> selenium   - 3.141.0
-2021-09-22 09:31:45> tqdm       - 4.60.0
-2021-09-22 09:31:45> 
-2021-09-22 09:31:45> WARNING: No Bruker libraries are available for this operating system. Intensities are uncalibrated, resulting in (very) small differences. However, mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
-2021-09-22 09:31:45> 
-2021-09-22 09:31:48> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-09-22 09:31:48> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-09-22 09:31:48> Reading 11,886 frames with 295,251,252 detector events for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-09-22 09:31:51> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
-2021-09-22 09:31:51> Bruker DLL not available, estimating mobility values
-2021-09-22 09:31:51> Bruker DLL not available, estimating mz values
-2021-09-22 09:31:51> Indexing quadrupole dimension
-2021-09-22 09:31:52> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
-2021-09-22 09:31:52> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
-2021-09-22 09:31:52> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
-2021-09-22 09:32:00> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-09-22 09:32:00> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-09-22 09:32:00> Reading 11,868 frames with 730,564,765 detector events for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
-2021-09-22 09:32:05> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
-2021-09-22 09:32:05> Bruker DLL not available, estimating mobility values
-2021-09-22 09:32:05> Bruker DLL not available, estimating mz values
-2021-09-22 09:32:05> Indexing quadrupole dimension
-2021-09-22 09:32:06> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2022-01-14 16:16:19> Platform information:
+2022-01-14 16:16:19> system        - Darwin
+2022-01-14 16:16:19> release       - 20.6.0
+2022-01-14 16:16:19> version       - 10.16
+2022-01-14 16:16:19> machine       - x86_64
+2022-01-14 16:16:19> processor     - i386
+2022-01-14 16:16:19> cpu count     - 8
+2022-01-14 16:16:19> cpu frequency - 2300.00 Mhz
+2022-01-14 16:16:19> ram           - 23.3/32.0 Gb (available/total)
+2022-01-14 16:16:19> 
+2022-01-14 16:16:19> Python information:
+2022-01-14 16:16:19> alphatims  - 0.3.1
+2022-01-14 16:16:19> bokeh      - 2.2.3
+2022-01-14 16:16:19> click      - 8.0.1
+2022-01-14 16:16:19> datashader - 0.12.1
+2022-01-14 16:16:19> h5py       - 3.2.1
+2022-01-14 16:16:19> hvplot     - 0.7.1
+2022-01-14 16:16:19> numba      - 0.53.1
+2022-01-14 16:16:19> pandas     - 1.2.4
+2022-01-14 16:16:19> psutil     - 5.8.0
+2022-01-14 16:16:19> python     - 3.8.10
+2022-01-14 16:16:19> python-lzf - 0.2.4
+2022-01-14 16:16:19> pyzstd     - 0.15.0
+2022-01-14 16:16:19> selenium   - 3.141.0
+2022-01-14 16:16:19> tqdm       - 4.60.0
+2022-01-14 16:16:19> 
+2022-01-14 16:16:20> WARNING: No Bruker libraries are available for this operating system. Mobility and m/z values need to be estimated. While this estimation often returns acceptable results with errors < 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been observed for some samples!
+2022-01-14 16:16:20> 
+2022-01-14 16:16:23> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2022-01-14 16:16:23> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2022-01-14 16:16:24> Reading 11,886 frames with 295,251,252 detector events for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2022-01-14 16:16:28> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d...
+2022-01-14 16:16:28> Bruker DLL not available, estimating mobility values
+2022-01-14 16:16:28> Bruker DLL not available, estimating mz values
+2022-01-14 16:16:28> Indexing quadrupole dimension
+2022-01-14 16:16:31> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.d
+2022-01-14 16:16:31> Writing TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2022-01-14 16:16:32> Succesfully wrote TimsTOF data to /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_DDA_21min_8cm_S1-C10_1_22476.hdf.
+2022-01-14 16:16:39> Importing data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2022-01-14 16:16:39> Reading frame metadata for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2022-01-14 16:16:39> Reading 11,868 frames with 730,564,765 detector events for /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d
+2022-01-14 16:16:45> Indexing /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d...
+2022-01-14 16:16:45> Bruker DLL not available, estimating mobility values
+2022-01-14 16:16:45> Bruker DLL not available, estimating mz values
+2022-01-14 16:16:45> Indexing quadrupole dimension
+2022-01-14 16:16:46> Succesfully imported data from /Users/swillems/Data/alphatims_testing/20201207_tims03_Evo03_PS_SA_HeLa_200ng_EvoSep_prot_high_speed_21min_8cm_S1-C8_1_22474.d

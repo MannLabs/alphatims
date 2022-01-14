@@ -318,7 +318,7 @@ else:
         # link_url='https://github.com/MannLabs/alphatims',
     )
     download_new_version_button.js_on_click(
-        code=f"""window.open("https://github.com/MannLabs/alphatims#change-log")"""
+        code=f"""window.open("https://github.com/MannLabs/alphatims#changelog")"""
     )
 
 download_test_data_button = pn.widgets.Button(

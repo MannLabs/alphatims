@@ -39,6 +39,7 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
+    * [**0.3.1**](#301)
     * [**0.3.0**](#300)
     * [**0.2.8**](#028)
     * [**0.2.7**](#027)
@@ -382,6 +383,11 @@ For more information see [the Contributors License Agreement](misc/CLA.md).
 ## Changelog
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
+
+### 0.3.1
+
+  * FIX/FEAT: Intensity correction when ICC is used. Note that this is only for exported data, not for visualized data.
+  * FEAT: By default, hdf files are now mmapped, making them much faster to initially load and use virtual memory in favor of residual memory.
 
 ### 0.3.0
 
