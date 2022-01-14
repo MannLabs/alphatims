@@ -16,6 +16,8 @@ import json
 import contextlib
 # local
 import alphatims
+# external
+import numpy as np
 
 
 BASE_PATH = os.path.dirname(__file__)
@@ -715,7 +717,6 @@ def create_hdf_group_from_dict(
         When a key of data_dict is not a string.
     """
     import pandas as pd
-    import numpy as np
     import h5py
     if recursed:
         iterable_dict = data_dict.items()
@@ -780,7 +781,11 @@ def create_hdf_group_from_dict(
             )
 
 
-def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
+def create_dict_from_hdf_group(
+    hdf_group,
+    memmap_arrays=None,
+    parent_file_name: str = None,
+) -> dict:
     """Convert the contents of an HDF group and return as normal Python dict.
 
     Parameters
@@ -790,6 +795,9 @@ def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
     memmap_arrays : iterable
         These array will be memmapped instead of pre-loaded.
         Default is None
+    parent_file_name : str
+        The parent_file_name. This is required when memmap_arrays is not None.
+        Default is None.
 
     Returns
     -------
@@ -808,7 +816,6 @@ def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
     """
     import h5py
     import pandas as pd
-    import numpy as np
     result = {}
     for key in hdf_group.attrs:
         value = hdf_group.attrs[key]
@@ -827,7 +834,27 @@ def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
         subgroup = hdf_group[key]
         if isinstance(subgroup, h5py.Dataset):
             if (memmap_arrays is not None) and (subgroup.name in memmap_arrays):
-                pass # TODO
+                import mmap
+                with open(parent_file_name, "rb") as raw_hdf_file:
+                    fileno = raw_hdf_file.fileno()
+                    mapping = mmap.mmap(fileno, 0, access=mmap.ACCESS_READ)
+                    offset = subgroup.id.get_offset()
+                    if offset is not None:
+                        offset = offset
+                        shape = subgroup.shape
+                        dtype = subgroup.dtype
+                        length = np.prod(shape)
+                        result[key] = np.frombuffer(
+                            mapping,
+                            dtype=dtype,
+                            count=length,
+                            offset=offset
+                        ).reshape(shape)
+                    else:
+                        raise IOError(
+                            f"Array {subgroup.name} cannot be memmapped. "
+                            "Perhaps it is compressed or chunked?"
+                        )
             else:
                 result[key] = subgroup[:]
         else:
@@ -843,6 +870,7 @@ def create_dict_from_hdf_group(hdf_group, memmap_arrays=None) -> dict:
                 result[key] = create_dict_from_hdf_group(
                     hdf_group[key],
                     memmap_arrays,
+                    parent_file_name,
                 )
     return result
 

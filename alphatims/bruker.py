@@ -1002,7 +1002,7 @@ class TimsTOF(object):
                 bruker_d_folder_name,
                 memmap_detector_events,
             )
-            self.bruker_hdf_file_name = bruker_hdf_file_name
+            self.bruker_hdf_file_name = bruker_d_folder_name
         else:
             raise NotImplementedError(
                 "WARNING: file extension not understood"
@@ -1223,13 +1223,14 @@ class TimsTOF(object):
         memmap_detector_events: bool = False,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
-            memmap_arrays = {}
+            memmap_arrays = []
             if memmap_detector_events:
-                memmap_arrays.append("_tof_indices")
-                memmap_arrays.append("_intensity_values")
+                memmap_arrays.append("/raw/_tof_indices")
+                memmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
                 hdf_root["raw"],
                 memmap_arrays,
+                bruker_d_folder_name,
             )
 
     def convert_from_indices(
