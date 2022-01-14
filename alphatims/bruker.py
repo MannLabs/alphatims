@@ -913,7 +913,7 @@ class TimsTOF(object):
         slice_as_dataframe: bool = True,
         use_calibrated_mz_values_as_default: int = 0,
         use_hdf_if_available: bool = False,
-        memmap_detector_events: bool = False,
+        mmap_detector_events: bool = None,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -954,29 +954,31 @@ class TimsTOF(object):
             If an HDF file is available, use this instead of the
             .d folder.
             Default is False.
-        memmap_detector_events : bool
+        mmap_detector_events : bool
             Do not save the intensity_values and tof_indices in memory,
-            but use an memmap instead. If no .hdf file is available to use for
-            memmapping, one will be created automatically.
-            Default is False.
+            but use an mmap instead. If no .hdf file is available to use for
+            mmapping, one will be created automatically.
+            Default is False for .d folders and True for .hdf files.
         """
         logging.info(f"Importing data from {bruker_d_folder_name}")
+        if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
+            mmap_detector_events = True
         if bruker_d_folder_name.endswith(".d"):
             bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
             hdf_file_exists = os.path.exists(bruker_hdf_file_name)
             if use_hdf_if_available and hdf_file_exists:
                 self._import_data_from_hdf_file(
                     bruker_hdf_file_name,
-                    memmap_detector_events,
+                    mmap_detector_events,
                 )
                 self.bruker_hdf_file_name = bruker_hdf_file_name
             else:
                 self.bruker_d_folder_name = os.path.abspath(
                     bruker_d_folder_name
                 )
-                if memmap_detector_events and hdf_file_exists:
+                if mmap_detector_events and hdf_file_exists:
                     raise IOError(
-                        f"Can only use memmap from .hdf files. "
+                        f"Can only use mmap from .hdf files. "
                         f"Since {bruker_hdf_file_name} already exists, "
                         f"and the option use_hdf_if_available=True "
                         f"is not explicitly used, this would result in "
@@ -991,16 +993,16 @@ class TimsTOF(object):
                     mz_estimation_from_frame,
                     mobility_estimation_from_frame,
                 )
-                if memmap_detector_events:
+                if mmap_detector_events:
                     self._import_data_from_hdf_file(
                         bruker_d_folder_name,
-                        memmap_detector_events,
+                        mmap_detector_events,
                     )
                     self.bruker_hdf_file_name = bruker_hdf_file_name
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
-                memmap_detector_events,
+                mmap_detector_events,
             )
             self.bruker_hdf_file_name = bruker_d_folder_name
         else:
@@ -1220,16 +1222,16 @@ class TimsTOF(object):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
-        memmap_detector_events: bool = False,
+        mmap_detector_events: bool = False,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
-            memmap_arrays = []
-            if memmap_detector_events:
-                memmap_arrays.append("/raw/_tof_indices")
-                memmap_arrays.append("/raw/_intensity_values")
+            mmap_arrays = []
+            if mmap_detector_events:
+                mmap_arrays.append("/raw/_tof_indices")
+                mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
                 hdf_root["raw"],
-                memmap_arrays,
+                mmap_arrays,
                 bruker_d_folder_name,
             )
 
