@@ -17,12 +17,6 @@ import h5py
 import alphatims
 import alphatims.utils
 
-logging.warning(
-    "WARNING: Intensities are unprocessed. "
-    "While they are often a good representation and directly usable, "
-    "preprocessing might be essential before downstream analysis!"
-)
-
 if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = os.path.join(
         alphatims.utils.EXT_PATH,
