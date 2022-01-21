@@ -562,15 +562,14 @@ def pjit(
                 threads.append(thread)
             if include_progress_callback:
                 import time
-                progress_count = 0
+                # progress_count = 0
                 progress_bar = 0
                 for result in progress_callback(
                     iterable,
                     include_progress_callback=include_progress_callback
                 ):
-                    if progress_bar == progress_count:
-                        while progress_count == np.sum(progress_counter):
-                            time.sleep(0.01)
+                    while progress_bar >= np.sum(progress_counter):
+                        time.sleep(0.01)
                     progress_bar += 1
             for thread in threads:
                 thread.join()
@@ -836,6 +835,7 @@ def create_dict_from_hdf_group(
             if (mmap_arrays is not None) and (subgroup.name in mmap_arrays):
                 offset = subgroup.id.get_offset()
                 if offset is not None:
+                    shape = subgroup.shape
                     import mmap
                     with open(parent_file_name, "rb") as raw_hdf_file:
                         mmap_obj = mmap.mmap(
@@ -843,7 +843,6 @@ def create_dict_from_hdf_group(
                             0,
                             access=mmap.ACCESS_READ
                         )
-                        shape = subgroup.shape
                         result[key] = np.frombuffer(
                             mmap_obj,
                             dtype=subgroup.dtype,
@@ -851,6 +850,13 @@ def create_dict_from_hdf_group(
                             offset=offset
                         ).reshape(shape)
                         # TODO WARNING: mmap is not closed!
+                    # result[key] = np.memmap(
+                    #     dia_data_file_name,
+                    #     dtype=subgroup.dtype,
+                    #     mode="r",
+                    #     offset=offset,
+                    #     shape=shape,
+                    # )
                 else:
                     raise IOError(
                         f"Array {subgroup.name} cannot be mmapped. "
