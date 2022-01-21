@@ -564,12 +564,14 @@ def pjit(
                 import time
                 # progress_count = 0
                 progress_bar = 0
+                progress_count = np.sum(progress_counter)
                 for result in progress_callback(
                     iterable,
                     include_progress_callback=include_progress_callback
                 ):
-                    while progress_bar >= np.sum(progress_counter):
+                    while progress_bar >= progress_count:
                         time.sleep(0.01)
+                        progress_count = np.sum(progress_counter)
                     progress_bar += 1
             for thread in threads:
                 thread.join()
