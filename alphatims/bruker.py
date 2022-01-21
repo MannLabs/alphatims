@@ -970,29 +970,17 @@ class TimsTOF(object):
                 self.bruker_d_folder_name = os.path.abspath(
                     bruker_d_folder_name
                 )
-                if mmap_detector_events and hdf_file_exists:
+                if mmap_detector_events:
                     raise IOError(
-                        f"Can only use mmap from .hdf files. "
-                        f"Since {bruker_hdf_file_name} already exists, "
-                        f"and the option use_hdf_if_available=True "
-                        f"is not explicitly used, this would result in "
-                        f"overwriting the .hdf file which could lead to "
-                        f"unexpected data losses. "
-                        f"Either use the .hdf file as input, "
-                        "allow to use the existing .hdf, "
-                        "or remove the existing .hdf file."
+                        f"Can only use mmapping from .hdf files. "
+                        f"Either use the .hdf file as input directly, "
+                        "or use the use_hdf_if_available option."
                     )
                 self._import_data_from_d_folder(
                     bruker_d_folder_name,
                     mz_estimation_from_frame,
                     mobility_estimation_from_frame,
                 )
-                if mmap_detector_events:
-                    self._import_data_from_hdf_file(
-                        bruker_d_folder_name,
-                        mmap_detector_events,
-                    )
-                    self.bruker_hdf_file_name = bruker_hdf_file_name
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
