@@ -3,6 +3,7 @@
 [![Downloads](https://pepy.tech/badge/alphatims)](https://pepy.tech/project/alphatims)
 [![Downloads](https://pepy.tech/badge/alphatims/month)](https://pepy.tech/project/alphatims)
 [![Downloads](https://pepy.tech/badge/alphatims/week)](https://pepy.tech/project/alphatims)
+[![Documentation Status](https://readthedocs.org/projects/alphatims/badge/?version=latest)](https://alphatims.readthedocs.io/en/latest/?badge=latest)
 
 ---
 # AlphaTims
