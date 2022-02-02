@@ -143,6 +143,7 @@ def read_bruker_sql(
     bruker_d_folder_name: str,
     add_zeroth_frame: bool = True,
     drop_polarity: bool = True,
+    convert_polarity_to_int: bool = True,
 ) -> tuple:
     """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
 
@@ -163,6 +164,11 @@ def read_bruker_sql(
         this ensures a fully numerical pd.DataFrame.
         If False, this column is kept, resulting in a pd.DataFrame with
         dtype=object.
+        Default is True.
+    convert_polarity_to_int : bool
+        Convert the polarity to int (-1 or +1).
+        This allows to keep it in numerical form.
+        This is ignored if the polarity is dropped.
         Default is True.
 
     Returns
@@ -242,6 +248,7 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
+        polarity_col = frames["Polarity"].copy()
         frames = pd.DataFrame(
             {
                 col: pd.to_numeric(
@@ -249,6 +256,13 @@ def read_bruker_sql(
                 ) for col in frames if col != "Polarity"
             }
         )
+        if not drop_polarity:
+            if convert_polarity_to_int:
+                frames['Polarity'] = polarity_col.apply(
+                    lambda x: 1 if x == "+" else -1
+                )
+            else:
+                frames['Polarity'] = polarity_col
         return (
             acquisition_mode,
             global_meta_data,
@@ -908,6 +922,8 @@ class TimsTOF(object):
         use_calibrated_mz_values_as_default: int = 0,
         use_hdf_if_available: bool = False,
         mmap_detector_events: bool = None,
+        drop_polarity: bool = True,
+        convert_polarity_to_int: bool = True,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -953,6 +969,19 @@ class TimsTOF(object):
             but use an mmap instead. If no .hdf file is available to use for
             mmapping, one will be created automatically.
             Default is False for .d folders and True for .hdf files.
+        drop_polarity : bool
+            The polarity column of the frames table contains "+" or "-" and
+            is not numerical.
+            If True, the polarity column is dropped from the frames table.
+            this ensures a fully numerical pd.DataFrame.
+            If False, this column is kept, resulting in a pd.DataFrame with
+            dtype=object.
+            Default is True.
+        convert_polarity_to_int : bool
+            Convert the polarity to int (-1 or +1).
+            This allows to keep it in numerical form.
+            This is ignored if the polarity is dropped.
+            Default is True.
         """
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
@@ -980,6 +1009,8 @@ class TimsTOF(object):
                     bruker_d_folder_name,
                     mz_estimation_from_frame,
                     mobility_estimation_from_frame,
+                    drop_polarity,
+                    convert_polarity_to_int,
                 )
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
@@ -1019,6 +1050,8 @@ class TimsTOF(object):
         bruker_d_folder_name: str,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
+        drop_polarity: bool = True,
+        convert_polarity_to_int: bool = True,
     ):
         self._version = alphatims.__version__
         self._zeroth_frame = True
@@ -1028,7 +1061,12 @@ class TimsTOF(object):
             self._frames,
             self._fragment_frames,
             self._precursors,
-        ) = read_bruker_sql(bruker_d_folder_name, self._zeroth_frame)
+        ) = read_bruker_sql(
+            bruker_d_folder_name,
+            self._zeroth_frame,
+            drop_polarity,
+            convert_polarity_to_int,
+        )
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
