@@ -260,7 +260,7 @@ def read_bruker_sql(
             if convert_polarity_to_int:
                 frames['Polarity'] = polarity_col.apply(
                     lambda x: 1 if x == "+" else -1
-                )
+                ).astype(np.int8)
             else:
                 frames['Polarity'] = polarity_col
         return (
