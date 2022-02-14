@@ -197,18 +197,22 @@ def cli_option(
                 **parameters,
             )
     else:
+        if "required" in parameters:
+            required = parameters.pop("required")
+        else:
+            required = True
         if "nargs" in parameters:
             return click.argument(
                 parameter_name,
                 type=click.Path(exists=True),
                 nargs=parameters["nargs"],
-                required=True
+                required=required,
             )
         else:
             return click.argument(
                 parameter_name,
                 type=parameters["type"],
-                required=True
+                required=required,
             )
 
 
@@ -231,7 +235,7 @@ def run(ctx, **kwargs):
 
 @run.command("gui", help="Start graphical user interface.")
 @cli_option("port")
-@cli_option("bruker_raw_data", required=False)
+@cli_option("bruker_raw_data", required=False, as_argument=True)
 def gui(port, bruker_raw_data):
     with parse_cli_settings("gui"):
         logging.info("Loading GUI..")
