@@ -14,6 +14,7 @@ import os
 import sys
 import json
 import contextlib
+import multiprocessing
 # local
 import alphatims
 # external
@@ -26,7 +27,7 @@ IMG_PATH = os.path.join(BASE_PATH, "img")
 LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(BASE_PATH, "logs")
 DOC_PATH = os.path.join(BASE_PATH, "docs")
-MAX_THREADS = 1
+MAX_THREADS = multiprocessing.cpu_count()
 LATEST_GITHUB_INIT_FILE = (
     "https://raw.githubusercontent.com/MannLabs/alphatims/"
     "master/alphatims/__init__.py"
@@ -322,7 +323,6 @@ def set_threads(threads: int, set_global: bool = True) -> int:
     : int
         The number of threads.
     """
-    import multiprocessing
     max_cpu_count = multiprocessing.cpu_count()
     if threads > max_cpu_count:
         threads = max_cpu_count
