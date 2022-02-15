@@ -505,7 +505,7 @@ def pjit(
             cache = True
         numba_func = numba.njit(nogil=True, cache=cache, **kwargs)(func)
 
-        @numba.njit(nogil=True, cache=True)
+        @numba.njit(nogil=True, cache=cache)
         def numba_func_parallel(
             iterable,
             thread_id,
@@ -760,7 +760,7 @@ def create_hdf_group_from_dict(
                         shuffle=compress,
                         chunks=True if chunked else None,
                     )
-        elif isinstance(value, (bool, int, float, str)):
+        elif isinstance(value, (bool, int, float, str, np.bool_)):
             if overwrite or (key not in hdf_group.attrs):
                 hdf_group.attrs[key] = value
         elif isinstance(value, dict):
