@@ -385,6 +385,12 @@ For more information see [the Contributors License Agreement](misc/CLA.md).
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
 
+### 0.3.2
+
+  * FEAT: cli/gui allow bruker data as argument.
+  * FEAT/FIX: Polarity included in frame table.
+  * FIX: utils cleanup.
+
 ### 0.3.1
 
   * FIX/FEAT: Intensity correction when ICC is used. Note that this is only for exported data, not for visualized data.
