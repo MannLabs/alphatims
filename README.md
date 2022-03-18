@@ -390,6 +390,10 @@ The following changes were introduced in the following versions of AlphaTims. Do
   * FEAT: cli/gui allow bruker data as argument.
   * FEAT/FIX: Polarity included in frame table.
   * FIX: utils cleanup.
+  * FEAT: cli/gui allow bruker data as argument
+  * FIX: utils issues
+  * FEAT: by default use -1 threads in utils
+  * FIX: disable cla check
 
 ### 0.3.1
 
