@@ -1,0 +1,55 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/requirements"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  target-branch: develop
+  ignore:
+  - dependency-name: sphinx-rtd-theme
+    versions:
+    - 0.5.2
+  - dependency-name: tqdm
+    versions:
+    - 4.56.2
+    - 4.58.0
+    - 4.60.0
+  - dependency-name: bokeh
+    versions:
+    - 2.3.0
+  - dependency-name: matplotlib
+    versions:
+    - 3.4.0
+    - 3.4.1
+  - dependency-name: ipykernel
+    versions:
+    - 5.5.3
+  - dependency-name: numpy
+    versions:
+    - 1.20.0
+    - 1.20.2
+  - dependency-name: numba
+    versions:
+    - 0.53.1
+  - dependency-name: pyzstd
+    versions:
+    - 0.14.2
+    - 0.14.4
+  - dependency-name: sphinx
+    versions:
+    - 3.5.2
+    - 3.5.3
+  - dependency-name: datashader
+    versions:
+    - 0.12.1
+  - dependency-name: panel
+    versions:
+    - 0.11.1
+  - dependency-name: holoviews
+    versions:
+    - 1.14.2
+  - dependency-name: pandas
+    versions:
+    - 1.2.2
+    - 1.2.3

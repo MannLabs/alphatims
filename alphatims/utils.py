@@ -14,6 +14,7 @@ import os
 import sys
 import json
 import contextlib
+import multiprocessing
 # local
 import alphatims
 # external
@@ -26,7 +27,7 @@ IMG_PATH = os.path.join(BASE_PATH, "img")
 LIB_PATH = os.path.join(BASE_PATH, "lib")
 LOG_PATH = os.path.join(BASE_PATH, "logs")
 DOC_PATH = os.path.join(BASE_PATH, "docs")
-MAX_THREADS = 1
+MAX_THREADS = multiprocessing.cpu_count()
 LATEST_GITHUB_INIT_FILE = (
     "https://raw.githubusercontent.com/MannLabs/alphatims/"
     "master/alphatims/__init__.py"
@@ -322,7 +323,6 @@ def set_threads(threads: int, set_global: bool = True) -> int:
     : int
         The number of threads.
     """
-    import multiprocessing
     max_cpu_count = multiprocessing.cpu_count()
     if threads > max_cpu_count:
         threads = max_cpu_count
@@ -505,7 +505,7 @@ def pjit(
             cache = True
         numba_func = numba.njit(nogil=True, cache=cache, **kwargs)(func)
 
-        @numba.njit(nogil=True, cache=True)
+        @numba.njit(nogil=True, cache=cache)
         def numba_func_parallel(
             iterable,
             thread_id,
@@ -562,15 +562,16 @@ def pjit(
                 threads.append(thread)
             if include_progress_callback:
                 import time
-                progress_count = 0
+                # progress_count = 0
                 progress_bar = 0
+                progress_count = np.sum(progress_counter)
                 for result in progress_callback(
                     iterable,
                     include_progress_callback=include_progress_callback
                 ):
-                    if progress_bar == progress_count:
-                        while progress_count == np.sum(progress_counter):
-                            time.sleep(0.01)
+                    while progress_bar >= progress_count:
+                        time.sleep(0.01)
+                        progress_count = np.sum(progress_counter)
                     progress_bar += 1
             for thread in threads:
                 thread.join()
@@ -759,7 +760,7 @@ def create_hdf_group_from_dict(
                         shuffle=compress,
                         chunks=True if chunked else None,
                     )
-        elif isinstance(value, (bool, int, float, str)):
+        elif isinstance(value, (bool, int, float, str, np.bool_)):
             if overwrite or (key not in hdf_group.attrs):
                 hdf_group.attrs[key] = value
         elif isinstance(value, dict):
@@ -836,6 +837,7 @@ def create_dict_from_hdf_group(
             if (mmap_arrays is not None) and (subgroup.name in mmap_arrays):
                 offset = subgroup.id.get_offset()
                 if offset is not None:
+                    shape = subgroup.shape
                     import mmap
                     with open(parent_file_name, "rb") as raw_hdf_file:
                         mmap_obj = mmap.mmap(
@@ -843,7 +845,6 @@ def create_dict_from_hdf_group(
                             0,
                             access=mmap.ACCESS_READ
                         )
-                        shape = subgroup.shape
                         result[key] = np.frombuffer(
                             mmap_obj,
                             dtype=subgroup.dtype,
@@ -851,6 +852,13 @@ def create_dict_from_hdf_group(
                             offset=offset
                         ).reshape(shape)
                         # TODO WARNING: mmap is not closed!
+                    # result[key] = np.memmap(
+                    #     dia_data_file_name,
+                    #     dtype=subgroup.dtype,
+                    #     mode="r",
+                    #     offset=offset,
+                    #     shape=shape,
+                    # )
                 else:
                     raise IOError(
                         f"Array {subgroup.name} cannot be mmapped. "
