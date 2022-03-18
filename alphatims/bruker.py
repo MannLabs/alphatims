@@ -17,12 +17,6 @@ import h5py
 import alphatims
 import alphatims.utils
 
-logging.warning(
-    "WARNING: Intensities are unprocessed. "
-    "While they are often a good representation and directly usable, "
-    "preprocessing might be essential before downstream analysis!"
-)
-
 if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = os.path.join(
         alphatims.utils.EXT_PATH,
@@ -149,6 +143,7 @@ def read_bruker_sql(
     bruker_d_folder_name: str,
     add_zeroth_frame: bool = True,
     drop_polarity: bool = True,
+    convert_polarity_to_int: bool = True,
 ) -> tuple:
     """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
 
@@ -169,6 +164,11 @@ def read_bruker_sql(
         this ensures a fully numerical pd.DataFrame.
         If False, this column is kept, resulting in a pd.DataFrame with
         dtype=object.
+        Default is True.
+    convert_polarity_to_int : bool
+        Convert the polarity to int (-1 or +1).
+        This allows to keep it in numerical form.
+        This is ignored if the polarity is dropped.
         Default is True.
 
     Returns
@@ -248,6 +248,7 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
+        polarity_col = frames["Polarity"].copy()
         frames = pd.DataFrame(
             {
                 col: pd.to_numeric(
@@ -255,6 +256,13 @@ def read_bruker_sql(
                 ) for col in frames if col != "Polarity"
             }
         )
+        if not drop_polarity:
+            if convert_polarity_to_int:
+                frames['Polarity'] = polarity_col.apply(
+                    lambda x: 1 if x == "+" else -1
+                ).astype(np.int8)
+            else:
+                frames['Polarity'] = polarity_col
         return (
             acquisition_mode,
             global_meta_data,
@@ -911,7 +919,11 @@ class TimsTOF(object):
         mz_estimation_from_frame: int = 1,
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
-        use_calibrated_mz_values_as_default: int = 0
+        use_calibrated_mz_values_as_default: int = 0,
+        use_hdf_if_available: bool = False,
+        mmap_detector_events: bool = None,
+        drop_polarity: bool = True,
+        convert_polarity_to_int: bool = True,
     ):
         """Create a Bruker TimsTOF object that contains all data in-memory.
 
@@ -947,20 +959,65 @@ class TimsTOF(object):
             calibrated_mz_values.
             If 1, calibration at the MS1 level is performed.
             If 2, calibration at the MS2 level is performed.
+            Default is 0.
+        use_hdf_if_available : bool
+            If an HDF file is available, use this instead of the
+            .d folder.
+            Default is False.
+        mmap_detector_events : bool
+            Do not save the intensity_values and tof_indices in memory,
+            but use an mmap instead. If no .hdf file is available to use for
+            mmapping, one will be created automatically.
+            Default is False for .d folders and True for .hdf files.
+        drop_polarity : bool
+            The polarity column of the frames table contains "+" or "-" and
+            is not numerical.
+            If True, the polarity column is dropped from the frames table.
+            this ensures a fully numerical pd.DataFrame.
+            If False, this column is kept, resulting in a pd.DataFrame with
+            dtype=object.
+            Default is True.
+        convert_polarity_to_int : bool
+            Convert the polarity to int (-1 or +1).
+            This allows to keep it in numerical form.
+            This is ignored if the polarity is dropped.
+            Default is True.
         """
-        self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
         logging.info(f"Importing data from {bruker_d_folder_name}")
+        if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
+            mmap_detector_events = True
         if bruker_d_folder_name.endswith(".d"):
-            self._import_data_from_d_folder(
-                bruker_d_folder_name,
-                mz_estimation_from_frame,
-                mobility_estimation_from_frame,
-            )
+            bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
+            hdf_file_exists = os.path.exists(bruker_hdf_file_name)
+            if use_hdf_if_available and hdf_file_exists:
+                self._import_data_from_hdf_file(
+                    bruker_hdf_file_name,
+                    mmap_detector_events,
+                )
+                self.bruker_hdf_file_name = bruker_hdf_file_name
+            else:
+                self.bruker_d_folder_name = os.path.abspath(
+                    bruker_d_folder_name
+                )
+                if mmap_detector_events:
+                    raise IOError(
+                        f"Can only use mmapping from .hdf files. "
+                        f"Either use the .hdf file as input directly, "
+                        "or use the use_hdf_if_available option."
+                    )
+                self._import_data_from_d_folder(
+                    bruker_d_folder_name,
+                    mz_estimation_from_frame,
+                    mobility_estimation_from_frame,
+                    drop_polarity,
+                    convert_polarity_to_int,
+                )
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
                 bruker_d_folder_name,
+                mmap_detector_events,
             )
-            self.bruker_d_folder_name = os.path.abspath(bruker_d_folder_name)
+            self.bruker_hdf_file_name = bruker_d_folder_name
         else:
             raise NotImplementedError(
                 "WARNING: file extension not understood"
@@ -993,6 +1050,8 @@ class TimsTOF(object):
         bruker_d_folder_name: str,
         mz_estimation_from_frame: int,
         mobility_estimation_from_frame: int,
+        drop_polarity: bool = True,
+        convert_polarity_to_int: bool = True,
     ):
         self._version = alphatims.__version__
         self._zeroth_frame = True
@@ -1002,7 +1061,12 @@ class TimsTOF(object):
             self._frames,
             self._fragment_frames,
             self._precursors,
-        ) = read_bruker_sql(bruker_d_folder_name, self._zeroth_frame)
+        ) = read_bruker_sql(
+            bruker_d_folder_name,
+            self._zeroth_frame,
+            drop_polarity,
+            convert_polarity_to_int,
+        )
         self._meta_data = dict(
             zip(global_meta_data.Key, global_meta_data.Value)
         )
@@ -1178,10 +1242,17 @@ class TimsTOF(object):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
+        mmap_detector_events: bool = False,
     ):
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
+            mmap_arrays = []
+            if mmap_detector_events:
+                mmap_arrays.append("/raw/_tof_indices")
+                mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
-                hdf_root["raw"]
+                hdf_root["raw"],
+                mmap_arrays,
+                bruker_d_folder_name,
             )
 
     def convert_from_indices(
@@ -1778,6 +1849,8 @@ class TimsTOF(object):
         ):
             low = frame_id * scan_max_index + scan_begin
             # TODO: CHECK?
+            # if low < high:
+            #     print(frame_id, low, frame_id * scan_max_index + scan_end, high, low - high)
             if low != high:
                 quad_indptr.append(low)
                 quad_low_values.append(-1)
