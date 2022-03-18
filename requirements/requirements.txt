@@ -3,5 +3,5 @@ numba==0.53.1
 pandas==1.2.4
 tqdm==4.61.1
 pyzstd==0.14.4
-psutil==5.8.0
+psutil==5.9.0
 click==8.0.1
