@@ -16,6 +16,7 @@ import h5py
 # local
 import alphatims
 import alphatims.utils
+import alphatims.tempmmap as tm
 
 if sys.platform[:5] == "win32":
     BRUKER_DLL_FILE_NAME = os.path.join(
@@ -414,7 +415,7 @@ def process_frame(
         Should be treieved from the global metadata.
     max_peaks_per_scan : int
         The maximum number of peaks per scan.
-        Should be treieved from the global metadata.
+        Should be retrieved from the global metadata.
     """
     with open(tdf_bin_file_name, "rb") as infile:
         frame_start = frame_indptr[frame_id]
@@ -513,8 +514,8 @@ def read_bruker_binary(
     max_scan_count = frames.NumScans.max() + 1
     scan_count = max_scan_count * frames.shape[0]
     scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
-    intensities = np.empty(frame_indptr[-1], dtype=np.uint16)
-    tof_indices = np.empty(frame_indptr[-1], dtype=np.uint32)
+    intensities = tm.empty(int(frame_indptr[-1]), dtype=np.uint16)
+    tof_indices = tm.empty(int(frame_indptr[-1]), dtype=np.uint32)
     tdf_bin_file_name = os.path.join(bruker_d_folder_name, "analysis.tdf_bin")
     tims_offset_values = frames.TimsId.values
     logging.info(
