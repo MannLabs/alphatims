@@ -8,7 +8,7 @@ rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_windows
 pip install "../../dist/alphatims-1.0.0-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
-pip install pyinstaller==4.2
+pip install pyinstaller==4.10
 # TODO https://stackoverflow.com/questions/54175042/python-3-7-anaconda-environment-import-ssl-dll-load-fail-error/60405693#60405693
 pyinstaller ../pyinstaller/alphatims.spec -y
 conda deactivate
