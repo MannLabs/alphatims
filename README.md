@@ -40,6 +40,8 @@ AlphaTims is an open-source Python package that provides fast accession and visu
   * [**Citing AlphaTims**](#citing-alphatims)
   * [**How to contribute**](#how-to-contribute)
   * [**Changelog**](#changelog)
+    * [**1.0.0**](#100)
+    * [**0.3.2**](#032)
     * [**0.3.1**](#031)
     * [**0.3.0**](#030)
     * [**0.2.8**](#028)
@@ -385,15 +387,18 @@ For more information see [the Contributors License Agreement](misc/CLA.md).
 
 The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
 
+### 1.0.0
+
+  * FEAT: tempmmap for large arrays by default.
+
 ### 0.3.2
 
   * FEAT: cli/gui allow bruker data as argument.
   * FEAT/FIX: Polarity included in frame table.
   * FIX: utils cleanup.
-  * FEAT: cli/gui allow bruker data as argument
-  * FIX: utils issues
-  * FEAT: by default use -1 threads in utils
-  * FIX: disable cla check
+  * FIX: utils issues.
+  * FEAT: by default use -1 threads in utils.
+  * FIX: disable cla check.
 
 ### 0.3.1
 
