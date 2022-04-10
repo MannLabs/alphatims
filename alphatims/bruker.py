@@ -987,6 +987,8 @@ class TimsTOF(object):
         logging.info(f"Importing data from {bruker_d_folder_name}")
         if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
             mmap_detector_events = True
+        if bruker_d_folder_name.endswith("/"):
+            bruker_d_folder_name = bruker_d_folder_name[:-1]
         if bruker_d_folder_name.endswith(".d"):
             bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
             hdf_file_exists = os.path.exists(bruker_hdf_file_name)
