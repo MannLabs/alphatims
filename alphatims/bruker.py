@@ -1040,7 +1040,7 @@ class TimsTOF(object):
         )
         # Precompile
         self[0, "raw"]
-        logging.info(f"Succesfully imported data from {bruker_d_folder_name}")
+        logging.info(f"Successfully imported data from {bruker_d_folder_name}")
 
     def __len__(self):
         return len(self.intensity_values)
@@ -1238,7 +1238,7 @@ class TimsTOF(object):
             full_file_name.seek(0)
         else:
             logging.info(
-                f"Succesfully wrote TimsTOF data to {full_file_name}."
+                f"Successfully wrote TimsTOF data to {full_file_name}."
             )
         return full_file_name
 
