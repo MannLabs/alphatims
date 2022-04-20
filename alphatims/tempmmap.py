@@ -5,6 +5,7 @@
 import os
 import logging
 import atexit
+import shutil
 
 # external
 import numpy as np
@@ -22,7 +23,8 @@ CLOSED = False
 logging.warning(
     f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
     "Cleanup of this folder is OS dependant, "
-    "and might need to be triggered manually!"
+    "and might need to be triggered manually! "
+    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]}"
 )
 
 
@@ -41,6 +43,13 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     type
         A writable temporary mmapped array.
     """
+    *other, free_space = shutil.disk_usage(TEMP_DIR_NAME)
+    required_space = np.product(shape) * np.dtype(dtype).itemsize
+    if free_space < required_space:
+        raise IOError(
+            f"Cannot create array of size {required_space} "
+            f"(available space on {TEMP_DIR_NAME} is {free_space})."
+        )
     temp_file_name = os.path.join(
         TEMP_DIR_NAME,
         f"temp_mmap_{np.random.randint(2**31)}{np.random.randint(2**31)}.hdf"
