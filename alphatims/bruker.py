@@ -930,7 +930,7 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int = 1,
         slice_as_dataframe: bool = True,
         use_calibrated_mz_values_as_default: int = 0,
-        use_hdf_if_available: bool = False,
+        use_hdf_if_available: bool = True,
         mmap_detector_events: bool = True,
         drop_polarity: bool = True,
         convert_polarity_to_int: bool = True,
@@ -972,7 +972,7 @@ class TimsTOF(object):
             Default is 0.
         use_hdf_if_available : bool
             If an HDF file is available, use this instead of the .d folder.
-            Default is False.
+            Default is True.
         mmap_detector_events : bool
             Do not save the intensity_values and tof_indices in memory,
             but use an mmap instead.
@@ -1057,6 +1057,7 @@ class TimsTOF(object):
         convert_polarity_to_int: bool = True,
         mmap_detector_events: bool = True
     ):
+        logging.info(f"Using .d import for {bruker_d_folder_name}")
         self._version = alphatims.__version__
         self._zeroth_frame = True
         (
@@ -1248,6 +1249,7 @@ class TimsTOF(object):
         bruker_d_folder_name: str,
         mmap_detector_events: bool = False,
     ):
+        logging.info(f"Using HDF import for {bruker_d_folder_name}")
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             mmap_arrays = []
             if mmap_detector_events:
