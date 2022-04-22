@@ -119,6 +119,30 @@ def ones(shape: tuple, dtype: np.dtype) -> np.ndarray:
     return _array
 
 
+def clone(array: np.ndarray) -> np.ndarray:
+    """Create a writable temporary mmapped array copy.
+
+    Parameters
+    ----------
+    array : np.ndarray
+        An array that needs to be copied.
+
+    Returns
+    -------
+    np.ndarray
+        A writable temporary mmapped array that is a copy of array.
+
+    Raises
+    ------
+    ExceptionName
+        Why the exception is raised.
+
+    """
+    _array = empty(array.shape, array.dtype)
+    _array[:] = array
+    return _array
+
+
 @atexit.register
 def atexit_clear() -> str:
     """Reset the temporary folder containing temp mmapped arrays.
