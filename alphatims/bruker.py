@@ -487,6 +487,7 @@ def read_bruker_binary(
     bruker_d_folder_name: str,
     compression_type: int,
     max_peaks_per_scan: int,
+    mmap_detector_events: bool = None,
 ) -> tuple:
     """Read all data from an "analysis.tdf_bin" of a Bruker .d folder.
 
@@ -502,6 +503,10 @@ def read_bruker_binary(
     max_peaks_per_scan : int
         The maximum number of peaks per scan.
         Should be treieved from the global metadata.
+    mmap_detector_events : bool
+        Do not save the intensity_values and tof_indices in memory,
+        but use an mmap instead.
+        Default is True
 
     Returns
     -------
@@ -514,8 +519,12 @@ def read_bruker_binary(
     max_scan_count = frames.NumScans.max() + 1
     scan_count = max_scan_count * frames.shape[0]
     scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
-    intensities = tm.empty(int(frame_indptr[-1]), dtype=np.uint16)
-    tof_indices = tm.empty(int(frame_indptr[-1]), dtype=np.uint32)
+    if mmap_detector_events:
+        intensities = tm.empty(int(frame_indptr[-1]), dtype=np.uint16)
+        tof_indices = tm.empty(int(frame_indptr[-1]), dtype=np.uint32)
+    else:
+        intensities = np.empty(int(frame_indptr[-1]), dtype=np.uint16)
+        tof_indices = np.empty(int(frame_indptr[-1]), dtype=np.uint32)
     tdf_bin_file_name = os.path.join(bruker_d_folder_name, "analysis.tdf_bin")
     tims_offset_values = frames.TimsId.values
     logging.info(
@@ -922,7 +931,7 @@ class TimsTOF(object):
         slice_as_dataframe: bool = True,
         use_calibrated_mz_values_as_default: int = 0,
         use_hdf_if_available: bool = False,
-        mmap_detector_events: bool = None,
+        mmap_detector_events: bool = True,
         drop_polarity: bool = True,
         convert_polarity_to_int: bool = True,
     ):
@@ -962,14 +971,12 @@ class TimsTOF(object):
             If 2, calibration at the MS2 level is performed.
             Default is 0.
         use_hdf_if_available : bool
-            If an HDF file is available, use this instead of the
-            .d folder.
+            If an HDF file is available, use this instead of the .d folder.
             Default is False.
         mmap_detector_events : bool
             Do not save the intensity_values and tof_indices in memory,
-            but use an mmap instead. If no .hdf file is available to use for
-            mmapping, one will be created automatically.
-            Default is False for .d folders and True for .hdf files.
+            but use an mmap instead.
+            Default is True
         drop_polarity : bool
             The polarity column of the frames table contains "+" or "-" and
             is not numerical.
@@ -984,11 +991,9 @@ class TimsTOF(object):
             This is ignored if the polarity is dropped.
             Default is True.
         """
-        logging.info(f"Importing data from {bruker_d_folder_name}")
-        if (mmap_detector_events is None) and bruker_d_folder_name.endswith(".hdf"):
-            mmap_detector_events = True
         if bruker_d_folder_name.endswith("/"):
             bruker_d_folder_name = bruker_d_folder_name[:-1]
+        logging.info(f"Importing data from {bruker_d_folder_name}")
         if bruker_d_folder_name.endswith(".d"):
             bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
             hdf_file_exists = os.path.exists(bruker_hdf_file_name)
@@ -1002,18 +1007,13 @@ class TimsTOF(object):
                 self.bruker_d_folder_name = os.path.abspath(
                     bruker_d_folder_name
                 )
-                if mmap_detector_events:
-                    raise IOError(
-                        f"Can only use mmapping from .hdf files. "
-                        f"Either use the .hdf file as input directly, "
-                        "or use the use_hdf_if_available option."
-                    )
                 self._import_data_from_d_folder(
                     bruker_d_folder_name,
                     mz_estimation_from_frame,
                     mobility_estimation_from_frame,
                     drop_polarity,
                     convert_polarity_to_int,
+                    mmap_detector_events,
                 )
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
@@ -1026,7 +1026,7 @@ class TimsTOF(object):
                 "WARNING: file extension not understood"
             )
         if not hasattr(self, "version"):
-            self._version = "none"
+            self._version = "N.A."
         if self.version != alphatims.__version__:
             logging.info(
                 "WARNING: "
@@ -1055,6 +1055,7 @@ class TimsTOF(object):
         mobility_estimation_from_frame: int,
         drop_polarity: bool = True,
         convert_polarity_to_int: bool = True,
+        mmap_detector_events: bool = True
     ):
         self._version = alphatims.__version__
         self._zeroth_frame = True
