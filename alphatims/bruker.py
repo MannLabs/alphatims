@@ -293,6 +293,10 @@ def parse_decompressed_bruker_binary_type2(decompressed_bytes: bytes) -> tuple:
     scan_count = buffer[0]
     scan_indices = buffer[:scan_count].copy() // 2
     scan_indices[0] = 0
+    intensities = buffer[scan_count + 1::2]
+    last_scan = len(intensities) - np.sum(scan_indices[1:])
+    scan_indices[:-1] = scan_indices[1:]
+    scan_indices[-1] = last_scan
     tof_indices = buffer[scan_count::2].copy()
     index = 0
     for size in scan_indices:
@@ -301,10 +305,6 @@ def parse_decompressed_bruker_binary_type2(decompressed_bytes: bytes) -> tuple:
             current_sum += tof_indices[index]
             tof_indices[index] = current_sum
             index += 1
-    intensities = buffer[scan_count + 1::2]
-    last_scan = len(intensities) - np.sum(scan_indices[1:])
-    scan_indices[:-1] = scan_indices[1:]
-    scan_indices[-1] = last_scan
     return scan_indices, tof_indices, intensities
 
 
