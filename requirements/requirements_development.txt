@@ -1,7 +1,7 @@
 jupyter==1.0.0
 jupyter_contrib_nbextensions==0.5.1
 pyinstaller==4.10
-autodocsumm==0.2.7
+autodocsumm==0.2.8
 sphinx-rtd-theme==0.5.2
 plotly==4.12.0
 seaborn==0.11.0
