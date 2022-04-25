@@ -1,6 +1,6 @@
 jupyter==1.0.0
 jupyter_contrib_nbextensions==0.5.1
-pyinstaller==4.10
+pyinstaller==5.0.1
 autodocsumm==0.2.7
 sphinx-rtd-theme==0.5.2
 plotly==4.12.0
