@@ -51,12 +51,12 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     ----------
     shape : tuple
         A tuple with the shape of the array.
-    dtype : type
+    dtype : np.dtype
         The np.dtype of the array.
 
     Returns
     -------
-    type
+    np.ndarray
         A writable temporary mmapped array.
     """
     element_count = np.prod(shape)
@@ -78,10 +78,36 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     with open(temp_file_name, "wb") as binfile:
         binfile.seek(required_space - 1)
         binfile.write(b"0")
-        offset = 0
-    with open(temp_file_name, "rb+") as raw_hdf_file:
+    return read(temp_file_name, element_count, shape, dtype)
+
+
+def read(
+    temp_file_name: str,
+    element_count: int,
+    shape: tuple,
+    dtype: np.dtype,
+) -> np.ndarray:
+    """Short summary.
+
+    Parameters
+    ----------
+    temp_file_name : str
+        The file name of the temp mmap data.
+    element_count : int
+        The number of elements to read.
+    shape : tuple
+        A tuple with the shape of the array.
+    dtype : np.dtype
+        The np.dtype of the array.
+
+    Returns
+    -------
+    np.ndarray
+        A writable temporary mmapped array.
+    """
+    with open(temp_file_name, "r+b") as bin_file:
         _mmap_obj = mmap.mmap(
-            raw_hdf_file.fileno(),
+            bin_file.fileno(),
             0,
             access=mmap.ACCESS_WRITE
         )
@@ -89,7 +115,6 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
             _mmap_obj,
             dtype=dtype,
             count=element_count,
-            offset=offset
         ).reshape(shape)
         if ALLOW_NDARRAY_SUBCLASS:
             _array = TempMMapArray(_array, temp_file_name)
