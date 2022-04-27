@@ -43,8 +43,13 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     type
         A writable temporary mmapped array.
     """
+    element_count = np.prod(shape)
+    if element_count <= 0:
+        raise ValueError(
+            f"Shape {shape} has an invalid element count of {element_count}"
+        )
     *other, free_space = shutil.disk_usage(TEMP_DIR_NAME)
-    required_space = np.product(shape) * np.dtype(dtype).itemsize
+    required_space = element_count * np.dtype(dtype).itemsize
     if free_space < required_space:
         raise IOError(
             f"Cannot create array of size {required_space} "
@@ -52,16 +57,12 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
         )
     temp_file_name = os.path.join(
         TEMP_DIR_NAME,
-        f"temp_mmap_{np.random.randint(2**31)}{np.random.randint(2**31)}.hdf"
+        f"temp_mmap_{np.random.randint(2**31)}{np.random.randint(2**31)}.bin"
     )
-    with h5py.File(temp_file_name, "w") as hdf_file:
-        array = hdf_file.create_dataset(
-            "array",
-            shape=shape,
-            dtype=dtype
-        )
-        array[0] = 0
-        offset = array.id.get_offset()
+    with open(temp_file_name, "wb") as binfile:
+        binfile.seek(required_space - 1)
+        binfile.write(b"0")
+        offset = 0
     with open(temp_file_name, "rb+") as raw_hdf_file:
         mmap_obj = mmap.mmap(
             raw_hdf_file.fileno(),
@@ -71,7 +72,7 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
         _array = np.frombuffer(
             mmap_obj,
             dtype=dtype,
-            count=np.prod(shape),
+            count=element_count,
             offset=offset
         ).reshape(shape)
         ARRAYS.append(_array)
