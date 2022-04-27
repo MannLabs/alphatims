@@ -217,3 +217,7 @@ class TempMMapArray(np.ndarray):
         if obj is None:
             return
         self._path = getattr(obj, '_path', None)
+
+    @property
+    def path(self):
+        return self._path
