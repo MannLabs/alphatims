@@ -190,7 +190,7 @@ def clear() -> str:
 
 
 class TempMMapArray(np.ndarray):
-    """A np.ndarray with path attribute for a temporary mmapped buffer ."""
+    """A np.ndarray with path attribute for a temporary mmapped buffer."""
 
     def __new__(cls, input_array, _path):
         obj = np.asarray(input_array).view(cls)
@@ -198,7 +198,6 @@ class TempMMapArray(np.ndarray):
         return obj
 
     def __array_finalize__(self, obj):
-        """
         if obj is None:
             return
         self._path = getattr(obj, '_path', None)
