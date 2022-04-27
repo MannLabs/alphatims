@@ -165,7 +165,7 @@ def clone(array: np.ndarray) -> np.ndarray:
 def atexit_clear() -> str:
     """Reset the temporary folder containing temp mmapped arrays.
 
-    WARNING: All existing temp mmapp arrays will be unusable!
+    WARNING: All existing temp mmapp arrays will become unusable!
 
     Returns
     -------
@@ -174,13 +174,13 @@ def atexit_clear() -> str:
     """
     global CLOSED
     CLOSED = True
-    clear()
+    reset()
 
 
-def clear() -> str:
+def reset() -> str:
     """Reset the temporary folder containing temp mmapped arrays.
 
-    WARNING: All existing temp mmapp arrays will be unusable!
+    WARNING: All existing temp mmapp arrays will become unusable!
 
     Returns
     -------
@@ -196,7 +196,6 @@ def clear() -> str:
             f"Folder {TEMP_DIR_NAME} with temp mmap arrays is being deleted. "
             "All existing temp mmapp arrays will be unusable!"
         )
-        CLOSED = True
     for _array in ARRAYS.values():
         _array[1].close()
     del _TEMP_DIR
