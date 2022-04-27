@@ -13,8 +13,25 @@ import mmap
 import tempfile
 
 
-_TEMP_DIR = tempfile.TemporaryDirectory(prefix="temp_mmap_")
-TEMP_DIR_NAME = _TEMP_DIR.name
+def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
+    """Make a temporary directory.
+
+    Parameters
+    ----------
+    prefix : str
+        The prefix for the temporary directory.
+
+    Returns
+    -------
+    tuple
+        The temporary directory and its name.
+    """
+    _temp_dir = tempfile.TemporaryDirectory(prefix=prefix)
+    temp_dir_name = _temp_dir.name
+    return _temp_dir, temp_dir_name
+
+
+_TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
 ARRAYS = {}
 CLOSED = False
 ALLOW_NDARRAY_SUBCLASS = True
@@ -183,8 +200,7 @@ def clear() -> str:
     for _array in ARRAYS.values():
         _array[1].close()
     del _TEMP_DIR
-    _TEMP_DIR = tempfile.TemporaryDirectory(prefix="temp_mmap_")
-    TEMP_DIR_NAME = _TEMP_DIR.name
+    _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
     ARRAYS = {}
     return TEMP_DIR_NAME
 
