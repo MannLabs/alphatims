@@ -10,15 +10,14 @@ import shutil
 # external
 import numpy as np
 import mmap
-import h5py
 import tempfile
 
 
 _TEMP_DIR = tempfile.TemporaryDirectory(prefix="temp_mmap_")
 TEMP_DIR_NAME = _TEMP_DIR.name
-ARRAYS = []
-MMAPS = []
+ARRAYS = {}
 CLOSED = False
+ALLOW_NDARRAY_SUBCLASS = True
 
 logging.warning(
     f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
@@ -64,19 +63,20 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
         binfile.write(b"0")
         offset = 0
     with open(temp_file_name, "rb+") as raw_hdf_file:
-        mmap_obj = mmap.mmap(
+        _mmap_obj = mmap.mmap(
             raw_hdf_file.fileno(),
             0,
             access=mmap.ACCESS_WRITE
         )
         _array = np.frombuffer(
-            mmap_obj,
+            _mmap_obj,
             dtype=dtype,
             count=element_count,
             offset=offset
         ).reshape(shape)
-        ARRAYS.append(_array)
-        MMAPS.append(mmap_obj)
+        if ALLOW_NDARRAY_SUBCLASS:
+            _array = TempMMapArray(_array, temp_file_name)
+        ARRAYS[temp_file_name] = (_array, _mmap_obj)
         return _array
 
 
@@ -173,7 +173,6 @@ def clear() -> str:
     global _TEMP_DIR
     global TEMP_DIR_NAME
     global ARRAYS
-    global MMAPS
     global CLOSED
     if not CLOSED:
         logging.warning(
@@ -181,11 +180,25 @@ def clear() -> str:
             "All existing temp mmapp arrays will be unusable!"
         )
         CLOSED = True
-    for _mmap in MMAPS:
-        _mmap.close()
+    for _array in ARRAYS.values():
+        _array[1].close()
     del _TEMP_DIR
     _TEMP_DIR = tempfile.TemporaryDirectory(prefix="temp_mmap_")
     TEMP_DIR_NAME = _TEMP_DIR.name
-    ARRAYS = []
-    MMAPS = []
+    ARRAYS = {}
     return TEMP_DIR_NAME
+
+
+class TempMMapArray(np.ndarray):
+    """A np.ndarray with path attribute for a temporary mmapped buffer ."""
+
+    def __new__(cls, input_array, _path):
+        obj = np.asarray(input_array).view(cls)
+        obj._path = _path
+        return obj
+
+    def __array_finalize__(self, obj):
+        """
+        if obj is None:
+            return
+        self._path = getattr(obj, '_path', None)
