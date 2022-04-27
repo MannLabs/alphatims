@@ -2,15 +2,15 @@
 """This module allows to create temporary mmapped arrays."""
 
 # builtin
-import os
-import logging
 import atexit
+import logging
+import os
 import shutil
+import tempfile
 
 # external
-import numpy as np
 import mmap
-import tempfile
+import numpy as np
 
 
 def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
