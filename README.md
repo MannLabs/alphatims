@@ -97,10 +97,16 @@ pip install "alphatims[stable]"
 
 NOTE: You might need to run `pip install pip==21.0` before installing AlphaTims like this. Also note the double quotes `"`.
 
-Alternatively, some basic plotting functions and the complete GUI can be installed with the following command:
+Alternatively, some basic plotting functions can be installed with the following command:
 
 ```bash
 pip install "alphatims[plotting]"
+```
+
+While the above command does allow usage of the full GUI, there are some known compatability issues with newer versions of bokeh. As such, it is generally advised to not use loose plotting dependancies and force a stable installation with:
+
+```bash
+pip install "alphatims[plotting-stable]"
 ```
 
 When older samples need to be analyzed, it might be essential to install the `legacy` version as well (See also the [troubleshooting](#troubleshooting) section):
