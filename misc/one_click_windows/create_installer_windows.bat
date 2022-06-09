@@ -8,15 +8,15 @@ REM call conda install git -y
 REM call pip install 'git+https://github.com/MannLabs/alphatims.git#egg=alphatims[gui]'
 REM call conda install freetype
 REM call pip install ../../.[plotting]
-REM call pip install pyinstaller==4.2
+REM call pip install pyinstaller==4.10
 REM call pyinstaller ../pyinstaller/alphatims.spec -y
 call cd ../..
 call rmdir dist /s /q
 call rmdir build /s /q
 call python setup.py sdist bdist_wheel
 call cd misc/one_click_windows
-call pip install "../../dist/alphatims-0.3.2-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
-call pip install pyinstaller==4.2
+call pip install "../../dist/alphatims-1.0.0-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
+call pip install pyinstaller==4.10
 call pyinstaller ../pyinstaller/alphatims.spec -y
 call conda deactivate
 
