@@ -1263,7 +1263,7 @@ class TimsTOF(object):
 
     def convert_from_indices(
         self,
-        raw_indices=None,
+        raw_indices,
         *,
         frame_indices=None,
         quad_indices=None,
@@ -1283,7 +1283,7 @@ class TimsTOF(object):
         return_mz_values: bool = False,
         return_intensity_values: bool = False,
         return_corrected_intensity_values: bool = False,
-        raw_indices_sorted: bool = True,
+        raw_indices_sorted: bool = False,
     ) -> dict:
         """Convert selected indices to a dict.
 
@@ -1345,13 +1345,19 @@ class TimsTOF(object):
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
-            Default is True.
+            Default is False.
 
         Returns
         -------
         dict
             A dict with all requested columns.
         """
+        try:
+            iter(raw_indices)
+        except TypeError:
+            raw_indices = [raw_indices]
+        if not isinstance(raw_indices, np.ndarray):
+            raw_indices = np.array(raw_indices)
         result = {}
         if (raw_indices is not None) and any(
             [
@@ -1726,7 +1732,7 @@ class TimsTOF(object):
         mz_values: bool = True,
         intensity_values: bool = True,
         corrected_intensity_values: bool = True,
-        raw_indices_sorted: bool = True,
+        raw_indices_sorted: bool = False,
     ):
         """Convert raw indices to a pd.DataFrame.
 
@@ -1780,7 +1786,7 @@ class TimsTOF(object):
         raw_indices_sorted : bool
             If True, raw_indices are assumed to be sorted,
             resulting in a faster conversion.
-            Default is True.
+            Default is False.
 
         Returns
         -------
