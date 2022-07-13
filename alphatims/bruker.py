@@ -1134,6 +1134,14 @@ class TimsTOF(object):
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         mz_min_value = float(self.meta_data["MzAcqRangeLower"])
         mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
+        if self.meta_data["AcquisitionSoftware"] == "Bruker otofControl":
+            logging.warning(
+                "WARNING: Acquisition software is Bruker otofControl, "
+                "mz min/max values are assumed to be 5 m/z wider than "
+                "defined in analysis.tdf!"
+            )
+            mz_min_value -= 5
+            mz_max_value += 5
         tof_intercept = np.sqrt(mz_min_value)
         tof_slope = (
             np.sqrt(mz_max_value) - tof_intercept
