@@ -129,8 +129,8 @@ def line_plot(
 
 def heatmap(
     df,
-    x_axis_label: str,
-    y_axis_label: str,
+    x_axis_label: str = "rt",
+    y_axis_label: str = "mobility",
     title: str = "",
     z_axis_label: str = "intensity",
     width: int = 1000,
@@ -150,14 +150,16 @@ def heatmap(
         This should be obtained by slicing an alphatims.bruker.TimsTOF object.
     x_axis_label : str
         A label that is used for projection
-        (i.e. intensities are summed) on the x-axis. Options are:
+        (i.e. intensities are summed) on the x-axis.
+        Default is "rt". Options are:
 
             - mz
             - rt
             - mobility
     y_axis_label : str
         A label that is used for projection
-        (i.e. intensities are summed) on the y-axis. Options are:
+        (i.e. intensities are summed) on the y-axis.
+        Default is "mobility". Options are:
 
             - mz
             - rt
