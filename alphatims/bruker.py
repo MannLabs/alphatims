@@ -755,6 +755,11 @@ class TimsTOF(object):
         return self._mobility_values
 
     @property
+    def cycle(self):
+        """: np.ndarray : np.float64[:,:,:,:] : The quad values."""
+        return self._cycle
+
+    @property
     def mz_values(self):
         """: np.ndarray : np.float64[:] : The mz values."""
         if self._use_calibrated_mz_values_as_default:
@@ -1170,6 +1175,7 @@ class TimsTOF(object):
         self._parse_quad_indptr()
         self._intensity_min_value = int(np.min(self.intensity_values))
         self._intensity_max_value = int(np.max(self.intensity_values))
+        self.set_cycle()
 
     def save_as_hdf(
         self,
@@ -2248,6 +2254,55 @@ class TimsTOF(object):
                     mz_tolerance=1
                 )
         self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
+
+
+    def set_cycle(self) -> None:
+        """Set the quad cycle for diaPASEF data.
+        """
+        last_window_group = -1
+        for max_index, (frame, window_group) in enumerate(
+            zip(
+                self.fragment_frames.Frame,
+                self.fragment_frames.Precursor
+            )
+        ):
+            if window_group < last_window_group:
+                break
+            else:
+                last_window_group = window_group
+        frames = self.fragment_frames.Frame[max_index-1]
+        frames += self.fragment_frames.Frame[0] == int(self.zeroth_frame)
+        sub_cycles = frames - len(np.unique(self.fragment_frames.Frame[:max_index]))
+        cycle = np.zeros(
+            (
+                frames,
+                self.scan_max_index,
+                2,
+            )
+        )
+        # cycle[:] = -1
+        precursor_frames = np.ones(frames, dtype=np.bool_)
+        for index, row in self.fragment_frames[:max_index].iterrows():
+            frame = int(row.Frame - self.zeroth_frame)
+            scan_begin = int(row.ScanNumBegin)
+            scan_end = int(row.ScanNumEnd)
+            low_mz = row.IsolationMz - row.IsolationWidth / 2
+            high_mz = row.IsolationMz + row.IsolationWidth / 2
+        #     print(low_mz, high_mz)
+            cycle[
+                frame,
+                scan_begin: scan_end,
+            ] = (low_mz, high_mz)
+            precursor_frames[frame] = False
+        cycle[precursor_frames] = (-1, -1)
+        cycle = cycle.reshape(
+            (
+                sub_cycles,
+                frames // sub_cycles,
+                *cycle.shape[1:]
+            )
+        )
+        self._cycle = cycle
 
 
 class PrecursorFloatError(TypeError):
