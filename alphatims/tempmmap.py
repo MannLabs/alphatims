@@ -59,7 +59,7 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     np.ndarray
         A writable temporary mmapped array.
     """
-    element_count = np.prod(shape)
+    element_count = np.prod(shape, dtype=np.int64)
     if element_count <= 0:
         raise ValueError(
             f"Shape {shape} has an invalid element count of {element_count}"

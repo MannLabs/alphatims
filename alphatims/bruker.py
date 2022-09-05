@@ -1139,6 +1139,14 @@ class TimsTOF(object):
             ) / self.scan_max_index * np.arange(self.scan_max_index)
         mz_min_value = float(self.meta_data["MzAcqRangeLower"])
         mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
+        if self.meta_data["AcquisitionSoftware"] == "Bruker otofControl":
+            logging.warning(
+                "WARNING: Acquisition software is Bruker otofControl, "
+                "mz min/max values are assumed to be 5 m/z wider than "
+                "defined in analysis.tdf!"
+            )
+            mz_min_value -= 5
+            mz_max_value += 5
         tof_intercept = np.sqrt(mz_min_value)
         tof_slope = (
             np.sqrt(mz_max_value) - tof_intercept
@@ -1179,8 +1187,8 @@ class TimsTOF(object):
 
     def save_as_hdf(
         self,
-        directory: str,
-        file_name: str,
+        directory: str = None,
+        file_name: str = None,
         overwrite: bool = False,
         compress: bool = False,
         return_as_bytes_io: bool = False,
@@ -1192,9 +1200,11 @@ class TimsTOF(object):
         directory : str
             The directory where to save the HDF file.
             Ignored if return_as_bytes_io == True.
+            Default is None, meaning it is parsed from input file.
         file_name : str
             The file name of the  HDF file.
             Ignored if return_as_bytes_io == True.
+            Default is None, meaning it is parsed from input file.
         overwrite : bool
             If True, an existing file is truncated.
             If False, the existing file is appended to only if the original
@@ -1219,6 +1229,10 @@ class TimsTOF(object):
             The full file name or a bytes stream containing the HDF file.
         """
         import io
+        if directory is None:
+            directory = self.directory
+        if file_name is None:
+            file_name = f"{self.sample_name}.hdf"
         if overwrite:
             hdf_mode = "w"
         else:

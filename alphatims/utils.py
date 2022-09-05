@@ -449,6 +449,65 @@ def njit(_func=None, *args, **kwargs):
     return numba.njit(_func, *args, cache=cache, **kwargs)
 
 
+def class_njit(
+    _func=None,
+):
+    import numpy as np
+    import numba
+    import types
+    import ast
+    import textwrap
+    import inspect
+    import pandas as pd
+    def parse_dict(dict_to_parse):
+        result_dict = {}
+        for key, value in dict_to_parse.items():
+            if isinstance(value, pd.DataFrame):
+                key_module = types.ModuleType(f"{key}")
+                for column in value.columns:
+                    key_module.__dict__[column] = np.array(
+                        value[column].values,
+                        copy=False
+                    )
+                result_dict[key] = key_module
+            else:
+                result_dict[key] = value
+        return result_dict
+    def wrapper(func):
+        def inner_func(self, *args, **kwargs):
+            self_ = self
+            self = types.ModuleType(f"{self.__class__}_{id(self)}")
+            self.__dict__.update(parse_dict(self_.__dict__))
+            tree = ast.parse(
+                textwrap.dedent(
+                    inspect.getsource(
+                        func
+                    )
+                )
+            )
+            # tree.body[0].decorator_list = [
+            #     decorator for decorator in tree.body[0].decorator_list if decorator.id != "class_njit"
+            # ]
+            tree.body[0].decorator_list = []
+            tree.body[0].args.args = tree.body[0].args.args[1:]
+            tree.body[0].name = f"{func.__name__}_class_njit"
+            src = ast.unparse(tree)
+            env = dict(locals())
+            env.update(globals())
+            env["numba"] = numba
+            exec(src, env, env)
+            src = f"self_.{func.__name__} = numba.njit(env['{func.__name__}_class_njit'])"
+#             src = f"self_.{func.__name__} = env['{func.__name__}_performance']"
+            exec(src)
+            result = eval(f"self_.{func.__name__}(*args, **kwargs)")
+            return result
+        return inner_func
+    if _func is None:
+        return wrapper
+    else:
+        return wrapper(_func)
+
+
 def pjit(
     _func=None,
     *,
