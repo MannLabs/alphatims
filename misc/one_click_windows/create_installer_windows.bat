@@ -15,7 +15,7 @@ call rmdir dist /s /q
 call rmdir build /s /q
 call python setup.py sdist bdist_wheel
 call cd misc/one_click_windows
-call pip install "../../dist/alphatims-1.0.0-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
+call pip install "../../dist/alphatims-1.0.1-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
 call pip install pyinstaller==4.10
 call pyinstaller ../pyinstaller/alphatims.spec -y
 call conda deactivate
