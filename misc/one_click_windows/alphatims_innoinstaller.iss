@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AlphaTims"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.3"
 #define MyAppPublisher "Max Planck Institute of Biochemistry, Mann department"
 #define MyAppURL "https://github.com/MannLabs/alphatims"
 #define MyAppExeName "alphatims_gui.exe"
