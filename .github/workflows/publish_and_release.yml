@@ -167,13 +167,15 @@ jobs:
       - name: Prepare distribution
         shell: bash -l {0}
         run: |
-          conda env create --force --name alphatims --file misc/conda_development_environment.yaml
-          conda activate alphatims
-          rm -rf dist
-          rm -rf build
-          python setup.py sdist bdist_wheel
-          twine check dist/*
-          conda deactivate
+          # conda env create --force --name alphatims --file misc/conda_development_environment.yaml
+          # conda activate alphatims
+          # rm -rf dist
+          # rm -rf build
+          # python setup.py sdist bdist_wheel
+          # twine check dist/*
+          # conda deactivate
+          cd misc
+          . ./prepare_pypi_wheel.sh
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
