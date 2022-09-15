@@ -269,7 +269,10 @@ def detect(**kwargs):
 def export_hdf(**kwargs):
     with parse_cli_settings("export hdf", **kwargs) as parameters:
         import alphatims.bruker
-        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
+        data = alphatims.bruker.TimsTOF(
+            parameters["bruker_raw_data"],
+            use_hdf_if_available=False
+        )
         if "output_folder" not in parameters:
             directory = data.directory
         else:
