@@ -40,7 +40,7 @@ logging.warning(
     f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
     "Cleanup of this folder is OS dependant, "
     "and might need to be triggered manually! "
-    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]}"
+    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
 )
 
 
