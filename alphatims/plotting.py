@@ -129,7 +129,7 @@ def line_plot(
 
 def heatmap(
     df,
-    x_axis_label: str = "rt",
+    x_axis_label: str = "mz",
     y_axis_label: str = "mobility",
     title: str = "",
     z_axis_label: str = "intensity",
