@@ -249,6 +249,7 @@ def read_bruker_sql(
             frames.MaxIntensity[0] = 0
             frames.SummedIntensities[0] = 0
             frames.NumPeaks[0] = 0
+            frames.MsMsType[0] = 0
         polarity_col = frames["Polarity"].copy()
         frames = pd.DataFrame(
             {
@@ -1183,7 +1184,8 @@ class TimsTOF(object):
         self._parse_quad_indptr()
         self._intensity_min_value = int(np.min(self.intensity_values))
         self._intensity_max_value = int(np.max(self.intensity_values))
-        self.set_cycle()
+        if self.acquisition_mode == "diaPASEF":
+            self.set_cycle()
 
     def save_as_hdf(
         self,
@@ -2273,19 +2275,13 @@ class TimsTOF(object):
     def set_cycle(self) -> None:
         """Set the quad cycle for diaPASEF data.
         """
-        last_window_group = -1
-        for max_index, (frame, window_group) in enumerate(
-            zip(
-                self.fragment_frames.Frame,
-                self.fragment_frames.Precursor
-            )
-        ):
-            if window_group < last_window_group:
+        subframes = self.fragment_frames.drop("Frame", axis=1)
+        for max_index in range(1, len(subframes)):
+            subframe = subframes.iloc[max_index]
+            if subframe.equals(subframes.iloc[0]):
                 break
-            else:
-                last_window_group = window_group
-        frames = self.fragment_frames.Frame[max_index-1]
-        frames += self.fragment_frames.Frame[0] == int(self.zeroth_frame)
+        frames = self.fragment_frames.Frame[max_index] - 1
+        frames += (1 - int(self.zeroth_frame))
         sub_cycles = frames - len(np.unique(self.fragment_frames.Frame[:max_index]))
         cycle = np.zeros(
             (
