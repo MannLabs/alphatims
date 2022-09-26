@@ -2271,44 +2271,50 @@ class TimsTOF(object):
                 )
         self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
-
     def set_cycle(self) -> None:
         """Set the quad cycle for diaPASEF data.
         """
+        ms1_diffs = np.diff(
+            np.flatnonzero(self.frames.MsMsType[int(self.zeroth_frame):]==0)
+        )
+        subcycle_length_count = np.bincount(ms1_diffs)
+        if np.all(subcycle_length_count[:-1]!=0):
+            raise ValueError("No consistent subcycle length")
+        subcycle_length = len(subcycle_length_count) - 1
+        max_precursor = len(self.fragment_frames.Precursor.unique())
+        subcycle_count = max_precursor // (subcycle_length - 1)
+        frame_count = subcycle_length * subcycle_count
+        cycle = np.zeros(
+            (
+                frame_count,
+                self.scan_max_index,
+                2,
+            )
+        )
+        precursor_frames = np.ones(frame_count, dtype=np.bool_)
+
         subframes = self.fragment_frames.drop("Frame", axis=1)
         for max_index in range(1, len(subframes)):
             subframe = subframes.iloc[max_index]
             if subframe.equals(subframes.iloc[0]):
                 break
-        frames = self.fragment_frames.Frame[max_index] - 1
-        frames += (1 - int(self.zeroth_frame))
-        sub_cycles = frames - len(np.unique(self.fragment_frames.Frame[:max_index]))
-        cycle = np.zeros(
-            (
-                frames,
-                self.scan_max_index,
-                2,
-            )
-        )
-        # cycle[:] = -1
-        precursor_frames = np.ones(frames, dtype=np.bool_)
         for index, row in self.fragment_frames[:max_index].iterrows():
             frame = int(row.Frame - self.zeroth_frame)
             scan_begin = int(row.ScanNumBegin)
             scan_end = int(row.ScanNumEnd)
             low_mz = row.IsolationMz - row.IsolationWidth / 2
             high_mz = row.IsolationMz + row.IsolationWidth / 2
-        #     print(low_mz, high_mz)
             cycle[
                 frame,
                 scan_begin: scan_end,
             ] = (low_mz, high_mz)
             precursor_frames[frame] = False
+
         cycle[precursor_frames] = (-1, -1)
         cycle = cycle.reshape(
             (
-                sub_cycles,
-                frames // sub_cycles,
+                subcycle_count,
+                subcycle_length,
                 *cycle.shape[1:]
             )
         )
