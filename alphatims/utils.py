@@ -621,16 +621,17 @@ def pjit(
                 threads.append(thread)
             if include_progress_callback:
                 import time
+                granularity = 1000
                 # progress_count = 0
                 progress_bar = 0
                 progress_count = np.sum(progress_counter)
                 for result in progress_callback(
-                    iterable,
+                    range(granularity),
                     include_progress_callback=include_progress_callback
                 ):
                     while progress_bar >= progress_count:
                         time.sleep(0.01)
-                        progress_count = np.sum(progress_counter)
+                        progress_count = granularity * np.sum(progress_counter) / len(iterable)
                     progress_bar += 1
             for thread in threads:
                 thread.join()
