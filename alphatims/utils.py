@@ -621,7 +621,10 @@ def pjit(
                 threads.append(thread)
             if include_progress_callback:
                 import time
-                granularity = 1000
+                if len(iterable) > 10**6:
+                    granularity = 1000
+                else:
+                    granularity = len(iterable)
                 # progress_count = 0
                 progress_bar = 0
                 progress_count = np.sum(progress_counter)
