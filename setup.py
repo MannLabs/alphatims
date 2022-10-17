@@ -21,8 +21,11 @@ for extra, requirement_file_name in package2install.__requirements__.items():
         extra_requirements[extra] = []
         for line in requirements_file:
             extra_requirements[extra_stable].append(line)
+            # conditional req like: "pywin32; sys_platform=='win32'"
+            line, *conditions = line.split(';')
             requirement, *comparison = re.split("[><=~!]", line)
             requirement == requirement.strip()
+            requirement = ";".join([requirement] + conditions)
             extra_requirements[extra].append(requirement)
 
 requirements = extra_requirements.pop("")
@@ -45,10 +48,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": package2install.__console_scripts__,
     },
-    install_requires=requirements + [
-        # TODO Remove hardcoded requirement?
-        "pywin32==225; sys_platform=='win32'"
-    ],
+    install_requires=requirements,
     extras_require=extra_requirements,
     python_requires=package2install.__python_version__,
 )

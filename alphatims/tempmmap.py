@@ -221,8 +221,16 @@ def reset() -> str:
             f"Folder {TEMP_DIR_NAME} with temp mmap arrays is being deleted. "
             "All existing temp mmapp arrays will be unusable!"
         )
-    for _array in ARRAYS.values():
-        _array[1].close()
+    import gc
+    for _array_name in list(ARRAYS.keys()):
+        _array_tuple = ARRAYS.pop(_array_name)
+        _array, _memmap = _array_tuple
+        del _array_tuple
+        _array.data.release()
+        del _array
+        gc.collect()
+        _memmap.close()
+        del _memmap
     del _TEMP_DIR
     _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
     ARRAYS = {}

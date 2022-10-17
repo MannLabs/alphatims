@@ -2,7 +2,7 @@
 
 
 __project__ = "alphatims"
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 __license__ = "Apache"
 __description__ = "A Python package to index Bruker TimsTOF raw data for fast and easy accession and visualization"
 __author__ = "Sander Willems, Eugenia Voytik"
@@ -17,7 +17,7 @@ __keywords__ = [
     "bioinformatics",
     "data indexing",
 ]
-__python_version__ = ">=3.8,<3.10"
+__python_version__ = ">=3.8,<4"
 __classifiers__ = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
@@ -25,6 +25,7 @@ __classifiers__ = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 __console_scripts__ = [

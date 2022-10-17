@@ -306,7 +306,7 @@ def parse_decompressed_bruker_binary_type2(decompressed_bytes: bytes) -> tuple:
     last_scan = len(intensities) - np.sum(scan_indices[1:])
     scan_indices[:-1] = scan_indices[1:]
     scan_indices[-1] = last_scan
-    return scan_indices, tof_indices, intensities
+    return scan_indices, tof_indices - 1, intensities
 
 
 @alphatims.utils.njit(nogil=True)
