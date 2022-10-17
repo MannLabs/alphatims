@@ -12,6 +12,9 @@ import tempfile
 import mmap
 import numpy as np
 
+# local
+import alphatims.utils
+
 
 def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """Make a temporary directory.
@@ -160,6 +163,41 @@ def ones(shape: tuple, dtype: np.dtype) -> np.ndarray:
     _array = empty(shape, dtype)
     _array[:] = 1
     return _array
+
+
+def arange(
+    start: int,
+    stop: int,
+    step: int = 1,
+    dtype: np.dtype = np.uint64
+) -> np.ndarray:
+    """Create a writable temporary mmapped array filled with as a range.
+
+    Parameters
+    ----------
+    start : int
+        The start of this range.
+    stop : int
+        The stop of this range.
+    step : int
+        The step of this range.
+    dtype : type
+        The np.dtype of the array.
+
+    Returns
+    -------
+    type
+        A writable temporary mmapped array filled as a range.
+    """
+    _array = empty((stop - start) // step, dtype)
+    fill_array(_array, start, stop, step)
+    return _array
+
+
+@alphatims.utils.njit(nogil=True)
+def fill_array(array, start, stop, step):
+    for index, value in enumerate(range(start, stop, step)):
+        array[index] = value
 
 
 def clone(array: np.ndarray) -> np.ndarray:
