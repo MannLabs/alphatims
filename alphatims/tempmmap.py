@@ -37,7 +37,7 @@ def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
 _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
 ARRAYS = {}
 CLOSED = False
-ALLOW_NDARRAY_SUBCLASS = True
+ALLOW_NDARRAY_SUBCLASS = False
 
 logging.warning(
     f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
