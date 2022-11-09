@@ -424,7 +424,6 @@ def threadpool(
 def njit(_func=None, *args, **kwargs):
     """A wrapper for the numba.njit decorator.
 
-    The "cache" option is set to True by default.
     This can be overriden with kwargs.
 
     Parameters
@@ -442,11 +441,7 @@ def njit(_func=None, *args, **kwargs):
         A numba.njit decorated function.
     """
     import numba
-    if "cache" in kwargs:
-        cache = kwargs.pop("cache")
-    else:
-        cache = True
-    return numba.njit(_func, *args, cache=cache, **kwargs)
+    return numba.njit(_func, *args, **kwargs)
 
 
 def class_njit(
@@ -463,7 +458,7 @@ def class_njit(
         result_dict = {}
         for key, value in dict_to_parse.items():
             if isinstance(value, pd.DataFrame):
-                key_module = types.ModuleType(f"{key}")
+                key_module = types.ModuleType(f"{value.__class__}_{id(value)}")
                 for column in value.columns:
                     key_module.__dict__[column] = np.array(
                         value[column].values,
@@ -471,7 +466,16 @@ def class_njit(
                     )
                 result_dict[key] = key_module
             else:
-                result_dict[key] = value
+                import numba.core.registry
+                if hasattr(value, "__dict__") and not isinstance(
+                    value,
+                    numba.core.registry.CPUDispatcher
+                ):
+                    key_module = types.ModuleType(f"{value.__class__}_{id(value)}")
+                    key_module.__dict__.update(parse_dict(value.__dict__))
+                    result_dict[key] = key_module
+                else:
+                    result_dict[key] = value
         return result_dict
     def wrapper(func):
         def inner_func(self, *args, **kwargs):
@@ -496,7 +500,8 @@ def class_njit(
             env.update(globals())
             env["numba"] = numba
             exec(src, env, env)
-            src = f"self_.{func.__name__} = numba.njit(env['{func.__name__}_class_njit'])"
+            # src = f"self_.{func.__name__} = numba.njit(env['{func.__name__}_class_njit'])"
+            src = f"object.__setattr__(self_, '{func.__name__}', numba.njit(env['{func.__name__}_class_njit']))"
 #             src = f"self_.{func.__name__} = env['{func.__name__}_performance']"
             exec(src)
             result = eval(f"self_.{func.__name__}(*args, **kwargs)")
@@ -513,7 +518,6 @@ def pjit(
     *,
     thread_count=None,
     include_progress_callback: bool = True,
-    cache: bool = True,
     **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
@@ -543,9 +547,6 @@ def pjit(
         If False, no callback is added.
         See `set_progress_callback` for callback styles.
         Default is True.
-    cache : bool
-        See numba.njit decorator.
-        Default is True (in contrast to numba).
 
     Returns
     -------
@@ -558,13 +559,9 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        if "cache" in kwargs:
-            cache = kwargs.pop("cache")
-        else:
-            cache = True
-        numba_func = numba.njit(nogil=True, cache=cache, **kwargs)(func)
+        numba_func = numba.njit(nogil=True, **kwargs)(func)
 
-        @numba.njit(nogil=True, cache=cache)
+        @numba.njit(nogil=True)
         def numba_func_parallel(
             iterable,
             thread_id,
