@@ -162,7 +162,10 @@ def show_platform_info() -> None:
         f"cpu count     - {psutil.cpu_count()}"
         # f" ({100 - psutil.cpu_percent()}% unused)"
     )
-    logging.info(f"cpu frequency - {psutil.cpu_freq().current:.2f} Mhz")
+
+    # check if architecture is arm64 as psutil.cpu_freq() is not yet supported on apple silicon
+    if platform.machine() != 'arm64':
+        logging.info(f"cpu frequency - {psutil.cpu_freq().current:.2f} Mhz")
     logging.info(
         f"ram           - "
         f"{psutil.virtual_memory().available/1024**3:.1f}/"
