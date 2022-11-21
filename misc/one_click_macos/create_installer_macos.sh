@@ -16,7 +16,7 @@ rm -rf dist
 rm -rf build
 python setup.py sdist bdist_wheel
 cd misc/one_click_macos
-pip install pyinstaller==4.10
+pip install pyinstaller==5.6.2
 pip install "../../dist/alphatims-1.0.6-py3-none-any.whl[plotting-stable,stable,legacy-stable]"
 conda list
 pyinstaller ../pyinstaller/alphatims.spec -y

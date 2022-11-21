@@ -478,6 +478,8 @@ def class_njit(
                     result_dict[key] = value
         return result_dict
     def wrapper(func):
+        import functools
+        @functools.wraps(func)
         def inner_func(self, *args, **kwargs):
             self_ = self
             self = types.ModuleType(f"{self.__class__}_{id(self)}")
@@ -494,15 +496,17 @@ def class_njit(
             # ]
             tree.body[0].decorator_list = []
             tree.body[0].args.args = tree.body[0].args.args[1:]
-            tree.body[0].name = f"{func.__name__}_class_njit"
+            # tree.body[0].name = f"{func.__name__}_class_njit"
+            tree.body[0].name = f"{func.__name__}"
             src = ast.unparse(tree)
             env = dict(locals())
             env.update(globals())
             env["numba"] = numba
             exec(src, env, env)
             # src = f"self_.{func.__name__} = numba.njit(env['{func.__name__}_class_njit'])"
-            src = f"object.__setattr__(self_, '{func.__name__}', numba.njit(env['{func.__name__}_class_njit']))"
-#             src = f"self_.{func.__name__} = env['{func.__name__}_performance']"
+            # src = f"object.__setattr__(self_, '{func.__name__}', numba.njit(env['{func.__name__}_class_njit']))"
+            # src = f"self_.{func.__name__} = env['{func.__name__}_performance']"
+            src = f"object.__setattr__(self_, '{func.__name__}', numba.njit(env['{func.__name__}']))"
             exec(src)
             result = eval(f"self_.{func.__name__}(*args, **kwargs)")
             return result
