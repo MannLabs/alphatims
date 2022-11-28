@@ -1,4 +1,4 @@
-bokeh==2.2.3
+bokeh==3.0.2
 datashader==0.12.1
 hvplot==0.7.1
 selenium==3.141.0
