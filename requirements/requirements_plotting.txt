@@ -1,5 +1,5 @@
 bokeh==2.2.3
 datashader==0.12.1
 hvplot==0.7.1
-selenium==3.141.0
+selenium==4.7.2
 jinja2==3.0.2 
