@@ -256,7 +256,11 @@ def detect(**kwargs):
     pass
 
 
-@export.command("hdf", help="Export BRUKER_RAW_DATA as hdf file.")
+@export.command(
+    "hdf",
+    help="Export BRUKER_RAW_DATA as hdf file.",
+    no_args_is_help=True,
+)
 @cli_option("bruker_raw_data", as_argument=True)
 @cli_option("disable_overwrite")
 @cli_option("enable_compression")
@@ -285,7 +289,11 @@ def export_hdf(**kwargs):
         )
 
 
-@export.command("mgf", help="Export BRUKER_RAW_DATA as (profile) mgf file.")
+@export.command(
+    "mgf",
+    help="Export BRUKER_RAW_DATA as (profile) mgf file.",
+    no_args_is_help=True,
+)
 @cli_option("bruker_raw_data", as_argument=True)
 @cli_option("keep_n_most_abundant_peaks")
 @cli_option("centroiding_window")
@@ -315,7 +323,8 @@ def export_mgf(**kwargs):
 
 @export.command(
     "selection",
-    help="Load a BRUKER_RAW_DATA and select a data slice for export."
+    help="Load a BRUKER_RAW_DATA and select a data slice for export.",
+    no_args_is_help=True,
 )
 @cli_option("bruker_raw_data", as_argument=True)
 @cli_option("ion_type")
@@ -482,7 +491,11 @@ def export_selection(**kwargs):
                 hv.save(plot, f"{output_file_name_base}.png", fmt="png")
 
 
-@detect.command("ions", help="Detect ions (NotImplemented yet).")
+@detect.command(
+    "ions",
+    help="Detect ions (NotImplemented yet).",
+    no_args_is_help=True,
+)
 @cli_option("bruker_raw_data", as_argument=True)
 @cli_option("output_folder")
 @cli_option("log_file")
@@ -492,30 +505,4 @@ def export_selection(**kwargs):
 @cli_option("export_parameters")
 def detect_ions(**kwargs):
     with parse_cli_settings("detect ions", **kwargs) as parameters:
-        raise NotImplementedError
-
-
-@detect.command("features", help="Detect features (NotImplemented yet).")
-@cli_option("bruker_raw_data", as_argument=True)
-@cli_option("output_folder")
-@cli_option("log_file")
-@cli_option("threads")
-@cli_option("disable_log_stream")
-@cli_option("parameter_file")
-@cli_option("export_parameters")
-def detect_features(**kwargs):
-    with parse_cli_settings("detect features", **kwargs) as parameters:
-        raise NotImplementedError
-
-
-@detect.command("analytes", help="Detect analytes (NotImplemented yet).")
-@cli_option("bruker_raw_data", as_argument=True)
-@cli_option("output_folder")
-@cli_option("log_file")
-@cli_option("threads")
-@cli_option("disable_log_stream")
-@cli_option("parameter_file")
-@cli_option("export_parameters")
-def detect_analytes(**kwargs):
-    with parse_cli_settings("detect analytes", **kwargs) as parameters:
         raise NotImplementedError
