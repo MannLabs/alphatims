@@ -136,6 +136,7 @@ def heatmap(
     width: int = 1000,
     height: int = 320,
     rescale_to_minutes: bool = True,
+    cmap=colorcet.fire,
     **kwargs,
 ):
     """Create a scatterplot / heatmap for a dataframe.
@@ -234,11 +235,11 @@ def heatmap(
         #     df[x_dimension].max()
         # ),
         title=f'Heatmap - {title}',
-        aggregator='sum',
+        aggregator='sum' if map==colorcet.fire else None,
         # tools=[hover],
         datashade=True,
         dynspread=True,
-        cmap=colorcet.fire,
+        cmap=cmap,
         # nonselection_color='green',
         # selection_color='blue',
         # color="white",
