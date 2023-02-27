@@ -998,9 +998,6 @@ class TimsTOF(object):
                 "observed for some samples!"
             )
             logging.info("")
-        
-        #Create temporary folder containing temp mmapped arrays
-        tm.make_temp_dir()
 
         if bruker_d_folder_name.endswith("/"):
             bruker_d_folder_name = bruker_d_folder_name[:-1]
