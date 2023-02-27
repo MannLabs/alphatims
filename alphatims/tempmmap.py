@@ -15,6 +15,9 @@ import numpy as np
 # local
 import alphatims.utils
 
+ARRAYS = {}
+CLOSED = False
+ALLOW_NDARRAY_SUBCLASS = False
 
 def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """Make a temporary directory.
@@ -31,21 +34,15 @@ def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """
     _temp_dir = tempfile.TemporaryDirectory(prefix=prefix)
     temp_dir_name = _temp_dir.name
-    return _temp_dir, temp_dir_name
-
-
-_TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
-ARRAYS = {}
-CLOSED = False
-ALLOW_NDARRAY_SUBCLASS = False
-
-logging.warning(
-    f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
+    
+    logging.warning(
+    f"WARNING: Temp mmap arrays are written to {temp_dir_name}. "
     "Cleanup of this folder is OS dependant, "
     "and might need to be triggered manually! "
-    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
+    f"Current space: {shutil.disk_usage(temp_dir_name)[-1]:,}"
 )
-
+    
+    return _temp_dir, temp_dir_name
 
 def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     """Create a writable temporary mmapped array.
