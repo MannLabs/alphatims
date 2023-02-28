@@ -29,17 +29,7 @@ elif sys.platform[:5] == "linux":
         "timsdata.so"
     )
 else:
-    logging.warning(
-        "WARNING: "
-        "No Bruker libraries are available for this operating system. "
-        "Mobility and m/z values need to be estimated. "
-        "While this estimation often returns acceptable results with errors "
-        "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
-        "observed for some samples!"
-    )
-    logging.info("")
     BRUKER_DLL_FILE_NAME = ""
-
 
 def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
     """Open a bruker.dll in Python.
@@ -996,6 +986,19 @@ class TimsTOF(object):
             This is ignored if the polarity is dropped.
             Default is True.
         """
+        
+        #Log a warning if there was not a valid DLL filename
+        if BRUKER_DLL_FILE_NAME=="":
+            logging.warning(
+                "WARNING: "
+                "No Bruker libraries are available for this operating system. "
+                "Mobility and m/z values need to be estimated. "
+                "While this estimation often returns acceptable results with errors "
+                "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
+                "observed for some samples!"
+            )
+            logging.info("")
+
         if bruker_d_folder_name.endswith("/"):
             bruker_d_folder_name = bruker_d_folder_name[:-1]
         logging.info(f"Importing data from {bruker_d_folder_name}")
