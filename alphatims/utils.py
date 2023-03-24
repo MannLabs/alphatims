@@ -164,8 +164,10 @@ def show_platform_info() -> None:
     )
 
     # check if architecture is arm64 as psutil.cpu_freq() is not yet supported on apple silicon
-    if platform.machine() != 'arm64':
+    try:
         logging.info(f"cpu frequency - {psutil.cpu_freq().current:.2f} Mhz")
+    except AttributeError:
+        logging.info("Unable to log cpu frequency")
     logging.info(
         f"ram           - "
         f"{psutil.virtual_memory().available/1024**3:.1f}/"
