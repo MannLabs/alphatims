@@ -3363,4 +3363,4 @@ def save_as_spectra(
         infile["precursor_intensity"] = intensities
         infile["precursor_mobility"] = mobilities
         infile["precursor_average_mz"] = average_mzs
-        infile["precursor_monoistopic_mz"] = mono_mzs
+        infile["precursor_monoisotopic_mz"] = mono_mzs
