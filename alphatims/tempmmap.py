@@ -39,14 +39,6 @@ ARRAYS = {}
 CLOSED = False
 ALLOW_NDARRAY_SUBCLASS = False
 
-logging.warning(
-    f"WARNING: Temp mmap arrays are written to {TEMP_DIR_NAME}. "
-    "Cleanup of this folder is OS dependant, "
-    "and might need to be triggered manually! "
-    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
-)
-
-
 def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     """Create a writable temporary mmapped array.
 
@@ -272,6 +264,14 @@ def reset() -> str:
     del _TEMP_DIR
     _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
     ARRAYS = {}
+    
+    logging.warning(
+    f"WARNING: Temp mmap arrays were written to {TEMP_DIR_NAME}. "
+    "Cleanup of this folder is OS dependant, "
+    "and might need to be triggered manually! "
+    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
+    )
+    
     return TEMP_DIR_NAME
 
 
