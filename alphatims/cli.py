@@ -312,12 +312,46 @@ def export_mgf(**kwargs):
             directory = data.directory
         else:
             directory = parameters["output_folder"]
-        data.save_as_mgf(
+        data.save_as_spectra(
             overwrite=not parameters["disable_overwrite"],
             directory=directory,
             file_name=f"{data.sample_name}.mgf",
             centroiding_window=parameters["centroiding_window"],
-            keep_n_most_abundant_peaks=parameters["keep_n_most_abundant_peaks"]
+            keep_n_most_abundant_peaks=parameters["keep_n_most_abundant_peaks"],
+            mgf=True,
+        )
+
+
+@export.command(
+    "spectra",
+    help="Export BRUKER_RAW_DATA as (profile) spectra file.",
+    no_args_is_help=True,
+)
+@cli_option("bruker_raw_data", as_argument=True)
+@cli_option("keep_n_most_abundant_peaks")
+@cli_option("centroiding_window")
+@cli_option("disable_overwrite")
+@cli_option("output_folder")
+@cli_option("log_file")
+@cli_option("threads")
+@cli_option("disable_log_stream")
+@cli_option("parameter_file")
+@cli_option("export_parameters")
+def export_spectra(**kwargs):
+    with parse_cli_settings("export spectra", **kwargs) as parameters:
+        import alphatims.bruker
+        data = alphatims.bruker.TimsTOF(parameters["bruker_raw_data"])
+        if "output_folder" not in parameters:
+            directory = data.directory
+        else:
+            directory = parameters["output_folder"]
+        data.save_as_spectra(
+            overwrite=not parameters["disable_overwrite"],
+            directory=directory,
+            file_name=f"{data.sample_name}.spectra.hdf",
+            centroiding_window=parameters["centroiding_window"],
+            keep_n_most_abundant_peaks=parameters["keep_n_most_abundant_peaks"],
+            mgf=False,
         )
 
 

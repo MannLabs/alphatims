@@ -1985,7 +1985,7 @@ class TimsTOF(object):
         precursor_offsets[-1] = len(precursor_order)
         offset = precursor_offsets[1]
         offsets = precursor_order[offset:]
-        counts = np.empty(len(offsets) + 1, dtype=np.int)
+        counts = np.empty(len(offsets) + 1, dtype=np.int64)
         counts[0] = 0
         counts[1:] = np.cumsum(
             self.quad_indptr[offsets + 1] - self.quad_indptr[offsets]
@@ -2061,22 +2061,23 @@ class TimsTOF(object):
             trimmed_spectrum_intensity_values
         )
 
-    def save_as_mgf(
+    def save_as_spectra(
         self,
         directory: str,
         file_name: str,
         overwrite: bool = False,
         centroiding_window: int = 5,
         keep_n_most_abundant_peaks: int = -1,
+        mgf: bool = True
     ):
-        """Save profile spectra from this TimsTOF object as an mgf file.
+        """Save profile spectra from this TimsTOF object as an spectrum file.
 
         Parameters
         ----------
         directory : str
-            The directory where to save the mgf file.
+            The directory where to save the spectrum file.
         file_name : str
-            The file name of the  mgf file.
+            The file name of the spectrum file.
         overwrite : bool
             If True, an existing file is truncated.
             If False, nothing happens if a file already exists.
@@ -2093,7 +2094,7 @@ class TimsTOF(object):
         Returns
         -------
         str
-            The full file name of the mgf file.
+            The full file name of the spectrum file.
         """
         full_file_name = os.path.join(
             directory,
@@ -2130,30 +2131,36 @@ class TimsTOF(object):
         mobilities = self.mobility_values[
             self.precursors.ScanNumber.values.astype(np.int64)
         ]
-        with open(full_file_name, "w") as infile:
-            logging.info(f"Exporting profile spectra to {full_file_name}...")
-            for index in alphatims.utils.progress_callback(
-                range(1, self.precursor_max_index)
-            ):
-                start = spectrum_indptr[index]
-                end = spectrum_indptr[index + 1]
-                title = (
-                    f"index: {index}, "
-                    f"intensity: {intensities[index - 1]:.1f}, "
-                    f"mobility: {mobilities[index - 1]:.3f}, "
-                    f"average_mz: {average_mzs[index - 1]:.3f}"
-                )
-                infile.write("BEGIN IONS\n")
-                infile.write(f'TITLE="{title}"\n')
-                infile.write(f"PEPMASS={mono_mzs[index - 1]:.6f}\n")
-                infile.write(f"CHARGE={charges[index - 1]}\n")
-                infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
-                for mz, intensity in zip(
-                    self.mz_values[spectrum_tof_indices[start: end]],
-                    spectrum_intensity_values[start: end],
-                ):
-                    infile.write(f"{mz:.6f} {intensity}\n")
-                infile.write("END IONS\n")
+        logging.info(f"Exporting profile spectra to {full_file_name}...")
+        if mgf:
+            save_as_mgf(
+                full_file_name,
+                spectrum_indptr,
+                intensities,
+                mobilities,
+                average_mzs,
+                mono_mzs,
+                charges,
+                rtinseconds,
+                spectrum_tof_indices,
+                spectrum_intensity_values,
+                self.precursor_max_index,
+                self.mz_values,
+            )
+        else:
+            save_as_spectra(
+                full_file_name,
+                spectrum_indptr,
+                intensities,
+                mobilities,
+                average_mzs,
+                mono_mzs,
+                charges,
+                rtinseconds,
+                spectrum_tof_indices,
+                spectrum_intensity_values,
+                self.mz_values,
+            )
         logging.info(
             f"Succesfully wrote {self.precursor_max_index - 1:,} "
             f"spectra to {full_file_name}."
@@ -2329,7 +2336,7 @@ class PrecursorFloatError(TypeError):
 
 
 @alphatims.utils.pjit(
-    signature_or_function="void(i8,i8[:],i8[:],i8[:],u4[:],u2[:],u4[:],f8[:],i8[:],i8[:])"
+    # signature_or_function="void(i8,i8[:],i8[:],i8[:],u4[:],u2[:],u4[:],f8[:],i8[:],i8[:])"
 )
 def set_precursor(
     precursor_index: int,
@@ -3294,3 +3301,69 @@ def filter_tof_to_csr(
                 tof_value = tof_indices[idx]
         indptr.append(len(values))
     return np.array(indptr), np.array(values), np.array(columns)
+
+
+def save_as_mgf(
+    full_file_name,
+    spectrum_indptr,
+    intensities,
+    mobilities,
+    average_mzs,
+    mono_mzs,
+    charges,
+    rtinseconds,
+    spectrum_tof_indices,
+    spectrum_intensity_values,
+    precursor_max_index,
+    mz_values,
+):
+    with open(full_file_name, "w") as infile:
+        for index in alphatims.utils.progress_callback(
+            range(1, precursor_max_index)
+        ):
+            start = spectrum_indptr[index]
+            end = spectrum_indptr[index + 1]
+            title = (
+                f"index: {index}, "
+                f"intensity: {intensities[index - 1]:.1f}, "
+                f"mobility: {mobilities[index - 1]:.3f}, "
+                f"average_mz: {average_mzs[index - 1]:.3f}"
+            )
+            infile.write("BEGIN IONS\n")
+            infile.write(f'TITLE="{title}"\n')
+            infile.write(f"PEPMASS={mono_mzs[index - 1]:.6f}\n")
+            infile.write(f"CHARGE={charges[index - 1]}\n")
+            infile.write(f"RTINSECONDS={rtinseconds[index - 1]:.2f}\n")
+            for mz, intensity in zip(
+                mz_values[spectrum_tof_indices[start: end]],
+                spectrum_intensity_values[start: end],
+            ):
+                infile.write(f"{mz:.6f} {intensity}\n")
+            infile.write("END IONS\n")
+
+
+def save_as_spectra(
+    full_file_name,
+    spectrum_indptr,
+    intensities,
+    mobilities,
+    average_mzs,
+    mono_mzs,
+    charges,
+    rtinseconds,
+    spectrum_tof_indices,
+    spectrum_intensity_values,
+    mz_values,
+):
+    with h5py.File(full_file_name, "w") as infile:
+        infile["indptr"] = spectrum_indptr[1:]
+        infile["fragment_mzs"] = mz_values[
+            spectrum_tof_indices
+        ]
+        infile["fragment_intensities"] = spectrum_intensity_values
+        infile["precursor_rt"] = rtinseconds
+        infile["precursor_charge"] = charges
+        infile["precursor_intensity"] = intensities
+        infile["precursor_mobility"] = mobilities
+        infile["precursor_average_mz"] = average_mzs
+        infile["precursor_monoisotopic_mz"] = mono_mzs
