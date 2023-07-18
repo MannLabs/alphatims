@@ -1982,7 +1982,7 @@ class TimsTOF(object):
         precursor_offsets[-1] = len(precursor_order)
         offset = precursor_offsets[1]
         offsets = precursor_order[offset:]
-        counts = np.empty(len(offsets) + 1, dtype=np.int)
+        counts = np.empty(len(offsets) + 1, dtype=np.int64)
         counts[0] = 0
         counts[1:] = np.cumsum(
             self.quad_indptr[offsets + 1] - self.quad_indptr[offsets]
