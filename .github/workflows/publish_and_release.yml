@@ -197,7 +197,30 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
+  Test_PyPi_Release:
+    name: Test_PyPi_version_on_${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: Create_PyPi_Release
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+      - name: Conda info
+        shell: bash -l {0}
+        run: conda info
+      - name: Test pip installation from PyPi
+        shell: bash -l {0}
+        run: |
+          conda create -n alphatims_pip_test python=3.8 -y
+          conda activate alphatims_pip_test
+          pip install "alphatims[stable,plotting-stable,legacy-stable]"
+          alphatims
+          conda deactivate
   Create_Docker_Release:
     # Adapted from wfondrie/mokapot's docker actions
     runs-on: ubuntu-latest
@@ -213,7 +236,9 @@ jobs:
 
       - name: Build Wheel
         run: |
+          python -m pip install wheel twine
           python setup.py bdist_wheel
+          twine check dist/*
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -239,28 +264,3 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  Test_PyPi_Release:
-    name: Test_PyPi_version_on_${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    needs: Create_PyPi_Release
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
-      - name: Test pip installation from PyPi
-        shell: bash -l {0}
-        run: |
-          conda create -n alphatims_pip_test python=3.8 -y
-          conda activate alphatims_pip_test
-          pip install "alphatims[stable,plotting-stable,legacy-stable]"
-          alphatims
-          conda deactivate
