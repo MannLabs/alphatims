@@ -31,6 +31,7 @@ elif sys.platform[:5] == "linux":
 else:
     BRUKER_DLL_FILE_NAME = ""
 
+
 def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
     """Open a bruker.dll in Python.
 
@@ -165,9 +166,9 @@ def read_bruker_sql(
     Returns
     -------
     : tuple
-        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame).
-        The acquisition_mode, global_meta_data, frames, fragment_frames
-        and precursors.
+        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame, bool).
+        The acquisition_mode, global_meta_data, frames, fragment_frames,
+        precursors and calibration availability.
         For diaPASEF, precursors is None.
     """
     import sqlite3
@@ -226,6 +227,14 @@ def read_bruker_sql(
             )
             precursors = None
             # raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
+        calibration_available = BRUKER_DLL_FILE_NAME != ""
+        try:
+            pd.read_sql_query(
+                "SELECT * from CalibrationInfo",
+                sql_database_connection
+            )
+        except pd.io.sql.DatabaseError:
+            calibration_available = False
         if add_zeroth_frame:
             frames = pd.concat(
                 [
@@ -260,7 +269,8 @@ def read_bruker_sql(
             global_meta_data,
             frames,
             fragment_frames,
-            precursors
+            precursors,
+            calibration_available,
         )
 
 
@@ -986,9 +996,8 @@ class TimsTOF(object):
             This is ignored if the polarity is dropped.
             Default is True.
         """
-        
         #Log a warning if there was not a valid DLL filename
-        if BRUKER_DLL_FILE_NAME=="":
+        if BRUKER_DLL_FILE_NAME == "":
             logging.warning(
                 "WARNING: "
                 "No Bruker libraries are available for this operating system. "
@@ -1074,6 +1083,7 @@ class TimsTOF(object):
             self._frames,
             self._fragment_frames,
             self._precursors,
+            calibration_available,
         ) = read_bruker_sql(
             bruker_d_folder_name,
             self._zeroth_frame,
@@ -1110,8 +1120,7 @@ class TimsTOF(object):
         )
         self._max_accumulation_time = np.max(self._accumulation_times)
         self._intensity_corrections = self._max_accumulation_time / self._accumulation_times
-        bruker_dll_available = BRUKER_DLL_FILE_NAME != ""
-        if (mobility_estimation_from_frame != 0) and bruker_dll_available:
+        if (mobility_estimation_from_frame != 0) and calibration_available:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 bruker_d_folder_name
@@ -1154,7 +1163,7 @@ class TimsTOF(object):
         tof_slope = (
             np.sqrt(mz_max_value) - tof_intercept
         ) / self.tof_max_index
-        if (mz_estimation_from_frame != 0) and bruker_dll_available:
+        if (mz_estimation_from_frame != 0) and calibration_available:
             import ctypes
             with alphatims.bruker.open_bruker_d_folder(
                 bruker_d_folder_name
