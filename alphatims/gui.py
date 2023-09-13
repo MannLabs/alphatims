@@ -1414,7 +1414,7 @@ def init_settings(*args):
         update_intensity_widgets_to_stack()
 
         frames_msmstype = DATASET.frames.query('MsMsType == 0')
-        step = len(frames_msmstype) // 10
+        step = max(1, len(frames_msmstype) // 10)
         player.options = frames_msmstype.loc[1::step, 'Id'].to_list()
         player.start, player.end = STACK["frames"]
 
