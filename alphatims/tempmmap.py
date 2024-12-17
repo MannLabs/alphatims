@@ -45,6 +45,13 @@ def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """
     _temp_dir = tempfile.TemporaryDirectory(prefix=prefix)
     temp_dir_name = _temp_dir.name
+
+    logging.info(
+        f"Memory-mapped arrays are written to temporary directory {temp_dir_name}. "
+        "Cleanup of this folder is OS dependent and might need to be triggered manually!"
+        f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
+    )
+
     return _temp_dir, temp_dir_name
 
 
@@ -241,18 +248,13 @@ def atexit_clear() -> str:
     """
     global CLOSED
     CLOSED = True
-    reset()
+    _reset()
 
 
-def reset() -> str:
+def _reset() -> str:
     """Reset the temporary folder containing temp mmapped arrays.
 
     WARNING: All existing temp mmapp arrays will become unusable!
-
-    Returns
-    -------
-    str
-        The name of the new temporary folder.
     """
     global _TEMP_DIR
     global TEMP_DIR_NAME
@@ -274,16 +276,27 @@ def reset() -> str:
         _memmap.close()
         del _memmap
     del _TEMP_DIR
+
+
+def reset() -> str:
+    """Reset the temporary folder containing temp mmapped arrays and create a new temporary folder.
+
+    WARNING: All existing temp mmapp arrays will become unusable!
+
+    Returns
+    -------
+    str
+        The name of the new temporary folder.
+    """
+    global _TEMP_DIR
+    global TEMP_DIR_NAME
+    global ARRAYS
+
+    _reset()
+
     _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
     ARRAYS = {}
-    
-    logging.warning(
-    f"WARNING: Temp mmap arrays were written to {TEMP_DIR_NAME}. "
-    "Cleanup of this folder is OS dependant, "
-    "and might need to be triggered manually! "
-    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
-    )
-    
+
     return TEMP_DIR_NAME
 
 
