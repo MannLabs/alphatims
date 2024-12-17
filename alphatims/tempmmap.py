@@ -16,6 +16,20 @@ import numpy as np
 import alphatims.utils
 
 
+_TEMP_DIR, TEMP_DIR_NAME = None, None
+ARRAYS = {}
+CLOSED = False
+ALLOW_NDARRAY_SUBCLASS = False
+
+def _init_temp_dir(prefix: str = "temp_mmap_"):
+    """Initialize the temporary directory for the temp mmap arrays if not already done."""
+    global _TEMP_DIR, TEMP_DIR_NAME
+
+    if _TEMP_DIR is None:
+        _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir(prefix)
+
+    return TEMP_DIR_NAME
+
 def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """Make a temporary directory.
 
@@ -34,10 +48,6 @@ def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     return _temp_dir, temp_dir_name
 
 
-_TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
-ARRAYS = {}
-CLOSED = False
-ALLOW_NDARRAY_SUBCLASS = False
 
 def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     """Create a writable temporary mmapped array.
@@ -54,20 +64,22 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     np.ndarray
         A writable temporary mmapped array.
     """
+    temp_dir_name = _init_temp_dir()
+
     element_count = np.prod(shape, dtype=np.int64)
     if element_count <= 0:
         raise ValueError(
             f"Shape {shape} has an invalid element count of {element_count}"
         )
-    *other, free_space = shutil.disk_usage(TEMP_DIR_NAME)
+    *other, free_space = shutil.disk_usage(temp_dir_name)
     required_space = element_count * np.dtype(dtype).itemsize
     if free_space < required_space:
         raise IOError(
             f"Cannot create array of size {required_space} "
-            f"(available space on {TEMP_DIR_NAME} is {free_space})."
+            f"(available space on {temp_dir_name} is {free_space})."
         )
     temp_file_name = os.path.join(
-        TEMP_DIR_NAME,
+        temp_dir_name,
         f"temp_mmap_{np.random.randint(2**31)}{np.random.randint(2**31)}.bin"
     )
     with open(temp_file_name, "wb") as binfile:
