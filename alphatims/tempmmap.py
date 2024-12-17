@@ -261,7 +261,7 @@ def _reset() -> str:
     global ARRAYS
     global CLOSED
     if not CLOSED:
-        logging.warning(
+        logging.info(
             f"Folder {TEMP_DIR_NAME} with temp mmap arrays is being deleted. "
             "All existing temp mmapp arrays will be unusable!"
         )
