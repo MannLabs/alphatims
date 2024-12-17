@@ -16,6 +16,20 @@ import numpy as np
 import alphatims.utils
 
 
+_TEMP_DIR, TEMP_DIR_NAME = None, None
+ARRAYS = {}
+CLOSED = False
+ALLOW_NDARRAY_SUBCLASS = False
+
+def _init_temp_dir(prefix: str = "temp_mmap_"):
+    """Initialize the temporary directory for the temp mmap arrays if not already done."""
+    global _TEMP_DIR, TEMP_DIR_NAME
+
+    if _TEMP_DIR is None:
+        _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir(prefix)
+
+    return TEMP_DIR_NAME
+
 def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """Make a temporary directory.
 
@@ -31,13 +45,16 @@ def make_temp_dir(prefix: str = "temp_mmap_") -> tuple:
     """
     _temp_dir = tempfile.TemporaryDirectory(prefix=prefix)
     temp_dir_name = _temp_dir.name
+
+    logging.info(
+        f"Memory-mapped arrays are written to temporary directory {temp_dir_name}. "
+        "Cleanup of this folder is OS dependent and might need to be triggered manually!"
+        f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
+    )
+
     return _temp_dir, temp_dir_name
 
 
-_TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
-ARRAYS = {}
-CLOSED = False
-ALLOW_NDARRAY_SUBCLASS = False
 
 def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     """Create a writable temporary mmapped array.
@@ -54,20 +71,22 @@ def empty(shape: tuple, dtype: np.dtype) -> np.ndarray:
     np.ndarray
         A writable temporary mmapped array.
     """
+    temp_dir_name = _init_temp_dir()
+
     element_count = np.prod(shape, dtype=np.int64)
     if element_count <= 0:
         raise ValueError(
             f"Shape {shape} has an invalid element count of {element_count}"
         )
-    *other, free_space = shutil.disk_usage(TEMP_DIR_NAME)
+    *other, free_space = shutil.disk_usage(temp_dir_name)
     required_space = element_count * np.dtype(dtype).itemsize
     if free_space < required_space:
         raise IOError(
             f"Cannot create array of size {required_space} "
-            f"(available space on {TEMP_DIR_NAME} is {free_space})."
+            f"(available space on {temp_dir_name} is {free_space})."
         )
     temp_file_name = os.path.join(
-        TEMP_DIR_NAME,
+        temp_dir_name,
         f"temp_mmap_{np.random.randint(2**31)}{np.random.randint(2**31)}.bin"
     )
     with open(temp_file_name, "wb") as binfile:
@@ -229,25 +248,20 @@ def atexit_clear() -> str:
     """
     global CLOSED
     CLOSED = True
-    reset()
+    _reset()
 
 
-def reset() -> str:
+def _reset() -> str:
     """Reset the temporary folder containing temp mmapped arrays.
 
     WARNING: All existing temp mmapp arrays will become unusable!
-
-    Returns
-    -------
-    str
-        The name of the new temporary folder.
     """
     global _TEMP_DIR
     global TEMP_DIR_NAME
     global ARRAYS
     global CLOSED
     if not CLOSED:
-        logging.warning(
+        logging.info(
             f"Folder {TEMP_DIR_NAME} with temp mmap arrays is being deleted. "
             "All existing temp mmapp arrays will be unusable!"
         )
@@ -262,16 +276,27 @@ def reset() -> str:
         _memmap.close()
         del _memmap
     del _TEMP_DIR
+
+
+def reset() -> str:
+    """Reset the temporary folder containing temp mmapped arrays and create a new temporary folder.
+
+    WARNING: All existing temp mmapp arrays will become unusable!
+
+    Returns
+    -------
+    str
+        The name of the new temporary folder.
+    """
+    global _TEMP_DIR
+    global TEMP_DIR_NAME
+    global ARRAYS
+
+    _reset()
+
     _TEMP_DIR, TEMP_DIR_NAME = make_temp_dir()
     ARRAYS = {}
-    
-    logging.warning(
-    f"WARNING: Temp mmap arrays were written to {TEMP_DIR_NAME}. "
-    "Cleanup of this folder is OS dependant, "
-    "and might need to be triggered manually! "
-    f"Current space: {shutil.disk_usage(TEMP_DIR_NAME)[-1]:,}"
-    )
-    
+
     return TEMP_DIR_NAME
 
 
