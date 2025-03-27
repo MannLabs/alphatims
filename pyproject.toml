@@ -62,3 +62,43 @@ version = {attr = "alphatims.__version__"}
 
 [project.scripts]
 alphatims = "alphatims.cli:run"
+
+[tool.poetry]
+name = "alphatims"
+version = "1.0.10"
+description = "alphatims"
+authors = ["Sander Willems <opensource@alphapept.com>",
+	"Eugenia Voytik <opensource@alphapept.com>"]
+
+repository = "https://github.com/MannLabs/alphatims"
+documentation = "https://github.com/Mannlabs/alphatims"
+readme = "README.md"
+#package-mode=false
+packages = [
+  {include = "alphatims", from="."}
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+deptry = "^0.16.2"
+mypy = "^1.5.1"
+pre-commit = "^3.4.0"
+tox = "^4.11.1"
+numpy = ">=1.24,<2.2"
+pandas = "2.2.3"
+h5py = "3.13.0"
+numba = "0.61.0"
+pyzstd = "0.16.2"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [
+  "."
+]
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(message)s"
