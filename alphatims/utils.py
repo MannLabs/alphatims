@@ -522,11 +522,31 @@ def class_njit(
         return wrapper(_func)
 
 
+def conditional_njit(use_numba: boolean=True, **kwargs) -> Callable:
+    """
+    A conditional decorator that applies @numba.njit() when activate=True,
+    otherwise returns the original function unchanged.
+
+    Args:
+        use_numba (bool): If True, applies numba.njit(). If False, returns original function.
+
+    Returns:
+        Decorated function or original function
+    """
+    def decorator(func):
+        if use_numba:
+            import numba
+            return numba.njit(**kwargs)(func)
+        else:
+            return func
+    return decorator
+
 def pjit(
     _func=None,
     *,
     thread_count=None,
     include_progress_callback: bool = True,
+    use_numba: bool = True,
     **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
@@ -556,6 +576,11 @@ def pjit(
         If False, no callback is added.
         See `set_progress_callback` for callback styles.
         Default is True.
+    use_numba : bool
+        If True, the function is compiled with numba.njit.
+        If False, the function is not compiled (this is handy for debugging and unit testing).
+        Default is True.
+
 
     Returns
     -------
@@ -568,9 +593,9 @@ def pjit(
     import numpy as np
 
     def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True, **kwargs)(func)
+        numba_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
 
-        @numba.njit(nogil=True)
+        @conditional_njit(use_numba=use_numba, nogil=True)
         def numba_func_parallel(
             iterable,
             thread_id,
