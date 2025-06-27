@@ -589,7 +589,24 @@ def pjit(
     import numba
     import numpy as np
 
-    def parallel_compiled_func_inner(func):
+    def _handle_progress_callback(iterable, progress_counter):
+        import time
+        if len(iterable) > 10 ** 6:
+            granularity = 1000
+        else:
+            granularity = len(iterable)
+        progress_bar = 0
+        progress_count = np.sum(progress_counter)
+        for _ in progress_callback(
+                range(granularity),
+                include_progress_callback=include_progress_callback
+        ):
+            while progress_bar >= progress_count:
+                time.sleep(0.01)
+                progress_count = granularity * np.sum(progress_counter) / len(iterable)
+            progress_bar += 1
+
+    def _parallel_compiled_func_inner(func):
         numba_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
 
         @conditional_njit(use_numba=use_numba, nogil=True)
@@ -648,30 +665,16 @@ def pjit(
                 thread.start()
                 threads.append(thread)
             if include_progress_callback:
-                import time
-                if len(iterable) > 10**6:
-                    granularity = 1000
-                else:
-                    granularity = len(iterable)
-                # progress_count = 0
-                progress_bar = 0
-                progress_count = np.sum(progress_counter)
-                for result in progress_callback(
-                    range(granularity),
-                    include_progress_callback=include_progress_callback
-                ):
-                    while progress_bar >= progress_count:
-                        time.sleep(0.01)
-                        progress_count = granularity * np.sum(progress_counter) / len(iterable)
-                    progress_bar += 1
+                _handle_progress_callback(iterable, progress_counter)
+
             for thread in threads:
                 thread.join()
                 del thread
         return functools.wraps(func)(wrapper)
     if _func is None:
-        return parallel_compiled_func_inner
+        return _parallel_compiled_func_inner
     else:
-        return parallel_compiled_func_inner(_func)
+        return _parallel_compiled_func_inner(_func)
 
 
 def progress_callback(
