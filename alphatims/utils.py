@@ -630,10 +630,13 @@ def pjit(
 
         def wrapper(iterable, *args):
 
-            current_thread_count = MAX_THREADS if thread_count is None else set_threads(
+            if thread_count is None:
+                current_thread_count = MAX_THREADS
+            else:
+                current_thread_count = set_threads(
                     thread_count,
                     set_global=False
-                ) # TODO this method never resets threads
+                )
 
             threads = []
             progress_counter = np.zeros(current_thread_count, dtype=np.int64)
