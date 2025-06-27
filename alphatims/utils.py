@@ -544,17 +544,19 @@ def conditional_njit(use_numba: boolean=True, **kwargs) -> Callable:
 def pjit(
     _func=None,
     *,
-    thread_count=None,
+    thread_count: int = None,
     include_progress_callback: bool = True,
     use_numba: bool = True,
     **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
 
-    The first argument of the decorated function need to be an iterable.
+    The first argument of the decorated function must be an iterable.
     A range-object will be most performant as iterable.
-    The original function should accept a single element of this iterable
+    The original function must accept a single element of this iterable
     as its first argument.
+    Important note: the type of the first argument will change to iterable for the wrapped function!
+
     The original function cannot return values, instead it should store
     results in e.g. one if its input arrays that acts as a buffer array.
     The original function needs to be numba.njit compatible.
@@ -563,28 +565,23 @@ def pjit(
     Parameters
     ----------
     _func : callable, None
-        The function to decorate.
+        The function to decorate. Default is None.
     thread_count : int, None
-        The number of threads to use.
-        This is always parsed with alphatims.utils.set_threads.
-        Not possible as positional arguments,
-        it always needs to be an explicit keyword argument.
+        The number of threads to use. This is always parsed with alphatims.utils.set_threads.
         Default is None.
     include_progress_callback : bool
-        If True, the default progress callback will be used as callback.
-        (See "progress_callback" function.)
+        If True, the default progress callback will be used as callback. (See "progress_callback" function and
+        `set_progress_callback` for callback styles.)
         If False, no callback is added.
-        See `set_progress_callback` for callback styles.
         Default is True.
     use_numba : bool
         If True, the function is compiled with numba.njit.
         If False, the function is not compiled (this is handy for debugging and unit testing).
         Default is True.
 
-
     Returns
     -------
-    : function
+    Callable:
         A parallelized numba.njit decorated function.
     """
     import functools
