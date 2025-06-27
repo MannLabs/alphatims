@@ -629,7 +629,13 @@ def pjit(
                     progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
+            """A wrapper function that parallelizes the numba.njit function.
 
+            The first argument of the wrapped function is seperately stored as `iterable` and its elements are
+            subsequently passed to the original function.
+            """
+
+            # TODO this method never resets threads
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
