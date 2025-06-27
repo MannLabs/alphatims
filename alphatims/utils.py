@@ -622,12 +622,12 @@ def pjit(
             threads = []
             progress_counter = np.zeros(current_thread_count, dtype=np.int64)
             for thread_id in range(current_thread_count):
-                local_iterable = iterable[thread_id::current_thread_count]
-                if isinstance(local_iterable, range):
-                    start = local_iterable.start
-                    stop = local_iterable.stop
-                    step = local_iterable.step
-                    local_iterable = np.array([], dtype=np.int64)
+                thread_local_iterable = iterable[thread_id::current_thread_count]
+                if isinstance(thread_local_iterable, range): # TODO does the speedup mentioned in the docstring still apply?
+                    start = thread_local_iterable.start
+                    stop = thread_local_iterable.stop
+                    step = thread_local_iterable.step
+                    thread_local_iterable = np.array([], dtype=np.int64)
                 else:
                     start = -1
                     stop = -1
@@ -635,7 +635,7 @@ def pjit(
                 thread = threading.Thread(
                     target=numba_func_parallel,
                     args=(
-                        local_iterable,
+                        thread_local_iterable,
                         thread_id,
                         progress_counter,
                         start,
