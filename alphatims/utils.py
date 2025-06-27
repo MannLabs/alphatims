@@ -598,8 +598,8 @@ def pjit(
         progress_bar = 0
         progress_count = np.sum(progress_counter)
         for _ in progress_callback(
-                range(granularity),
-                include_progress_callback=include_progress_callback
+            range(granularity),
+            include_progress_callback=include_progress_callback
         ):
             while progress_bar >= progress_count:
                 time.sleep(0.01)
@@ -607,10 +607,10 @@ def pjit(
             progress_bar += 1
 
     def _parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
+        wrapped_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
 
         @conditional_njit(use_numba=use_numba, nogil=True)
-        def _numba_func_parallel(
+        def wrapped_func_parallel(
             iterable,
             thread_id,
             progress_counter,
@@ -621,11 +621,11 @@ def pjit(
         ):
             if len(iterable) == 0:
                 for i in range(start, stop, step):
-                    numba_func(i, *args)
+                    wrapped_func(i, *args) # here, the first argument of the wrapped function is a single index
                     progress_counter[thread_id] += 1
             else:
                 for i in iterable:
-                    numba_func(i, *args)
+                    wrapped_func(i, *args)
                     progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
@@ -660,7 +660,7 @@ def pjit(
                     step = -1
 
                 thread = threading.Thread(
-                    target=_numba_func_parallel,
+                    target=wrapped_func_parallel,
                     args=(
                         thread_local_iterable,
                         thread_id,
