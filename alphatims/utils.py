@@ -602,7 +602,7 @@ def pjit(
             include_progress_callback=include_progress_callback
         ):
             while progress_bar >= progress_count:
-                time.sleep(0.01)
+                time.sleep(0.1)
                 progress_count = granularity * np.sum(progress_counter) / len(iterable)
             progress_bar += 1
 
