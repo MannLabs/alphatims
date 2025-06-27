@@ -522,10 +522,8 @@ def class_njit(
         return wrapper(_func)
 
 
-def conditional_njit(use_numba: boolean=True, **kwargs) -> Callable:
-    """
-    A conditional decorator that applies @numba.njit() when activate=True,
-    otherwise returns the original function unchanged.
+def conditional_njit(use_numba: bool = True, **kwargs) -> Callable:
+    """A conditional decorator that applies @numba.njit() when activate=True, otherwise returns the original function unchanged.
 
     Args:
         use_numba (bool): If True, applies numba.njit(). If False, returns original function.
