@@ -582,7 +582,7 @@ def pjit(
     Returns
     -------
     Callable:
-        A parallelized numba.njit decorated function.
+        A thread-parallelized numba.njit decorated function.
     """
     import functools
     import threading
@@ -610,7 +610,7 @@ def pjit(
         numba_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
 
         @conditional_njit(use_numba=use_numba, nogil=True)
-        def numba_func_parallel(
+        def _numba_func_parallel(
             iterable,
             thread_id,
             progress_counter,
@@ -629,15 +629,15 @@ def pjit(
                     progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
-            if thread_count is None:
-                current_thread_count = MAX_THREADS
-            else:
-                current_thread_count = set_threads(
+
+            current_thread_count = MAX_THREADS if thread_count is None else set_threads(
                     thread_count,
                     set_global=False
-                )
+                ) # TODO this method never resets threads
+
             threads = []
             progress_counter = np.zeros(current_thread_count, dtype=np.int64)
+
             for thread_id in range(current_thread_count):
                 thread_local_iterable = iterable[thread_id::current_thread_count]
                 if isinstance(thread_local_iterable, range): # TODO does the speedup mentioned in the docstring still apply?
@@ -649,8 +649,9 @@ def pjit(
                     start = -1
                     stop = -1
                     step = -1
+
                 thread = threading.Thread(
-                    target=numba_func_parallel,
+                    target=_numba_func_parallel,
                     args=(
                         thread_local_iterable,
                         thread_id,
@@ -664,12 +665,14 @@ def pjit(
                 )
                 thread.start()
                 threads.append(thread)
+
             if include_progress_callback:
                 _handle_progress_callback(iterable, progress_counter)
 
             for thread in threads:
                 thread.join()
                 del thread
+
         return functools.wraps(func)(wrapper)
     if _func is None:
         return _parallel_compiled_func_inner
