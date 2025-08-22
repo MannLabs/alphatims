@@ -36,6 +36,7 @@ COPY pyproject.toml pyproject.toml
 RUN pip install --no-cache-dir ".[stable,plotting-stable]"
 
 RUN chmod 777 /usr/local/lib/python3.9/site-packages/alphatims/ext/timsdata.so
+RUN mkdir -p /usr/local/lib/python3.9/site-packages/alphatims/logs && chmod 777 /usr/local/lib/python3.9/site-packages/alphatims/logs
 
 ENV PORT=5006
 EXPOSE 5006
