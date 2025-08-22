@@ -58,37 +58,76 @@ There are three different types of installation possible:
 * [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installer:**](#pip) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
 * [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-* [**Docker:**](#docker) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies.
+<!-- * [**Docker:**](#docker) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies. -->
 
 ***IMPORTANT: While AlphaTims is mostly platform independent, some calibration functions require [Bruker libraries](alphatims/ext) which are only available on Windows and Linux.***
 
-### One-click GUI
 
-The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
-* [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_windows.exe)
-* [**macOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_macos.pkg)
-* [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_linux.deb)
+### One-click GUI installation
+
+The GUI of AlphaTims is a completely stand-alone tool that requires no
+knowledge of Python or CLI tools.
+
+You can download the latest release of AlphaTims [here](https://github.com/Mannlabs/alphatims/releases/latest).
 
 ***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
 
-Older releases remain available on the [release page](https://github.com/MannLabs/alphatims/releases), but no backwards compatibility is guaranteed.
+#### Windows
+Download the latest `alphatims-X.Y.Z-windows-amd64.exe ` build and double click it to install. If you receive a warning during installation click *Run anyway*.
+Important note: always install AlphaTims into a new folder, as the installer will not properly overwrite existing installations.
 
-### Pip
+#### Linux
+Download the latest `alphatims-X.Y.Z-linux-x64.deb` build and install it via `dpkg -i alphatims-X.Y.Z-linux-x64.deb`.
 
-AlphaTims can be installed in an existing Python 3.8 environment with a single `bash` command. *This `bash` command can also be run directly from within a Jupyter notebook by prepending it with a `!`*. The lightweight version of AlphaTims that purely focuses on data accession (no plotting without additional packages) can be installed with:
+#### MacOS
+Download the latest build suitable for your chip architecture
+(can be looked up by clicking on the Apple Symbol > *About this Mac* > *Chip* ("M1", "M2", "M3" -> `arm64`, "Intel" -> `x64`),
+`alphatims-X.Y.Z-macos-darwin-arm64.pkg ` or ` alphatims-X.Y.Z-macos-darwin-x64.pkg`. Open the parent folder of the downloaded file in Finder,
+right-click and select *open*. If you receive a warning during installation click *Open*.
+
+In newer MacOS versions, additional steps are required to enable installation of unverified software.
+This is indicated by a dialog telling you `“alphatims. ... .pkg” Not Opened`.
+1. Close this dialog by clicking `Done`.
+2. Choose `Apple menu` > `System Settings`, then `Privacy & Security` in the sidebar. (You may need to scroll down.)
+3. Go to `Security`, locate the line "alphadia.pkg was blocked to protect your Mac" then click `Open Anyway`.
+4. In the dialog windows, click `Open Anyway`.
+
+
+Older releases remain available on the [release
+page](https://github.com/MannLabs/alphatims/releases), but no
+backwards compatibility is guaranteed.
+
+
+
+### Pip installation
+
+AlphaTims can be installed in an existing Python environment with a
+single `bash` command. *This `bash` command can also be run directly
+from within a Jupyter notebook by prepending it with a `!`*:
 
 ```bash
 pip install alphatims
 ```
 
-Installing AlphaTims like this avoids conflicts when integrating it in other tools, as this does not enforce strict versioning of dependancies. However, if new versions of dependancies are released, they are not guaranteed to be fully compatible with AlphaTims. While this should only occur in rare cases where dependencies are not backwards compatible, you can always force AlphaTims to use dependancy versions which are known to be compatible with:
+Installing AlphaTims like this avoids conflicts when integrating it in
+other tools, as this does not enforce strict versioning of dependencies.
+However, if new versions of dependencies are released, they are not
+guaranteed to be fully compatible with AlphaTims. This should only occur
+in rare cases where dependencies are not backwards compatible.
 
-```bash
+You can always force AlphaTims to use dependency versions
+which are known to be compatible with:
+
+``` bash
 pip install "alphatims[stable]"
 ```
 
-NOTE: You might need to run `pip install pip==21.0` before installing AlphaTims like this. Also note the double quotes `"`.
+It is also possible to directly install any branch (e.g. `some-branch`) from GitHub with
+``` bash
+pip install "git+https://github.com/MannLabs/alphatims.git@some-branch#egg=alphatims[stable,development-stable]"
+```
+
 
 Alternatively, some basic plotting functions can be installed with the following command:
 
@@ -108,77 +147,84 @@ When older samples need to be analyzed, it might be essential to install the `le
 pip install "alphatims[legacy]"
 ```
 
-When a new version of AlphaTims becomes available, the old version can easily be upgraded by running e.g. the command again with an additional `--upgrade` flag:
 
-```bash
-pip install "alphatims[plotting,legacy,stable]" --upgrade
+
+### Developer installation
+
+AlphaTims can also be installed in "editable" mode. This allows to fully customize the software and
+even modify the source code to your specific needs.
+
+First, clone the AlphaTims repository from GitHub to a new directory
+``` bash
+mkdir -p ~/alphatims/project/folder && cd ~/alphatims/project/folder
+git clone https://github.com/MannLabs/alphatims.git && cd alphatims
 ```
 
-The following extra options are available:
-
-* `stable`
-* `plotting`
-* `plotting-stable`
-* `legacy`
-* `legacy-stable`
-* `development`
-* `development-stable`
-
-NOTE: Multiple dependancy packs can be installed by comma-separation. Note however that this only works without spaces!
-
-### Developer
-
-AlphaTims can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
-
-```bash
-mkdir ~/folder/where/to/install/software
-cd ~/folder/where/to/install/software
-```
-
-***The following commands assume you do not perform any additional `cd` commands anymore***.
-
-Next, download the AlphaTims repository from GitHub either directly or with a `git` command. This creates a new AlphaTims subfolder in your current directory.
-
-```bash
-git clone https://github.com/MannLabs/alphatims.git
-```
-
-For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). The best way to install an editable version of AlphaTims is to use AlphaTims' pre-built conda development environment (note that the `--force` flag overwrites an already existing AlphaTims environment):
-
-```bash
-conda env create --force --name alphatims --file alphatims/misc/conda_development_environment.yaml
+Next, it is highly recommended to use a separate
+[conda virtual environment](https://docs.conda.io/en/latest/), as
+otherwise dependency conflicts can occur with already existing
+packages
+``` bash
+conda create --name alphatims python=3.9 -y
 conda activate alphatims
 ```
 
-Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflicts can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+Finally, AlphaTims and all its [dependencies](requirements) need to be
+installed. To take advantage of all features and allow development (with
+the `-e` flag), this is best done by also installing the [development
+dependencies](requirements/requirements_development_loose.txt) instead of only
+the [core dependencies](requirements/requirements_loose.txt):
 
+``` bash
+pip install -e ".[development]"
+```
+
+By default this installs 'loose' dependencies (no pinned versions),
+although it is also possible to use stable dependencies
+(e.g. `pip install -e ".[stable,development-stable]"`).
+
+By using the editable flag `-e`, all modifications to the [AlphaTims
+source code folder](alphatims) are directly reflected when running
+AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed
+if an editable version is installed. In case of confusion, you can
+always retrieve the location of any Python module with e.g. the command
+`import module` followed by `module.__file__`.
+
+<!--
+### Docker installation
+The containerized version can be used to run AlphaTims without any installation to your system.
+
+#### 1. Setting up Docker
+Install the latest version of docker (https://docs.docker.com/engine/install/).
+
+#### 2. Prepare folder structure
+Set up your data to match the expected folder structure:
+create a folder and store its name in a variable, and specify a port
+```
+DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
+PORT=8501
+```
+
+#### 3. Start the container
 ```bash
-conda create -n alphatims python=3.8 -y
-conda activate alphatims
-pip install -e "./alphatims[plotting-stable,development]"
+docker run -v $DATA_FOLDER:/app/data -p $PORT:8501 mannlabs/alphatims:latest
 ```
+After initial download of the container, AlphaTims will start running immediately,
+and can be accessed under [localhost:$PORT](http://localhost:8501).
 
-***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
+Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
 
-The following steps are optional, but make working with AlphaTims slightly more convenient:
-
-* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
-  ```bash
-  conda activate alphatims
-  alphatims_bin="$(which alphatims)"
-  echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
-  conda deactivate
-  ```
-  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to Windows' path variable.
-* When using Jupyter notebooks and multiple conda environments direcly from the terminal, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available, in addition to all other conda kernels in which the command `conda install ipykernel` was run.
-
-### Docker
-
-(WIP)
-
-```shell
-docker pull ghcr://MannLabs/alphatims:latest
+#### Alternatively: Build the image yourself
+If you want to build the image yourself, you can do so by
+```bash
+docker build -t alphatims .
 ```
+and run it with
+```bash
+docker run -p $PORT:8501 -v $DATA_FOLDER:/app/data -t alphatims
+
+```
+-->
 
 ### Installation issues
 
