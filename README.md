@@ -58,7 +58,7 @@ There are different types of installation possible:
 * [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
 * [**Pip installation:**](#pip-installation) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
 * [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-* [**Docker installation:**](#docker-installation) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies. -->
+* [**Docker installation:**](#docker-installation) Choose this installation if you want to use AlphaTims without any changes to your system.
 
 ***IMPORTANT: While AlphaTims is mostly platform independent, some calibration functions require [Bruker libraries](alphatims/ext) which are only available on Windows and Linux.***
 
@@ -90,7 +90,7 @@ In newer MacOS versions, additional steps are required to enable installation of
 This is indicated by a dialog telling you `“alphatims. ... .pkg” Not Opened`.
 1. Close this dialog by clicking `Done`.
 2. Choose `Apple menu` > `System Settings`, then `Privacy & Security` in the sidebar. (You may need to scroll down.)
-3. Go to `Security`, locate the line "alphadia.pkg was blocked to protect your Mac" then click `Open Anyway`.
+3. Go to `Security`, locate the line "alphatims.pkg was blocked to protect your Mac" then click `Open Anyway`.
 4. In the dialog windows, click `Open Anyway`.
 
 

@@ -43,7 +43,7 @@ EXPOSE 5006
 # to allow other host ports than 5006
 ENV BOKEH_ALLOW_WS_ORIGIN=localhost
 
-#USER alphatimsuser
+USER alphatimsuser
 
 CMD ["/usr/local/bin/alphatims", "gui", "--port", "5006"]
 
