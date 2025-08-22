@@ -602,7 +602,7 @@ def pjit(
             include_progress_callback=include_progress_callback
         ):
             while progress_bar >= progress_count:
-                time.sleep(0.1)
+                time.sleep(0.01)  # this will be done by the main thread
                 progress_count = granularity * np.sum(progress_counter) / len(iterable)
             progress_bar += 1
 
@@ -634,8 +634,6 @@ def pjit(
             The first argument of the wrapped function is seperately stored as `iterable` and its elements are
             subsequently passed to the original function.
             """
-
-            # TODO this method never resets threads
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
