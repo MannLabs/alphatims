@@ -53,12 +53,12 @@ High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can b
 ## Installation
 
 AlphaTims can be installed and used on all major operating systems (Windows, macOS and Linux).
-There are three different types of installation possible:
+There are different types of installation possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
-* [**Pip installer:**](#pip) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
-* [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-<!-- * [**Docker:**](#docker) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies. -->
+* [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
+* [**Pip installation:**](#pip-installation) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
+* [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
+* [**Docker installation:**](#docker-installation) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies. -->
 
 ***IMPORTANT: While AlphaTims is mostly platform independent, some calibration functions require [Bruker libraries](alphatims/ext) which are only available on Windows and Linux.***
 
@@ -190,7 +190,7 @@ if an editable version is installed. In case of confusion, you can
 always retrieve the location of any Python module with e.g. the command
 `import module` followed by `module.__file__`.
 
-<!--
+
 ### Docker installation
 The containerized version can be used to run AlphaTims without any installation to your system.
 
@@ -202,15 +202,15 @@ Set up your data to match the expected folder structure:
 create a folder and store its name in a variable, and specify a port
 ```
 DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
-PORT=8501
+PORT=5006
 ```
 
 #### 3. Start the container
 ```bash
-docker run -v $DATA_FOLDER:/app/data -p $PORT:8501 mannlabs/alphatims:latest
+docker run -v $DATA_FOLDER:/app/data -p $PORT:5006 mannlabs/alphatims:latest
 ```
 After initial download of the container, AlphaTims will start running immediately,
-and can be accessed under [localhost:$PORT](http://localhost:8501).
+and can be accessed under [localhost:$PORT](http://localhost:5006).
 
 Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
 
@@ -221,10 +221,10 @@ docker build -t alphatims .
 ```
 and run it with
 ```bash
-docker run -p $PORT:8501 -v $DATA_FOLDER:/app/data -t alphatims
+docker run -p $PORT:5006 -v $DATA_FOLDER:/app/data -t alphatims
 
 ```
--->
+
 
 ### Installation issues
 
