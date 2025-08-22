@@ -14,14 +14,15 @@ authors = [
 
 readme = "README.md"
 keywords = [
-    "ms",
+    "proteomics",
     "mass spectrometry",
     "bruker",
     "timsTOF",
-    "proteomics",
     "bioinformatics",
     "data indexing",
+    "AlphaPept",
     "AlphaPept ecosystem",
+    "alphapept.org",
 ]
 license = {file = "LICENSE.txt"}
 classifiers = [
@@ -37,12 +38,13 @@ classifiers = [
 
 [project.urls]
 
+repository = "https://github.com/MannLabs/alphatims"
+issues = "https://github.com/MannLabs/alphatims/issues"
+download = "https://mannlabs.github.io/alphatims/releases"
+documentation = "https://alphatims.readthedocs.io/en/latest/"
+homepage = "https://www.alphapept.org"
 "Mann Labs Homepage" = "https://www.biochem.mpg.de/mann"
-Repository=  "https://github.com/MannLabs/alphatims"
-Documentation =  "https://alphatims.readthedocs.io/en/latest/"
-"PyPi" =  "https://pypi.org/project/alphatims/"
-"Scientific paper"=  "https://doi.org/10.1016/j.mcpro.2021.100149"
-Issues = "https://github.com/MannLabs/alphatims/issues"
+publication = "https://doi.org/10.1016/j.mcpro.2021.100149"
 
 [tool.setuptools.packages]
 find = {}
