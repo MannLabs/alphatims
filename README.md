@@ -4,60 +4,50 @@
 [![Downloads](https://pepy.tech/badge/alphatims/month)](https://pepy.tech/project/alphatims)
 [![Downloads](https://pepy.tech/badge/alphatims/week)](https://pepy.tech/project/alphatims)
 [![Documentation Status](https://readthedocs.org/projects/alphatims/badge/?version=latest)](https://alphatims.readthedocs.io/en/latest/?badge=latest)
+[![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/alphatims/total?label=github%20downloads)](https://github.com/MannLabs/alphatims/releases)
+[![pypi](https://img.shields.io/pypi/v/alphatims)](https://pypi.org/project/alphatims)
+![Python](https://img.shields.io/pypi/pyversions/alphatims)
+
+
+# AlphaTims
 
 ---
-# AlphaTims
+
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <img src="release/logos/alpha_logo.png" alt="Logo" height="80">
+
+  <h3 align="center">AlphaTims</h3>
+
+  <p align="center">
+    <a href="https://doi.org/10.1016/j.mcpro.2021.100149">Publication</a>
+    ·
+    <a href="https://github.com/Mannlabs/alphatims/releases/latest">Download</a>
+    ·
+    <a href="#installation">Installation</a>
+    ·
+    <a href="#usage">Usage</a>
+    ·
+    <a href="https://alphatims.readthedocs.io/en/latest/">Documentation</a>
+    ·
+    <a href="https://alphapept.org">alphapept.org</a>
+
+  </p>
+</div>
+
+
 
 AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) as a modular tool of the [AlphaPept ecosystem](https://github.com/MannLabs/alphapept). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/alphatims).
 
 ![example_screenshot.png](example_screenshot.png)
 
-* [**AlphaTims**](#alphatims)
-  * [**About**](#about)
-  * [**License**](#license)
-  * [**Installation**](#installation)
-     * [**One-click GUI**](#one-click-gui)
-     * [**Pip installer**](#pip)
-     * [**Developer installer**](#developer)
-     * [**Installation issues**](#installation-issues)
-  * [**Test data**](#test-data)
-    * [**Test sample**](#test-sample)
-    * [**LC**](#lc)
-    * [**DDA**](#dda)
-    * [**DIA**](#dia)
-  * [**Usage**](#usage)
-    * [**GUI**](#gui)
-    * [**CLI**](#cli)
-    * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
-    * [**Other tools**](#other-tools)
-  * [**Performance**](#performance)
-    * [**Speed**](#speed)
-    * [**RAM**](#ram)
-  * [**Troubleshooting**](#troubleshooting)
-  * [**How it works**](#how-it-works)
-    * [**Bruker raw data**](#bruker-raw-data)
-    * [**TimsTOF objects in Python**](#timstof-objects-in-python)
-    * [**Slicing TimsTOF objects**](#slicing-timstof-objects)
-  * [**Future perspectives**](#future-perspectives)
-  * [**Citing AlphaTims**](#citing-alphatims)
-  * [**How to contribute**](#how-to-contribute)
-  * [**Changelog**](#changelog)
-    * [**1.0.0**](#100)
-    * [**0.3.2**](#032)
-    * [**0.3.1**](#031)
-    * [**0.3.0**](#030)
-    * [**0.2.8**](#028)
-    * [**0.2.7**](#027)
 
 ---
 ## About
 
 High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available, open-source and available on all major Operating Systems. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
 
----
-## License
-
-AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable. External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
 ---
 ## Installation
@@ -390,9 +380,12 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
   * fragment clusters (i.e. pseudo MSMS spectra)
 
 ---
-## Citing AlphaTims
 
-Check out the [paper](https://doi.org/10.1016/j.mcpro.2021.100149).
+## Publication
+
+> **AlphaTims: Indexing Trapped Ion Mobility Spectrometry–TOF Data for Fast and Easy Accession and Visualization**
+> Sander Willems, Eugenia Voytik, Patricia Skowronek, Maximilian T. Strauss, Matthias Mann,
+> Molecular & Cellular Proteomics,  Volume 20, 2021, 100149, https://doi.org/10.1016/j.mcpro.2021.100149.
 
 ---
 ## How to contribute
@@ -417,63 +410,16 @@ This package uses a shared release process defined in the
 [alphashared](https://github.com/MannLabs/alphashared) repository. Please see the instructions
 [there](https://github.com/MannLabs/alphashared/blob/reusable-release-workflow/.github/workflows/README.md#release-a-new-version)
 
+
 ---
+
+## License
+
+AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable. External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
+
+---
+
 ## Changelog
 
-The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
-
-### 1.0.0
-
-  * FEAT: tempmmap for large arrays by default.
-
-### 0.3.2
-
-  * FEAT: cli/gui allow bruker data as argument.
-  * FEAT/FIX: Polarity included in frame table.
-  * FIX: utils cleanup.
-  * FIX: utils issues.
-  * FEAT: by default use -1 threads in utils.
-  * FIX: disable cla check.
-
-### 0.3.1
-
-  * FIX/FEAT: Intensity correction when ICC is used. Note that this is only for exported data, not for visualized data.
-  * FEAT: By default, hdf files are now mmapped, making them much faster to initially load and use virtual memory in favor of residual memory.
-
-### 0.3.0
-
-  * FEAT: Introduction of global mz calibration.
-  * FEAT: Introduction of dia_cycle for diaPASEF.
-  * CHORE: Verified Python 3.9 compatibility.
-  * FEAT: Included option to open Bruker raw data when starting the GUI.
-  * FEAT: Provided hash for TimsTOF objects.
-  * FEAT: Filter push indices.
-  * CHORE: included stable and loose versions for all dependancies
-
-### 0.2.8
-
-  * FIX: Ensure stable version for one click GUI.
-  * FIX: Do not require plotting dependancies for CLI export csv selection.
-  * FIX: Import of very old diaPASEF samples where the analysis.tdf file still looks like ddaPASEF.
-  * FIX: frame pointers of fragment_frame table.
-  * FEAT: Include visual report in performance notebook.
-  * FEAT: Include DIA 120 sample in performance tests.
-  * FEAT: Show performance in README.
-  * FIX: Move python-lzf dependancy (to decompress older Bruker files) to legacy requirements, as pip install on Windows requires visual c++ otherwise.
-  * DOCS: BioRxiv paper link.
-  * FEAT/FIX: RT in min column.
-  * FEAT: CLI manual.
-  * FEAT: Inclusion of more coordinates in CLI.
-
-### 0.2.7
-
-  * CHORE: Introduction of changelog.
-  * CHORE: Automated publish_and_release action to parse version numbers.
-  * FEAT/FIX: Include average precursor mz in MGF titles and set unknown precursor charges to 0.
-  * FIX: Properly resolve set_global argument of `alphatims.utils.set_threads`.
-  * FIX: Set nogil option for `alphatims.bruker.indptr_lookup`.
-  * DOCS: GUI Manual typos.
-  * FEAT: Include buttons to download test data and citation in GUI.
-  * FEAT: Include option for progress_callback in alphatims.utils.pjit.
-  * FIX/FEAT: Older samples with TimsCompressionType 1 can now also be read. This is at limited performance.
-  * FEAT: By default use loose versioning for the base dependancies. Stable dependancy versions can be enforced with `pip install "alphatims[stable]"`. NOTE: This option is not guaranteed to be maintained. Future AlphaTims versions might opt for an intermediate solution with semi-strict dependancy versioning.
+For a full overview of the changes made in each version see [CHANGELOG.md](CHANGELOG.md) (until version 1.0.0) and the 
+[GitHub release notes](https://github.com/MannLabs/alphatims/releases) (from >1.0.0).
