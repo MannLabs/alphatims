@@ -1,22 +1,54 @@
+# syntax=docker/dockerfile:1
 
-# FROM python:3.9-slim
-FROM --platform=linux/amd64 python:3.9-bullseye
+FROM --platform=linux/amd64 python:3.9-bookworm
 
-RUN apt-get update && apt-get install -y build-essential gcc python3-dev
+# Prevents Python from writing pyc files.
+ENV PYTHONDONTWRITEBYTECODE=1
+# Keeps Python from buffering stdout and stderr to avoid situations where
+# the application crashes without emitting any logs due to buffering.
+ENV PYTHONUNBUFFERED=1
 
-RUN adduser worker
-USER worker
-WORKDIR /home/worker
+WORKDIR /app
 
-COPY --chown=worker:worker dist/*.whl /home/worker
 
-# RUN python3 -m pip install ".[plotting-stable]" # Image is 1.6gb with plotting
-# The size is reduced to 847 mb without it.
-RUN python3 -m pip install --disable-pip-version-check --no-cache-dir --user /home/worker/*.whl
-RUN ls /home/worker/.local/lib/python3.9/site-packages/alphatims/ext/timsdata.so
-RUN chmod 777 /home/worker/.local/lib/python3.9/site-packages/alphatims/ext/timsdata.so
+# Create a non-privileged user that the app will run under.
+# See https://docs.docker.com/go/dockerfile-user-best-practices/
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/home/alphatimsuser" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    alphatimsuser
 
-RUN python3 -m pip cache purge
-ENV PATH="/home/worker/.local/bin:${PATH}"
+COPY requirements requirements
 
-ENTRYPOINT [ "alphatims" ]
+RUN pip install --no-cache-dir  -r requirements/requirements.txt
+RUN pip install --no-cache-dir  -r requirements/requirements_plotting.txt
+
+COPY alphatims alphatims
+COPY MANIFEST.in MANIFEST.in
+COPY LICENSE.txt LICENSE.txt
+COPY README.md README.md
+COPY pyproject.toml pyproject.toml
+
+RUN pip install --no-cache-dir ".[stable,plotting-stable]"
+
+RUN chmod 777 /usr/local/lib/python3.9/site-packages/alphatims/ext/timsdata.so
+RUN mkdir -p /usr/local/lib/python3.9/site-packages/alphatims/logs && chmod 777 /usr/local/lib/python3.9/site-packages/alphatims/logs
+
+ENV PORT=5006
+EXPOSE 5006
+
+# to allow other host ports than 5006
+ENV BOKEH_ALLOW_WS_ORIGIN=localhost
+
+USER alphatimsuser
+
+CMD ["/usr/local/bin/alphatims", "gui", "--port", "5006"]
+
+# build & run:
+# docker build --progress=plain -t alphatims .
+# DATA_FOLDER=/path/to/local/data
+# docker run -p 5006:5006 -v $DATA_FOLDER:/app/data/ -t alphatims

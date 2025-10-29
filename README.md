@@ -4,101 +4,130 @@
 [![Downloads](https://pepy.tech/badge/alphatims/month)](https://pepy.tech/project/alphatims)
 [![Downloads](https://pepy.tech/badge/alphatims/week)](https://pepy.tech/project/alphatims)
 [![Documentation Status](https://readthedocs.org/projects/alphatims/badge/?version=latest)](https://alphatims.readthedocs.io/en/latest/?badge=latest)
+[![GitHub downloads](https://img.shields.io/github/downloads/mannlabs/alphatims/total?label=github%20downloads)](https://github.com/MannLabs/alphatims/releases)
+[![pypi](https://img.shields.io/pypi/v/alphatims)](https://pypi.org/project/alphatims)
+![Python](https://img.shields.io/pypi/pyversions/alphatims)
+
+
+# AlphaTims
 
 ---
-# AlphaTims
+
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <img src="release/logos/alpha_logo.png" alt="Logo" height="80">
+
+  <h3 align="center">AlphaTims</h3>
+
+  <p align="center">
+    <a href="https://doi.org/10.1016/j.mcpro.2021.100149">Publication</a>
+    ·
+    <a href="https://github.com/Mannlabs/alphatims/releases/latest">Download</a>
+    ·
+    <a href="#installation">Installation</a>
+    ·
+    <a href="#usage">Usage</a>
+    ·
+    <a href="https://alphatims.readthedocs.io/en/latest/">Documentation</a>
+    ·
+    <a href="https://alphapept.org">alphapept.org</a>
+
+  </p>
+</div>
+
+
 
 AlphaTims is an open-source Python package that provides fast accession and visualization of unprocessed LC-TIMS-Q-TOF data from [Bruker’s timsTOF Pro](https://www.bruker.com/en/products-and-solutions/mass-spectrometry/timstof/timstof-pro.html) instruments. It indexes the data such that it can easily be sliced along all five dimensions: LC, TIMS, QUADRUPOLE, TOF and DETECTOR. It was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) as a modular tool of the [AlphaPept ecosystem](https://github.com/MannLabs/alphapept). To enable all hyperlinks in this document, please view it at [GitHub](https://github.com/MannLabs/alphatims).
 
 ![example_screenshot.png](example_screenshot.png)
 
-* [**AlphaTims**](#alphatims)
-  * [**About**](#about)
-  * [**License**](#license)
-  * [**Installation**](#installation)
-     * [**One-click GUI**](#one-click-gui)
-     * [**Pip installer**](#pip)
-     * [**Developer installer**](#developer)
-     * [**Installation issues**](#installation-issues)
-  * [**Test data**](#test-data)
-    * [**Test sample**](#test-sample)
-    * [**LC**](#lc)
-    * [**DDA**](#dda)
-    * [**DIA**](#dia)
-  * [**Usage**](#usage)
-    * [**GUI**](#gui)
-    * [**CLI**](#cli)
-    * [**Python and jupyter notebooks**](#python-and-jupyter-notebooks)
-    * [**Other tools**](#other-tools)
-  * [**Performance**](#performance)
-    * [**Speed**](#speed)
-    * [**RAM**](#ram)
-  * [**Troubleshooting**](#troubleshooting)
-  * [**How it works**](#how-it-works)
-    * [**Bruker raw data**](#bruker-raw-data)
-    * [**TimsTOF objects in Python**](#timstof-objects-in-python)
-    * [**Slicing TimsTOF objects**](#slicing-timstof-objects)
-  * [**Future perspectives**](#future-perspectives)
-  * [**Citing AlphaTims**](#citing-alphatims)
-  * [**How to contribute**](#how-to-contribute)
-  * [**Changelog**](#changelog)
-    * [**1.0.0**](#100)
-    * [**0.3.2**](#032)
-    * [**0.3.1**](#031)
-    * [**0.3.0**](#030)
-    * [**0.2.8**](#028)
-    * [**0.2.7**](#027)
 
 ---
 ## About
 
 High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can be coupled to several other analytical techniques such as liquid chromatography (LC) and trapped ion mobility spectrometry (TIMS). LC-TIMS-Q-TOF has gained considerable interest since the introduction of the [Parallel Accumulation–Serial Fragmentation (PASEF)](https://doi.org/10.1074/mcp.TIR118.000900) method in both data-dependent ([DDA](https://pubs.acs.org/doi/abs/10.1021/acs.jproteome.5b00932)) and data-independent acquisition ([DIA](https://www.nature.com/articles/s41592-020-00998-0)). With this setup, ion intensity values are acquired as a function of the chromatographic retention time, ion mobility, quadrupole mass to charge and TOF mass to charge. As these five-dimensional data points are detected at GHz rates, datasets often contain billions of data points which makes them impractical and slow to access. Raw data are therefore frequently binned for faster data analysis or visualization. In contrast, AlphaTims is a Python package that provides fast accession and visualization of unprocessed raw data. By recognizing that all measurements are ultimately arrival times linked to intensity values, it constructs an efficient set of indices such that raw data can be interpreted as a sparse five-dimensional matrix. On a modern laptop, this indexing takes less than half a minute for raw datasets of more than two billion datapoints. Following this step, interactive visualization of the same dataset can also be done in milliseconds. AlphaTims is freely available, open-source and available on all major Operating Systems. It can be used with a graphical user interface (GUI), a command-line interface (CLI) or as a regular Python package.
 
----
-## License
-
-AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable. External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
 
 ---
 ## Installation
 
 AlphaTims can be installed and used on all major operating systems (Windows, macOS and Linux).
-There are three different types of installation possible:
+There are different types of installation possible:
 
-* [**One-click GUI installer:**](#one-click-gui) Choose this installation if you only want the GUI and/or keep things as simple as possible.
-* [**Pip installer:**](#pip) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
-* [**Developer installer:**](#developer) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
-* [**Docker:**](#docker) Use this installation if you want to use a container based workflow. This is usefull to preserve a clean environment or when running multiple tools that might have conflicting dependencies.
+* [**One-click GUI installation:**](#one-click-gui-installation) Choose this installation if you only want the GUI and/or keep things as simple as possible.
+* [**Pip installation:**](#pip-installation) Choose this installation if you want to use AlphaTims as a Python package in an existing Python 3.8 environment (e.g. a Jupyter notebook). If needed, the GUI and CLI can be installed with pip as well.
+* [**Developer installation:**](#developer-installation) Choose this installation if you are familiar with CLI tools, [conda](https://docs.conda.io/en/latest/) and Python. This installation allows access to all available features of AlphaTims and even allows to modify its source code directly. Generally, the developer version of AlphaTims outperforms the precompiled versions which makes this the installation of choice for high-throughput experiments.
+* [**Docker installation:**](#docker-installation) Choose this installation if you want to use AlphaTims without any changes to your system.
 
 ***IMPORTANT: While AlphaTims is mostly platform independent, some calibration functions require [Bruker libraries](alphatims/ext) which are only available on Windows and Linux.***
 
-### One-click GUI
 
-The GUI of AlphaTims is a completely stand-alone tool that requires no knowledge of Python or CLI tools. Click on one of the links below to download the latest release for:
 
-* [**Windows**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_windows.exe)
-* [**macOS**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_macos.pkg)
-* [**Linux**](https://github.com/MannLabs/alphatims/releases/latest/download/alphatims_gui_installer_linux.deb)
+### One-click GUI installation
+
+The GUI of AlphaTims is a completely stand-alone tool that requires no
+knowledge of Python or CLI tools.
+
+You can download the latest release of AlphaTims [here](https://github.com/Mannlabs/alphatims/releases/latest).
 
 ***IMPORTANT: Please refer to the [GUI manual](alphatims/docs/gui_manual.pdf) for detailed instructions on the installation, troubleshooting and usage of the stand-alone AlphaTims GUI.***
 
-Older releases remain available on the [release page](https://github.com/MannLabs/alphatims/releases), but no backwards compatibility is guaranteed.
+#### Windows
+Download the latest `alphatims-X.Y.Z-windows-amd64.exe ` build and double click it to install. If you receive a warning during installation click *Run anyway*.
+Important note: always install AlphaTims into a new folder, as the installer will not properly overwrite existing installations.
 
-### Pip
+#### Linux
+Download the latest `alphatims-X.Y.Z-linux-x64.deb` build and install it via `dpkg -i alphatims-X.Y.Z-linux-x64.deb`.
 
-AlphaTims can be installed in an existing Python 3.8 environment with a single `bash` command. *This `bash` command can also be run directly from within a Jupyter notebook by prepending it with a `!`*. The lightweight version of AlphaTims that purely focuses on data accession (no plotting without additional packages) can be installed with:
+#### MacOS
+Download the latest build suitable for your chip architecture
+(can be looked up by clicking on the Apple Symbol > *About this Mac* > *Chip* ("M1", "M2", "M3" -> `arm64`, "Intel" -> `x64`),
+`alphatims-X.Y.Z-macos-darwin-arm64.pkg ` or ` alphatims-X.Y.Z-macos-darwin-x64.pkg`. Open the parent folder of the downloaded file in Finder,
+right-click and select *open*. If you receive a warning during installation click *Open*.
+
+In newer MacOS versions, additional steps are required to enable installation of unverified software.
+This is indicated by a dialog telling you `“alphatims. ... .pkg” Not Opened`.
+1. Close this dialog by clicking `Done`.
+2. Choose `Apple menu` > `System Settings`, then `Privacy & Security` in the sidebar. (You may need to scroll down.)
+3. Go to `Security`, locate the line "alphatims.pkg was blocked to protect your Mac" then click `Open Anyway`.
+4. In the dialog windows, click `Open Anyway`.
+
+
+Older releases remain available on the [release
+page](https://github.com/MannLabs/alphatims/releases), but no
+backwards compatibility is guaranteed.
+
+
+
+### Pip installation
+
+AlphaTims can be installed in an existing Python environment with a
+single `bash` command. *This `bash` command can also be run directly
+from within a Jupyter notebook by prepending it with a `!`*:
 
 ```bash
 pip install alphatims
 ```
 
-Installing AlphaTims like this avoids conflicts when integrating it in other tools, as this does not enforce strict versioning of dependancies. However, if new versions of dependancies are released, they are not guaranteed to be fully compatible with AlphaTims. While this should only occur in rare cases where dependencies are not backwards compatible, you can always force AlphaTims to use dependancy versions which are known to be compatible with:
+Installing AlphaTims like this avoids conflicts when integrating it in
+other tools, as this does not enforce strict versioning of dependencies.
+However, if new versions of dependencies are released, they are not
+guaranteed to be fully compatible with AlphaTims. This should only occur
+in rare cases where dependencies are not backwards compatible.
 
-```bash
+You can always force AlphaTims to use dependency versions
+which are known to be compatible with:
+
+``` bash
 pip install "alphatims[stable]"
 ```
 
-NOTE: You might need to run `pip install pip==21.0` before installing AlphaTims like this. Also note the double quotes `"`.
+It is also possible to directly install any branch (e.g. `some-branch`) from GitHub with
+``` bash
+pip install "git+https://github.com/MannLabs/alphatims.git@some-branch#egg=alphatims[stable,development-stable]"
+```
+
 
 Alternatively, some basic plotting functions can be installed with the following command:
 
@@ -118,77 +147,84 @@ When older samples need to be analyzed, it might be essential to install the `le
 pip install "alphatims[legacy]"
 ```
 
-When a new version of AlphaTims becomes available, the old version can easily be upgraded by running e.g. the command again with an additional `--upgrade` flag:
 
-```bash
-pip install "alphatims[plotting,legacy,stable]" --upgrade
+
+### Developer installation
+
+AlphaTims can also be installed in "editable" mode. This allows to fully customize the software and
+even modify the source code to your specific needs.
+
+First, clone the AlphaTims repository from GitHub to a new directory
+``` bash
+mkdir -p ~/alphatims/project/folder && cd ~/alphatims/project/folder
+git clone https://github.com/MannLabs/alphatims.git && cd alphatims
 ```
 
-The following extra options are available:
-
-* `stable`
-* `plotting`
-* `plotting-stable`
-* `legacy`
-* `legacy-stable`
-* `development`
-* `development-stable`
-
-NOTE: Multiple dependancy packs can be installed by comma-separation. Note however that this only works without spaces!
-
-### Developer
-
-AlphaTims can also be installed in editable (i.e. developer) mode with a few `bash` commands. This allows to fully customize the software and even modify the source code to your specific needs. When an editable Python package is installed, its source code is stored in a transparent location of your choice. While optional, it is advised to first (create and) navigate to e.g. a general software folder:
-
-```bash
-mkdir ~/folder/where/to/install/software
-cd ~/folder/where/to/install/software
-```
-
-***The following commands assume you do not perform any additional `cd` commands anymore***.
-
-Next, download the AlphaTims repository from GitHub either directly or with a `git` command. This creates a new AlphaTims subfolder in your current directory.
-
-```bash
-git clone https://github.com/MannLabs/alphatims.git
-```
-
-For any Python package, it is highly recommended to use a [conda virtual environment](https://docs.conda.io/en/latest/). The best way to install an editable version of AlphaTims is to use AlphaTims' pre-built conda development environment (note that the `--force` flag overwrites an already existing AlphaTims environment):
-
-```bash
-conda env create --force --name alphatims --file alphatims/misc/conda_development_environment.yaml
+Next, it is highly recommended to use a separate
+[conda virtual environment](https://docs.conda.io/en/latest/), as
+otherwise dependency conflicts can occur with already existing
+packages
+``` bash
+conda create --name alphatims python=3.9 -y
 conda activate alphatims
 ```
 
-Alternatively, a new conda environment can manually be created or AlphaTims can be installed in an already existing environment. *Note that dependancy conflicts can occur with already existing packages in the latter case*! Once a conda environment is activated, AlphaTims and all its [dependancies](requirements) need to be installed. To take advantage of all features and allow development (with the `-e` flag), this is best done by installing both the [plotting dependencies](requirements/requirements_plotting.txt) and [development dependencies](requirements/requirements_development.txt) instead of only the [core dependencies](requirements/requirements.txt):
+Finally, AlphaTims and all its [dependencies](requirements) need to be
+installed. To take advantage of all features and allow development (with
+the `-e` flag), this is best done by also installing the [development
+dependencies](requirements/requirements_development_loose.txt) instead of only
+the [core dependencies](requirements/requirements_loose.txt):
 
+``` bash
+pip install -e ".[development]"
+```
+
+By default this installs 'loose' dependencies (no pinned versions),
+although it is also possible to use stable dependencies
+(e.g. `pip install -e ".[stable,development-stable]"`).
+
+By using the editable flag `-e`, all modifications to the [AlphaTims
+source code folder](alphatims) are directly reflected when running
+AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed
+if an editable version is installed. In case of confusion, you can
+always retrieve the location of any Python module with e.g. the command
+`import module` followed by `module.__file__`.
+
+
+### Docker installation
+The containerized version can be used to run AlphaTims without any installation to your system.
+
+#### 1. Setting up Docker
+Install the latest version of docker (https://docs.docker.com/engine/install/).
+
+#### 2. Prepare folder structure
+Set up your data to match the expected folder structure:
+create a folder and store its name in a variable, and specify a port
+```
+DATA_FOLDER=/home/username/data; mkdir -p $DATA_FOLDER
+PORT=5006
+```
+
+#### 3. Start the container
 ```bash
-conda create -n alphatims python=3.8 -y
-conda activate alphatims
-pip install -e "./alphatims[plotting-stable,development]"
+docker run -v $DATA_FOLDER:/app/data -p $PORT:5006 mannlabs/alphatims:latest
+```
+After initial download of the container, AlphaTims will start running immediately,
+and can be accessed under [localhost:$PORT](http://localhost:5006).
+
+Note: in the app, the local `$DATA_FOLDER` needs to be referred to as "`/app/data`".
+
+#### Alternatively: Build the image yourself
+If you want to build the image yourself, you can do so by
+```bash
+docker build -t alphatims .
+```
+and run it with
+```bash
+docker run -p $PORT:5006 -v $DATA_FOLDER:/app/data -t alphatims
+
 ```
 
-***By using the editable flag `-e`, all modifications to the AlphaTims [source code folder](alphatims) are directly reflected when running AlphaTims. Note that the AlphaTims folder cannot be moved and/or renamed if an editable version is installed.***
-
-The following steps are optional, but make working with AlphaTims slightly more convenient:
-
-* To avoid calling `conda activate alphatims` and `conda deactivate` every time AlphaTims is used, the binary execution (which still reflects all modifications to the source code) can be added as an alias. On linux and MacOS, this can be done with e.g.:
-  ```bash
-  conda activate alphatims
-  alphatims_bin="$(which alphatims)"
-  echo "alias alphatims='"${alphatims_bin}"'" >> ~/.bashrc
-  conda deactivate
-  ```
-  When `zsh` is the default terminal instead of `bash`, replace `~/.bashrc` with `~/.zshrc`. On Windows, the command `where alphatims` can be used to find the location of the binary executable. This path can then be (permanently) added to Windows' path variable.
-* When using Jupyter notebooks and multiple conda environments direcly from the terminal, it is recommended to `conda install nb_conda_kernels` in the conda base environment. Hereafter, running a `jupyter notebook` from the conda base environment should have a `python [conda env: alphatims]` kernel available, in addition to all other conda kernels in which the command `conda install ipykernel` was run.
-
-### Docker
-
-(WIP)
-
-```shell
-docker pull ghcr://MannLabs/alphatims:latest
-```
 
 ### Installation issues
 
@@ -390,9 +426,12 @@ Once a Python TimsTOF object is available, it can be loaded into memory for ultr
   * fragment clusters (i.e. pseudo MSMS spectra)
 
 ---
-## Citing AlphaTims
 
-Check out the [paper](https://doi.org/10.1016/j.mcpro.2021.100149).
+## Publication
+
+> **AlphaTims: Indexing Trapped Ion Mobility Spectrometry–TOF Data for Fast and Easy Accession and Visualization**
+> Sander Willems, Eugenia Voytik, Patricia Skowronek, Maximilian T. Strauss, Matthias Mann,
+> Molecular & Cellular Proteomics,  Volume 20, 2021, 100149, https://doi.org/10.1016/j.mcpro.2021.100149.
 
 ---
 ## How to contribute
@@ -417,63 +456,16 @@ This package uses a shared release process defined in the
 [alphashared](https://github.com/MannLabs/alphashared) repository. Please see the instructions
 [there](https://github.com/MannLabs/alphashared/blob/reusable-release-workflow/.github/workflows/README.md#release-a-new-version)
 
+
 ---
+
+## License
+
+AlphaTims was developed by the [Mann Labs at the Max Planck Institute of Biochemistry](https://www.biochem.mpg.de/mann) and is freely available with an [Apache License](LICENSE.txt). Since AlphaTims uses Bruker libraries (available in the [alphatims/ext](alphatims/ext) folder) additional [third-party licenses](LICENSE-THIRD-PARTY.txt) are applicable. External Python packages (available in the [requirements](requirements) folder) have their own licenses, which can be consulted on their respective websites.
+
+---
+
 ## Changelog
 
-The following changes were introduced in the following versions of AlphaTims. Download the latest version in the [installation section](#installation).
-
-### 1.0.0
-
-  * FEAT: tempmmap for large arrays by default.
-
-### 0.3.2
-
-  * FEAT: cli/gui allow bruker data as argument.
-  * FEAT/FIX: Polarity included in frame table.
-  * FIX: utils cleanup.
-  * FIX: utils issues.
-  * FEAT: by default use -1 threads in utils.
-  * FIX: disable cla check.
-
-### 0.3.1
-
-  * FIX/FEAT: Intensity correction when ICC is used. Note that this is only for exported data, not for visualized data.
-  * FEAT: By default, hdf files are now mmapped, making them much faster to initially load and use virtual memory in favor of residual memory.
-
-### 0.3.0
-
-  * FEAT: Introduction of global mz calibration.
-  * FEAT: Introduction of dia_cycle for diaPASEF.
-  * CHORE: Verified Python 3.9 compatibility.
-  * FEAT: Included option to open Bruker raw data when starting the GUI.
-  * FEAT: Provided hash for TimsTOF objects.
-  * FEAT: Filter push indices.
-  * CHORE: included stable and loose versions for all dependancies
-
-### 0.2.8
-
-  * FIX: Ensure stable version for one click GUI.
-  * FIX: Do not require plotting dependancies for CLI export csv selection.
-  * FIX: Import of very old diaPASEF samples where the analysis.tdf file still looks like ddaPASEF.
-  * FIX: frame pointers of fragment_frame table.
-  * FEAT: Include visual report in performance notebook.
-  * FEAT: Include DIA 120 sample in performance tests.
-  * FEAT: Show performance in README.
-  * FIX: Move python-lzf dependancy (to decompress older Bruker files) to legacy requirements, as pip install on Windows requires visual c++ otherwise.
-  * DOCS: BioRxiv paper link.
-  * FEAT/FIX: RT in min column.
-  * FEAT: CLI manual.
-  * FEAT: Inclusion of more coordinates in CLI.
-
-### 0.2.7
-
-  * CHORE: Introduction of changelog.
-  * CHORE: Automated publish_and_release action to parse version numbers.
-  * FEAT/FIX: Include average precursor mz in MGF titles and set unknown precursor charges to 0.
-  * FIX: Properly resolve set_global argument of `alphatims.utils.set_threads`.
-  * FIX: Set nogil option for `alphatims.bruker.indptr_lookup`.
-  * DOCS: GUI Manual typos.
-  * FEAT: Include buttons to download test data and citation in GUI.
-  * FEAT: Include option for progress_callback in alphatims.utils.pjit.
-  * FIX/FEAT: Older samples with TimsCompressionType 1 can now also be read. This is at limited performance.
-  * FEAT: By default use loose versioning for the base dependancies. Stable dependancy versions can be enforced with `pip install "alphatims[stable]"`. NOTE: This option is not guaranteed to be maintained. Future AlphaTims versions might opt for an intermediate solution with semi-strict dependancy versioning.
+For a full overview of the changes made in each version see [CHANGELOG.md](CHANGELOG.md) (until version 1.0.0) and the 
+[GitHub release notes](https://github.com/MannLabs/alphatims/releases) (from >1.0.0).
