@@ -5,7 +5,7 @@
 ; so all paths are given relative to the location of this .iss file.
 
 #define MyAppName "AlphaTims"
-#define MyAppVersion "1.0.10-dev0"
+#define MyAppVersion "1.0.10"
 #define MyAppPublisher "Max Planck Institute of Biochemistry, Mann department"
 #define MyAppURL "https://github.com/MannLabs/alphatims"
 #define MyAppExeName "alphatims_gui.exe"
