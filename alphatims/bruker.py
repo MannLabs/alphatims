@@ -1929,7 +1929,7 @@ class TimsTOF(object):
             cycle_index = np.searchsorted(
                 self.raw_quad_indptr,
                 (self.scan_max_index) * (self.precursor_max_index + offset),
-                "r"
+                    "right"
             ) + 1
             repeats = np.diff(self.raw_quad_indptr[: cycle_index])
             if self.zeroth_frame:
