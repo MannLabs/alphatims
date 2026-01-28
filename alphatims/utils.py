@@ -15,6 +15,8 @@ import sys
 import json
 import contextlib
 import multiprocessing
+from typing import Callable
+
 # local
 import alphatims
 # external
@@ -522,19 +524,39 @@ def class_njit(
         return wrapper(_func)
 
 
+def conditional_njit(use_numba: bool = True, **kwargs) -> Callable:
+    """A conditional decorator that applies @numba.njit() when use_numba=True, otherwise returns the original function unchanged.
+
+    Args:
+        use_numba (bool): If True, applies numba.njit(). If False, returns original function.
+
+    Returns:
+        Decorated function or original function
+    """
+    def decorator(func):
+        if use_numba:
+            import numba
+            return numba.njit(**kwargs)(func)
+        else:
+            return func
+    return decorator
+
 def pjit(
     _func=None,
     *,
-    thread_count=None,
+    thread_count: int = None,
     include_progress_callback: bool = True,
+    use_numba: bool = True,
     **kwargs
 ):
     """A decorator that parallelizes the numba.njit decorator with threads.
 
-    The first argument of the decorated function need to be an iterable.
+    The first argument of the decorated function must be an iterable.
     A range-object will be most performant as iterable.
-    The original function should accept a single element of this iterable
+    The original function must accept a single element of this iterable
     as its first argument.
+    Important note: the type of the first argument will change to iterable for the wrapped function!
+
     The original function cannot return values, instead it should store
     results in e.g. one if its input arrays that acts as a buffer array.
     The original function needs to be numba.njit compatible.
@@ -543,35 +565,52 @@ def pjit(
     Parameters
     ----------
     _func : callable, None
-        The function to decorate.
+        The function to decorate. Default is None.
     thread_count : int, None
-        The number of threads to use.
-        This is always parsed with alphatims.utils.set_threads.
-        Not possible as positional arguments,
-        it always needs to be an explicit keyword argument.
+        The number of threads to use. This is always parsed with alphatims.utils.set_threads.
         Default is None.
     include_progress_callback : bool
-        If True, the default progress callback will be used as callback.
-        (See "progress_callback" function.)
+        If True, the default progress callback will be used as callback. (See "progress_callback" function and
+        `set_progress_callback` for callback styles.)
         If False, no callback is added.
-        See `set_progress_callback` for callback styles.
+        Default is True.
+    use_numba : bool
+        If True, the function is compiled with numba.njit.
+        If False, the function is not compiled (this is handy for debugging and unit testing).
         Default is True.
 
     Returns
     -------
-    : function
-        A parallelized numba.njit decorated function.
+    Callable:
+        A thread-parallelized numba.njit decorated function.
     """
     import functools
     import threading
     import numba
     import numpy as np
 
-    def parallel_compiled_func_inner(func):
-        numba_func = numba.njit(nogil=True, **kwargs)(func)
+    def _handle_progress_callback(iterable, progress_counter):
+        import time
+        if len(iterable) > 10 ** 6:
+            granularity = 1000
+        else:
+            granularity = len(iterable)
+        progress_bar = 0
+        progress_count = np.sum(progress_counter)
+        for _ in progress_callback(
+            range(granularity),
+            include_progress_callback=include_progress_callback
+        ):
+            while progress_bar >= progress_count:
+                time.sleep(0.01)  # this will be done by the main thread
+                progress_count = granularity * np.sum(progress_counter) / len(iterable)
+            progress_bar += 1
 
-        @numba.njit(nogil=True)
-        def numba_func_parallel(
+    def _parallel_compiled_func_inner(func):
+        wrapped_func = numba.njit(nogil=True, **kwargs)(func) if use_numba else func
+
+        @conditional_njit(use_numba=use_numba, nogil=True)
+        def wrapped_func_parallel(
             iterable,
             thread_id,
             progress_counter,
@@ -582,14 +621,19 @@ def pjit(
         ):
             if len(iterable) == 0:
                 for i in range(start, stop, step):
-                    numba_func(i, *args)
+                    wrapped_func(i, *args) # here, the first argument of the wrapped function is a single index
                     progress_counter[thread_id] += 1
             else:
                 for i in iterable:
-                    numba_func(i, *args)
+                    wrapped_func(i, *args)
                     progress_counter[thread_id] += 1
 
         def wrapper(iterable, *args):
+            """A wrapper function that parallelizes the numba.njit function.
+
+            The first argument of the wrapped function is seperately stored as `iterable` and its elements are
+            subsequently passed to the original function.
+            """
             if thread_count is None:
                 current_thread_count = MAX_THREADS
             else:
@@ -597,23 +641,26 @@ def pjit(
                     thread_count,
                     set_global=False
                 )
+
             threads = []
             progress_counter = np.zeros(current_thread_count, dtype=np.int64)
+
             for thread_id in range(current_thread_count):
-                local_iterable = iterable[thread_id::current_thread_count]
-                if isinstance(local_iterable, range):
-                    start = local_iterable.start
-                    stop = local_iterable.stop
-                    step = local_iterable.step
-                    local_iterable = np.array([], dtype=np.int64)
+                thread_local_iterable = iterable[thread_id::current_thread_count]
+                if isinstance(thread_local_iterable, range): # TODO does the speedup mentioned in the docstring still apply?
+                    start = thread_local_iterable.start
+                    stop = thread_local_iterable.stop
+                    step = thread_local_iterable.step
+                    thread_local_iterable = np.array([], dtype=np.int64)
                 else:
                     start = -1
                     stop = -1
                     step = -1
+
                 thread = threading.Thread(
-                    target=numba_func_parallel,
+                    target=wrapped_func_parallel,
                     args=(
-                        local_iterable,
+                        thread_local_iterable,
                         thread_id,
                         progress_counter,
                         start,
@@ -625,31 +672,19 @@ def pjit(
                 )
                 thread.start()
                 threads.append(thread)
+
             if include_progress_callback:
-                import time
-                if len(iterable) > 10**6:
-                    granularity = 1000
-                else:
-                    granularity = len(iterable)
-                # progress_count = 0
-                progress_bar = 0
-                progress_count = np.sum(progress_counter)
-                for result in progress_callback(
-                    range(granularity),
-                    include_progress_callback=include_progress_callback
-                ):
-                    while progress_bar >= progress_count:
-                        time.sleep(0.01)
-                        progress_count = granularity * np.sum(progress_counter) / len(iterable)
-                    progress_bar += 1
+                _handle_progress_callback(iterable, progress_counter)
+
             for thread in threads:
                 thread.join()
                 del thread
+
         return functools.wraps(func)(wrapper)
     if _func is None:
-        return parallel_compiled_func_inner
+        return _parallel_compiled_func_inner
     else:
-        return parallel_compiled_func_inner(_func)
+        return _parallel_compiled_func_inner(_func)
 
 
 def progress_callback(
