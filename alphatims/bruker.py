@@ -881,61 +881,7 @@ def add_intensity_to_bin(
             parsed_indices[1][query_index]
         ] += intensity
 
-
-@alphatims.utils.njit(nogil=True)
-def indptr_lookup(
-    targets: np.ndarray,
-    queries: np.ndarray,
-    momentum_amplifier: int = 2
-):
-    """Find the indices of queries in targets.
-
-    This function is equivalent to
-    "np.searchsorted(targets, queries, "right") - 1".
-    By utilizing the fact that queries are also sorted,
-    it is significantly faster though.
-
-    Parameters
-    ----------
-    targets : np.int64[:]
-        A sorted list of index pointers where queries needs to be looked up.
-    queries : np.int64[:]
-        A sorted list of queries whose index pointers needs to be looked up.
-    momentum_amplifier : int
-        Factor to add momentum to linear searching, attempting to quickly
-        discard empty range without hits.
-        Invreasing it can speed up searching of queries if they are sparsely
-        spread out in targets.
-
-    Returns
-    -------
-    : np.int64[:]
-        The indices of queries in targets.
-    """
-    hits = np.empty_like(queries)
-    target_index = 0
-    no_target_overflow = True
-    for i, query_index in enumerate(queries):
-        while no_target_overflow:
-            momentum = 1
-            while targets[target_index] <= query_index:
-                target_index += momentum
-                if target_index >= len(targets):
-                    break
-                momentum *= momentum_amplifier
-            else:
-                if momentum <= momentum_amplifier:
-                    break
-                else:
-                    target_index -= momentum // momentum_amplifier - 1
-                    continue
-            if momentum == 1:
-                no_target_overflow = False
-            else:
-                target_index -= momentum
-        hits[i] = target_index - 1
-    return hits
-
+# TODO import indptr_lookup from alpharaw
 
 @alphatims.utils.njit(nogil=True)
 def get_dia_push_indices(
