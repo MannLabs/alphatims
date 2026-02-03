@@ -373,7 +373,8 @@ Common installation/usage issues include:
 ---
 
 ## How it works
-The code and the relevant documentation have been moved to [AlphaRaw/bruker.md](https://github.com/MannLabs/alpharaw/blob/main/docs/bruker.md) .
+
+The code and the relevant [documentation](https://github.com/MannLabs/alpharaw/blob/main/docs/bruker/bruker.md)  have been moved to AlphaRaw.
 
 ---
 ## Future perspectives
