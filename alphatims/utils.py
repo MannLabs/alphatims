@@ -17,10 +17,21 @@ import contextlib
 import multiprocessing
 from typing import Callable
 
-# local
 import alphatims
-# external
-import numpy as np
+
+# print nice message for rest of API
+_REMOVED_ITEMS = {
+    "create_hdf_group_from_dict",
+    "create_dict_from_hdf_group",
+
+}
+
+def __getattr__(name: str):
+    if name in _REMOVED_ITEMS:
+        raise NotImplementedError(
+            f"'{name}' has been moved from alphatims (v1.0.10) to alpharaw (v0.6.0). "
+        )
+    raise AttributeError(f"module 'alphatims.utils' has no attribute '{name}'")
 
 
 BASE_PATH = os.path.dirname(__file__)
@@ -541,6 +552,7 @@ def conditional_njit(use_numba: bool = True, **kwargs) -> Callable:
             return func
     return decorator
 
+# TODO: this can now be imported from alpharaw
 def pjit(
     _func=None,
     *,
@@ -764,8 +776,6 @@ def set_progress_callback(progress_callback):
     global PROGRESS_CALLBACK
     PROGRESS_CALLBACK = progress_callback
 
-# TODO: import create_hdf_group_from_dict from alpharaw
-# TODO: import create_dict_from_hdf_group from alpharaw
 
 class Option_Stack(object):
     """A stack with the option to redo and undo."""
