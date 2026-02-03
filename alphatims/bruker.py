@@ -243,12 +243,12 @@ def read_bruker_sql(
                 ],
                 ignore_index=True
             )
-            frames.Id[0] = 0
-            frames.Time[0] = 0
-            frames.MaxIntensity[0] = 0
-            frames.SummedIntensities[0] = 0
-            frames.NumPeaks[0] = 0
-            frames.MsMsType[0] = 0
+            frames.loc[0, "Id"] = 0
+            frames.loc[0, "Time"] = 0
+            frames.loc[0, "MaxIntensity"] = 0
+            frames.loc[0, "SummedIntensities"] = 0
+            frames.loc[0, "NumPeaks"] = 0
+            frames.loc[0, "MsMsType"] = 0
         polarity_col = frames["Polarity"].copy()
         frames = pd.DataFrame(
             {
