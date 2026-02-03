@@ -12,7 +12,7 @@ import alphatims.utils
 import alphatims.tempmmap as tm
 
 # required for backwards compatibility within the package
-from alpharaw.bruker import save_as_mgf, save_as_spectra, filter_indices, TimsTOF, convert_slice_key_to_float_array, convert_slice_key_to_int_array
+from alpharaw.bruker import save_as_mgf, save_as_spectra, filter_indices, TimsTOF, convert_slice_key_to_float_array, convert_slice_key_to_int_array, parse_keys, PrecursorFloatError
 
 # print nice message for rest of API
 _REMOVED_ITEMS = {
@@ -27,12 +27,10 @@ _REMOVED_ITEMS = {
     "indptr_lookup",
     "process_frame",
     "read_bruker_binary",
-    "PrecursorFloatError",
     "set_precursor",
     "centroid_spectra",
     "filter_spectra_by_abundant_peaks",
     "trim_spectra",
-    "parse_keys",
 }
 
 
