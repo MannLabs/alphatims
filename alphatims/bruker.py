@@ -1,29 +1,47 @@
 #!python
 """This module provides functions to handle Bruker data.
-It primarily implements the TimsTOF class, that acts as an in-memory container
+
+It exposes the TimsTOF class, that acts as an in-memory container
 for Bruker data accession and storage.
+
+Note: the implementation of the TimsTOF class has been moved from from alphatims (v1.0.10) to alpharaw (v0.6.0)
 """
 
-# builtin
-import os
-import sys
-import contextlib
-import logging
-# external
 import numpy as np
-import pandas as pd
-import h5py
-# local
-import alphatims
 import alphatims.utils
 import alphatims.tempmmap as tm
 
-# TODO import BRUKER_DLL_FILE_NAME, init_bruker_dll, open_bruker_d_folder from alpharaw
+# required for backwards compatibility within the package
+from alpharaw.bruker import save_as_mgf, save_as_spectra, filter_indices, TimsTOF, convert_slice_key_to_float_array, convert_slice_key_to_int_array
 
-# TODO import read_bruker_sql from alpharaw
+# print nice message for rest of API
+_REMOVED_ITEMS = {
+    "BRUKER_DLL_FILE_NAME",
+    "init_bruker_dll",
+    "open_bruker_d_folder",
+    "read_bruker_sql",
+    "parse_decompressed_bruker_binary_type2",
+    "valid_quad_mz_values",
+    "valid_precursor_index",
+    "add_intensity_to_bin",
+    "indptr_lookup",
+    "process_frame",
+    "read_bruker_binary",
+    "PrecursorFloatError",
+    "set_precursor",
+    "centroid_spectra",
+    "filter_spectra_by_abundant_peaks",
+    "trim_spectra",
+    "parse_keys",
+}
 
-# TODO import parse_decompressed_bruker_binary_type2 from alpharaw
 
+def __getattr__(name: str):
+    if name in _REMOVED_ITEMS:
+        raise NotImplementedError(
+            f"'{name}' has been moved from alphatims (v1.0.10) to alpharaw (v0.6.0). "
+        )
+    raise AttributeError(f"module 'alphatims.bruker' has no attribute '{name}'")
 
 @alphatims.utils.njit(nogil=True)
 def parse_decompressed_bruker_binary_type1(
@@ -76,15 +94,6 @@ def parse_decompressed_bruker_binary_type1(
     return scan_size
 
 
-# TODO import process_frame, read_bruker_binary from alpharaw
-# TODO: import TimsTOF from alpharaw
-# TODO: import PrecursorFloatError from alpharaw
-# TODO: import set_precursor, centroid_spectra from alpharaw
-
-# TODO import filter_spectra_by_abundant_peaks, trim_spectra from alpharaw
-
-# TODO: import parse_keys, convert_slice_key_to_float_array, convert_slice_key_to_int_array from alpharaw
-
 
 @alphatims.utils.njit
 def calculate_dia_cycle_mask(
@@ -134,9 +143,6 @@ def calculate_dia_cycle_mask(
         return mz_mask
 
 
-
-# TODO import valid_quad_mz_values, valid_precursor_index, filter_indices, add_intensity_to_bin from alpharaw
-# TODO import indptr_lookup from alpharaw
 
 @alphatims.utils.njit(nogil=True)
 def get_dia_push_indices(
@@ -253,4 +259,4 @@ def filter_tof_to_csr(
     return np.array(indptr), np.array(values), np.array(columns)
 
 
-# TODO import save_as_mgf, save_as_spectra from alpharaw
+

@@ -1,3 +1,4 @@
+alpharaw>0.5.0
 click
 h5py
 numba
