@@ -4,7 +4,7 @@
 It exposes the TimsTOF class, that acts as an in-memory container
 for Bruker data accession and storage.
 
-Note: the implementation of the TimsTOF class has been moved from from alphatims (v1.0.10) to alpharaw (v0.6.0)
+Note: the implementation of the TimsTOF class has been moved from alphatims (v1.0.10) to alpharaw (v0.6.0)
 """
 
 import numpy as np
