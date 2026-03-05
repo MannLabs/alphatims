@@ -280,11 +280,11 @@ class TimsTOF(TimsTOFBase):
             mz_estimation_from_frame=mz_estimation_from_frame,
             mobility_estimation_from_frame=mobility_estimation_from_frame,
             use_hdf_if_available=use_hdf_if_available,
-            mmap_detector_events=mmap_detector_events,
             drop_polarity=drop_polarity,
             convert_polarity_to_int=convert_polarity_to_int,
         )
 
+        self.mmap_detector_events = mmap_detector_events
         self.slice_as_dataframe = slice_as_dataframe
         self.use_calibrated_mz_values_as_default(
             use_calibrated_mz_values_as_default
@@ -374,12 +374,11 @@ class TimsTOF(TimsTOFBase):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
-        mmap_detector_events: bool = False,
     ):
         logging.info(f"Using HDF import for {bruker_d_folder_name}")
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             mmap_arrays = []
-            if mmap_detector_events:
+            if self.mmap_detector_events:
                 mmap_arrays.append("/raw/_tof_indices")
                 mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
