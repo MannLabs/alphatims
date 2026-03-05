@@ -178,6 +178,34 @@ class TimsTOF(TimsTOFBase):
     # Return the raw indices of datapoints from precursor 999
     """
 
+    @property
+    def mz_values(self):
+        """: np.ndarray : np.float64[:] : The mz values."""
+        if self._use_calibrated_mz_values_as_default:
+            return self._calibrated_mz_values
+        else:
+            return self._mz_values
+
+    @property
+    def calibrated_mz_values(self):
+        """: np.ndarray : np.float64[:] : The global calibrated mz values."""
+        return self._calibrated_mz_values
+
+    @property
+    def calibrated_mz_min_value(self):
+        """: float : The minimum calibrated mz value."""
+        return self.calibrated_mz_values[0]
+
+    @property
+    def calibrated_mz_max_value(self):
+        """: float : The maximum calibrated mz value."""
+        return self.calibrated_mz_values[-1]
+
+    @property
+    def is_compressed(self):
+        """: bool : HDF array is compressed or not."""
+        return self._compressed
+
     def save_as_hdf(
         self,
         directory: str = None,
