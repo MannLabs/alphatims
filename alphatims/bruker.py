@@ -275,22 +275,75 @@ class TimsTOF(TimsTOFBase):
             This is ignored if the polarity is dropped.
             Default is True.
         """
+        # need to be set before calling constructor of superclass
+        self._mmap_detector_events = mmap_detector_events
+        self._use_hdf_if_available = use_hdf_if_available
+
         super().__init__(
             bruker_d_folder_name,
             mz_estimation_from_frame=mz_estimation_from_frame,
             mobility_estimation_from_frame=mobility_estimation_from_frame,
-            use_hdf_if_available=use_hdf_if_available,
             drop_polarity=drop_polarity,
             convert_polarity_to_int=convert_polarity_to_int,
         )
 
-        self.mmap_detector_events = mmap_detector_events
+        if not hasattr(self, "version"):
+            self._version = "N.A."
+        if self.version != alphatims.__version__:
+            logging.info(
+                "WARNING: "
+                f"AlphaTims version {self.version} was used to initialize "
+                f"{bruker_d_folder_name}, while the current version of "
+                f"AlphaTims is {alphatims.__version__}."
+            )
+
         self.slice_as_dataframe = slice_as_dataframe
         self.use_calibrated_mz_values_as_default(
             use_calibrated_mz_values_as_default
         )
         # Precompile
         self[0, "raw"]
+
+
+    def _load_data(self,
+                   bruker_d_folder_name: str,
+                   mz_estimation_from_frame: int,
+                   mobility_estimation_from_frame: int,
+                   drop_polarity: bool,
+                   convert_polarity_to_int: bool) -> None:
+        """Load data from disk."""
+        if bruker_d_folder_name.endswith("/"):
+            bruker_d_folder_name = bruker_d_folder_name[:-1]
+        logging.info(f"Importing data from {bruker_d_folder_name}")
+
+        if bruker_d_folder_name.endswith(".d"):
+            bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
+            hdf_file_exists = os.path.exists(bruker_hdf_file_name)
+            if self._use_hdf_if_available and hdf_file_exists:
+                self._import_data_from_hdf_file(
+                    bruker_hdf_file_name
+                )
+                self.bruker_hdf_file_name = bruker_hdf_file_name
+            else:
+                self.bruker_d_folder_name = os.path.abspath(
+                    bruker_d_folder_name
+                )
+                self._import_data_from_d_folder(
+                    bruker_d_folder_name,
+                    mz_estimation_from_frame,
+                    mobility_estimation_from_frame,
+                    drop_polarity,
+                    convert_polarity_to_int,
+                )
+        elif bruker_d_folder_name.endswith(".hdf"):
+            self._import_data_from_hdf_file(
+                bruker_d_folder_name
+            )
+            self.bruker_hdf_file_name = bruker_d_folder_name
+        else:
+            raise NotImplementedError(
+                "WARNING: file extension not understood"
+            )
 
     def save_as_hdf(
         self,
@@ -378,7 +431,7 @@ class TimsTOF(TimsTOFBase):
         logging.info(f"Using HDF import for {bruker_d_folder_name}")
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             mmap_arrays = []
-            if self.mmap_detector_events:
+            if self._mmap_detector_events:
                 mmap_arrays.append("/raw/_tof_indices")
                 mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
