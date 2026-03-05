@@ -541,6 +541,7 @@ def conditional_njit(use_numba: bool = True, **kwargs) -> Callable:
             return func
     return decorator
 
+# TODO: this can now be imported from alpharaw
 def pjit(
     _func=None,
     *,

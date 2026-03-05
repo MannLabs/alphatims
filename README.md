@@ -52,6 +52,9 @@ High-resolution quadrupole time-of-flight (Q-TOF) tandem mass spectrometry can b
 ---
 ## Installation
 
+Note: The data reading functionality that this package introduced via the `TimsTOF` class have been moved to [AlphaRaw](https://github.com/MannLabs/alpharaw). 
+If you need only that, it might be sufficient to install AlphaRaw instead of AlphaTims. The original [AlphaTims publication](#publication) should still be cited when using this functionality.
+
 AlphaTims can be installed and used on all major operating systems (Windows, macOS and Linux).
 There are different types of installation possible:
 
