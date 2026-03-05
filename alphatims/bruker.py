@@ -206,6 +206,92 @@ class TimsTOF(TimsTOFBase):
         """: bool : HDF array is compressed or not."""
         return self._compressed
 
+    def __init__(
+        self,
+        bruker_d_folder_name: str,
+        *,
+        mz_estimation_from_frame: int = 1,
+        mobility_estimation_from_frame: int = 1,
+        slice_as_dataframe: bool = True,
+        use_calibrated_mz_values_as_default: int = 0,
+        use_hdf_if_available: bool = True,
+        mmap_detector_events: bool = True,
+        drop_polarity: bool = True,
+        convert_polarity_to_int: bool = True,
+    ):
+        """Create a Bruker TimsTOF object that contains all data in-memory.
+
+        Parameters
+        ----------
+        bruker_d_folder_name : str
+            The full file name to a Bruker .d folder.
+            Alternatively, the full file name of an already exported .hdf
+            can be provided as well.
+        mz_estimation_from_frame : int
+            If larger than 0, mz_values from this frame are read as
+            default mz_values with the Bruker library.
+            If 0, mz_values are being estimated with the metadata
+            based on "MzAcqRangeLower" and "MzAcqRangeUpper".
+            IMPORTANT NOTE: MacOS defaults to 0, as no Bruker library
+            is available.
+            Default is 1.
+        mobility_estimation_from_frame : int
+            If larger than 0, mobility_values from this frame are read as
+            default mobility_values with the Bruker library.
+            If 0, mobility_values are being estimated with the metadata
+            based on "OneOverK0AcqRangeLower" and "OneOverK0AcqRangeUpper".
+            IMPORTANT NOTE: MacOS defaults to 0, as no Bruker library
+            is available.
+            Default is 1.
+        slice_as_dataframe : bool
+            If True, slicing returns a pd.DataFrame by default.
+            If False, slicing provides a np.int64[:] with raw indices.
+            This value can also be modified after creation.
+            Default is True.
+        use_calibrated_mz_values : int
+            If not 0, the mz_values are overwritten with global
+            calibrated_mz_values.
+            If 1, calibration at the MS1 level is performed.
+            If 2, calibration at the MS2 level is performed.
+            Default is 0.
+        use_hdf_if_available : bool
+            If an HDF file is available, use this instead of the .d folder.
+            Default is True.
+        mmap_detector_events : bool
+            Do not save the intensity_values and tof_indices in memory,
+            but use an mmap instead.
+            Default is True
+        drop_polarity : bool
+            The polarity column of the frames table contains "+" or "-" and
+            is not numerical.
+            If True, the polarity column is dropped from the frames table.
+            this ensures a fully numerical pd.DataFrame.
+            If False, this column is kept, resulting in a pd.DataFrame with
+            dtype=object.
+            Default is True.
+        convert_polarity_to_int : bool
+            Convert the polarity to int (-1 or +1).
+            This allows to keep it in numerical form.
+            This is ignored if the polarity is dropped.
+            Default is True.
+        """
+        super().__init__(
+            bruker_d_folder_name,
+            mz_estimation_from_frame=mz_estimation_from_frame,
+            mobility_estimation_from_frame=mobility_estimation_from_frame,
+            use_hdf_if_available=use_hdf_if_available,
+            mmap_detector_events=mmap_detector_events,
+            drop_polarity=drop_polarity,
+            convert_polarity_to_int=convert_polarity_to_int,
+        )
+
+        self.slice_as_dataframe = slice_as_dataframe
+        self.use_calibrated_mz_values_as_default(
+            use_calibrated_mz_values_as_default
+        )
+        # Precompile
+        self[0, "raw"]
+
     def save_as_hdf(
         self,
         directory: str = None,
