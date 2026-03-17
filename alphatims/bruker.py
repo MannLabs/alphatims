@@ -7,6 +7,8 @@ for Bruker data accession and storage.
 # builtin
 import os
 import logging
+from typing import Callable
+
 # external
 import numpy as np
 import pandas as pd
@@ -16,6 +18,7 @@ import alphatims
 import alphatims.utils
 from alpharaw.bruker.timstof import TimsTOFBase
 
+import alphatims.tempmmap as tm
 
 class TimsTOF(TimsTOFBase):
     """A class that stores Bruker TimsTOF data in memory for fast access.
@@ -345,6 +348,10 @@ class TimsTOF(TimsTOFBase):
             raise NotImplementedError(
                 "WARNING: file extension not understood"
             )
+
+    def _get_empty_array_constructor_function(self) -> Callable:
+        """Get the function to create empty arrays for this class."""
+        return tm.empty
 
     def save_as_hdf(
         self,
