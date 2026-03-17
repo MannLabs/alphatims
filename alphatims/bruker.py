@@ -287,8 +287,9 @@ class TimsTOF(TimsTOFBase):
             convert_polarity_to_int=convert_polarity_to_int,
         )
 
-        if not hasattr(self, "version"):
-            self._version = "N.A."
+        if not hasattr(self, "version") or self._version is None:
+            self._version = alphatims.__version__
+
         if self.version != alphatims.__version__:
             logging.info(
                 "WARNING: "
