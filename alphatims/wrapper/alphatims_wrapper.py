@@ -70,15 +70,15 @@ def remove_unused_peaks(
     )
     return spectrum_df, peak_df
 
-    spectrum_df = spectrum_df.sort_values(["peak_start_idx"], ascending=True)
-    frag_idx = spectrum_df[["peak_start_idx", "peak_stop_idx"]].values
-
-    new_frag_idx, fragment_pointer = compress_fragment_indices(frag_idx)
-
-    spectrum_df[["peak_start_idx", "peak_stop_idx"]] = new_frag_idx
-    spectrum_df = spectrum_df.sort_index()
-
-    return (spectrum_df, peak_df.iloc[fragment_pointer].copy().reset_index(drop=True))
+    # spectrum_df = spectrum_df.sort_values(["peak_start_idx"], ascending=True)
+    # frag_idx = spectrum_df[["peak_start_idx", "peak_stop_idx"]].values
+    #
+    # new_frag_idx, fragment_pointer = compress_fragment_indices(frag_idx)
+    #
+    # spectrum_df[["peak_start_idx", "peak_stop_idx"]] = new_frag_idx
+    # spectrum_df = spectrum_df.sort_index()
+    #
+    # return (spectrum_df, peak_df.iloc[fragment_pointer].copy().reset_index(drop=True))
 
 
 class AlphaTimsReader(MSData_Base):
