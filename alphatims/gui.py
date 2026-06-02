@@ -1685,7 +1685,8 @@ def run(port=None, bruker_raw_data=None):
         websocket_origin = f"{ip_address}:{port}"
     else:
         websocket_origin = None
-        # port=0  # chooses port automatically
+        # bokeh requires an integer port; 0 lets it choose one automatically
+        port = 0
     SERVER = LAYOUT.show(
         title='AlphaTims',
         threaded=True,
