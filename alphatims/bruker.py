@@ -6,9 +6,9 @@ for Bruker data accession and storage.
 
 # builtin
 import os
-import sys
-import contextlib
 import logging
+from typing import Callable
+
 # external
 import numpy as np
 import pandas as pd
@@ -16,547 +16,15 @@ import h5py
 # local
 import alphatims
 import alphatims.utils
+from alpharaw.bruker.timstof import TimsTOFBase
+
 import alphatims.tempmmap as tm
 
-if sys.platform[:5] == "win32":
-    BRUKER_DLL_FILE_NAME = os.path.join(
-        alphatims.utils.EXT_PATH,
-        "timsdata.dll"
-    )
-elif sys.platform[:5] == "linux":
-    BRUKER_DLL_FILE_NAME = os.path.join(
-        alphatims.utils.EXT_PATH,
-        "timsdata.so"
-    )
-else:
-    BRUKER_DLL_FILE_NAME = ""
-
-
-def init_bruker_dll(bruker_dll_file_name: str = BRUKER_DLL_FILE_NAME):
-    """Open a bruker.dll in Python.
-
-    Five functions are defined for this dll:
-
-        - tims_open: [c_char_p, c_uint32] -> c_uint64
-        - tims_close: [c_char_p, c_uint32] -> c_uint64
-        - tims_read_scans_v2: [c_uint64, c_int64, c_uint32, c_uint32, c_void_p, c_uint32] -> c_uint32
-        - tims_index_to_mz: [c_uint64, c_int64, POINTER(c_double), POINTER(c_double), c_uint32] -> None
-        - tims_scannum_to_oneoverk0: Same as "tims_index_to_mz"
-
-    Parameters
-    ----------
-    bruker_dll_file_name : str
-        The absolute path to the timsdata.dll.
-        Default is alphatims.utils.BRUKER_DLL_FILE_NAME.
-
-    Returns
-    -------
-    : ctypes.cdll
-        The Bruker dll library.
-    """
-    import ctypes
-    bruker_dll = ctypes.cdll.LoadLibrary(
-        os.path.realpath(bruker_dll_file_name)
-    )
-    bruker_dll.tims_open.argtypes = [ctypes.c_char_p, ctypes.c_uint32]
-    bruker_dll.tims_open.restype = ctypes.c_uint64
-    bruker_dll.tims_close.argtypes = [ctypes.c_uint64]
-    bruker_dll.tims_close.restype = None
-    bruker_dll.tims_read_scans_v2.argtypes = [
-        ctypes.c_uint64,
-        ctypes.c_int64,
-        ctypes.c_uint32,
-        ctypes.c_uint32,
-        ctypes.c_void_p,
-        ctypes.c_uint32
-    ]
-    bruker_dll.tims_read_scans_v2.restype = ctypes.c_uint32
-    bruker_dll.tims_index_to_mz.argtypes = [
-        ctypes.c_uint64,
-        ctypes.c_int64,
-        ctypes.POINTER(ctypes.c_double),
-        ctypes.POINTER(ctypes.c_double),
-        ctypes.c_uint32
-    ]
-    bruker_dll.tims_index_to_mz.restype = ctypes.c_uint32
-    bruker_dll.tims_scannum_to_oneoverk0.argtypes = [
-        ctypes.c_uint64,
-        ctypes.c_int64,
-        ctypes.POINTER(ctypes.c_double),
-        ctypes.POINTER(ctypes.c_double),
-        ctypes.c_uint32
-    ]
-    bruker_dll.tims_scannum_to_oneoverk0.restype = ctypes.c_uint32
-    bruker_dll.tims_set_num_threads.argtypes = [ctypes.c_uint64]
-    bruker_dll.tims_set_num_threads.restype = None
-    bruker_dll.tims_set_num_threads(alphatims.utils.MAX_THREADS)
-    # multiple threads is equally fast as just 1 for io?
-    # bruker_dll.tims_set_num_threads(1)
-    return bruker_dll
-
-
-@contextlib.contextmanager
-def open_bruker_d_folder(
-    bruker_d_folder_name: str,
-    bruker_dll_file_name=BRUKER_DLL_FILE_NAME,
-) -> tuple:
-    """A context manager for a bruker dll connection to a .d folder.
-
-    Parameters
-    ----------
-    bruker_d_folder_name : str
-        The name of a Bruker .d folder.
-    bruker_dll_file_name : str, ctypes.cdll
-        The path to Bruker' timsdata.dll library.
-        Alternatively, the library itself can be passed as argument.
-        Default is alphatims.utils.BRUKER_DLL_FILE_NAME,
-        which in itself is dependent on the OS.
-
-    Returns
-    -------
-    : tuple (ctypes.cdll, int).
-        The opened bruker dll and identifier of the .d folder.
-    """
-    try:
-        if isinstance(bruker_dll_file_name, str):
-            bruker_dll = init_bruker_dll(bruker_dll_file_name)
-        logging.info(f"Opening handle for {bruker_d_folder_name}")
-        bruker_d_folder_handle = bruker_dll.tims_open(
-            bruker_d_folder_name.encode('utf-8'),
-            0
-        )
-        yield bruker_dll, bruker_d_folder_handle
-    finally:
-        logging.info(f"Closing handle for {bruker_d_folder_name}")
-        bruker_dll.tims_close(bruker_d_folder_handle)
-
-
-def read_bruker_sql(
-    bruker_d_folder_name: str,
-    add_zeroth_frame: bool = True,
-    drop_polarity: bool = True,
-    convert_polarity_to_int: bool = True,
-) -> tuple:
-    """Read metadata, (fragment) frames and precursors from a Bruker .d folder.
-
-    Parameters
-    ----------
-    bruker_d_folder_name : str
-        The name of a Bruker .d folder.
-    add_zeroth_frame : bool
-        Bruker uses 1-indexing for frames.
-        If True, a zeroth frame is added without any TOF detections to
-        make Python simulate this 1-indexing.
-        If False, frames are 0-indexed.
-        Default is True.
-    drop_polarity : bool
-        The polarity column of the frames table contains "+" or "-" and
-        is not numerical.
-        If True, the polarity column is dropped from the frames table.
-        this ensures a fully numerical pd.DataFrame.
-        If False, this column is kept, resulting in a pd.DataFrame with
-        dtype=object.
-        Default is True.
-    convert_polarity_to_int : bool
-        Convert the polarity to int (-1 or +1).
-        This allows to keep it in numerical form.
-        This is ignored if the polarity is dropped.
-        Default is True.
-
-    Returns
-    -------
-    : tuple
-        (str, dict, pd.DataFrame, pd.DataFrame, pd.DataFrame, bool).
-        The acquisition_mode, global_meta_data, frames, fragment_frames,
-        precursors and calibration availability.
-        For diaPASEF, precursors is None.
-    """
-    import sqlite3
-    logging.info(f"Reading frame metadata for {bruker_d_folder_name}")
-    with sqlite3.connect(
-        os.path.join(bruker_d_folder_name, "analysis.tdf")
-    ) as sql_database_connection:
-        global_meta_data = pd.read_sql_query(
-            "SELECT * from GlobalMetaData",
-            sql_database_connection
-        )
-        frames = pd.read_sql_query(
-            "SELECT * FROM Frames",
-            sql_database_connection
-        )
-        if 9 in frames.MsMsType.values:
-            acquisition_mode = "diaPASEF"
-            fragment_frames = pd.read_sql_query(
-                "SELECT * FROM DiaFrameMsMsInfo",
-                sql_database_connection
-            )
-            fragment_frame_groups = pd.read_sql_query(
-                "SELECT * from DiaFrameMsMsWindows",
-                sql_database_connection
-            )
-            fragment_frames = fragment_frames.merge(
-                fragment_frame_groups,
-                how="left"
-            )
-            fragment_frames.rename(
-                columns={"WindowGroup": "Precursor"},
-                inplace=True
-            )
-            precursors = None
-        elif 8 in frames.MsMsType.values:
-            acquisition_mode = "ddaPASEF"
-            fragment_frames = pd.read_sql_query(
-                "SELECT * from PasefFrameMsMsInfo",
-                sql_database_connection
-            )
-            precursors = pd.read_sql_query(
-                "SELECT * from Precursors",
-                sql_database_connection
-            )
-        else:
-            acquisition_mode = "noPASEF"
-            fragment_frames = pd.DataFrame(
-                {
-                    "Frame": np.array([0]),
-                    "ScanNumBegin": np.array([0]),
-                    "ScanNumEnd": np.array([0]),
-                    "IsolationWidth": np.array([0]),
-                    "IsolationMz": np.array([0]),
-                    "Precursor": np.array([0]),
-                }
-            )
-            precursors = None
-            # raise ValueError("Scan mode is not ddaPASEF or diaPASEF")
-        calibration_available = BRUKER_DLL_FILE_NAME != ""
-        try:
-            pd.read_sql_query(
-                "SELECT * from CalibrationInfo",
-                sql_database_connection
-            )
-        except pd.io.sql.DatabaseError:
-            calibration_available = False
-        if add_zeroth_frame:
-            frames = pd.concat(
-                [
-                    pd.DataFrame(frames.iloc[0]).T,
-                    frames,
-                ],
-                ignore_index=True
-            )
-            frames.Id[0] = 0
-            frames.Time[0] = 0
-            frames.MaxIntensity[0] = 0
-            frames.SummedIntensities[0] = 0
-            frames.NumPeaks[0] = 0
-            frames.MsMsType[0] = 0
-        polarity_col = frames["Polarity"].copy()
-        frames = pd.DataFrame(
-            {
-                col: pd.to_numeric(
-                    frames[col]
-                ) for col in frames if col != "Polarity"
-            }
-        )
-        if not drop_polarity:
-            if convert_polarity_to_int:
-                frames['Polarity'] = polarity_col.apply(
-                    lambda x: 1 if x == "+" else -1
-                ).astype(np.int8)
-            else:
-                frames['Polarity'] = polarity_col
-        return (
-            acquisition_mode,
-            global_meta_data,
-            frames,
-            fragment_frames,
-            precursors,
-            calibration_available,
-        )
-
-
-@alphatims.utils.njit(nogil=True)
-def parse_decompressed_bruker_binary_type2(decompressed_bytes: bytes) -> tuple:
-    """Parse a Bruker binary frame buffer into scans, tofs and intensities.
-
-    Parameters
-    ----------
-    decompressed_bytes : bytes
-        A Bruker frame binary buffer that is already decompressed with pyzstd.
-
-    Returns
-    -------
-    : tuple (np.uint32[:], np.uint32[:], np.uint32[:]).
-        The scan_indices, tof_indices and intensities present in this binary
-        array
-    """
-    temp = np.frombuffer(decompressed_bytes, dtype=np.uint8)
-    buffer = np.frombuffer(temp.reshape(4, -1).T.flatten(), dtype=np.uint32)
-    scan_count = buffer[0]
-    scan_indices = buffer[:scan_count].copy() // 2
-    intensities = buffer[scan_count + 1::2]
-    last_scan = len(intensities) - np.sum(scan_indices[1:])
-    scan_indices[:-1] = scan_indices[1:]
-    scan_indices[-1] = last_scan
-    tof_indices = buffer[scan_count::2].copy()
-    index = 0
-    for size in scan_indices:
-        current_sum = 0
-        for i in range(size):
-            current_sum += tof_indices[index]
-            tof_indices[index] = current_sum
-            index += 1
-    return scan_indices, tof_indices - 1, intensities
-
-
-@alphatims.utils.njit(nogil=True)
-def parse_decompressed_bruker_binary_type1(
-    decompressed_bytes: bytes,
-    scan_indices_: np.ndarray,
-    tof_indices_: np.ndarray,
-    intensities_: np.ndarray,
-    scan_start: int,
-    scan_index: int,
-) -> int:
-    """Parse a Bruker binary scan buffer into tofs and intensities.
-
-    Parameters
-    ----------
-    decompressed_bytes : bytes
-        A Bruker scan binary buffer that is already decompressed with lzf.
-    scan_indices_ : np.ndarray
-        The scan_indices_ buffer array.
-    tof_indices_ : np.ndarray
-        The tof_indices_ buffer array.
-    intensities_ : np.ndarray
-        The intensities_ buffer array.
-    scan_start : int
-        The offset where to start new tof_indices and intensity_values.
-    scan_index : int
-        The scan index.
-
-    Returns
-    -------
-    : int
-        The number of peaks in this scan.
-    """
-    buffer = np.frombuffer(decompressed_bytes, dtype=np.int32)
-    tof_index = 0
-    previous_was_intensity = True
-    current_index = scan_start
-    for value in buffer:
-        if value >= 0:
-            if previous_was_intensity:
-                tof_index += 1
-            tof_indices_[current_index] = tof_index
-            intensities_[current_index] = value
-            previous_was_intensity = True
-            current_index += 1
-        else:
-            tof_index -= value
-            previous_was_intensity = False
-    scan_size = current_index - scan_start
-    scan_indices_[scan_index] = scan_size
-    return scan_size
-
-
-def process_frame(
-    frame_id: int,
-    tdf_bin_file_name: str,
-    tims_offset_values: np.ndarray,
-    scan_indptr: np.ndarray,
-    intensities: np.ndarray,
-    tof_indices: np.ndarray,
-    frame_indptr: np.ndarray,
-    max_scan_count: int,
-    compression_type: int,
-    max_peaks_per_scan: int,
-) -> None:
-    """Read and parse a frame directly from a Bruker .d.analysis.tdf_bin.
-
-    Parameters
-    ----------
-    frame_id : int
-        The frame number that should be processed.
-        Note that this is interpreted as 1-indixed instead of 0-indexed,
-        so that it is compatible with Bruker.
-    tdf_bin_file_name : str
-        The full file name of the SQL database "analysis.tdf_bin" in a Bruker
-        .d folder.
-    tims_offset_values : np.int64[:]
-        The offsets that indicate the starting indices of each frame in the
-        binary.
-        These are contained in the "TimsId" column of the frames table in
-        "analysis.tdf_bin".
-    scan_indptr : np.int64[:]
-        A buffer containing zeros that can store the cumulative number of
-        detections per scan.
-        The size should be equal to max_scan_count * len(frames) + 1.
-        A dummy 0-indexed frame is required to be present for len(frames).
-        The last + 1 allows to explicitly interpret the end of a scan as
-        the start of a subsequent scan.
-    intensities : np.uint16[:]
-        A buffer that can store the intensities of all detections.
-        It's size can be determined by summing the "NumPeaks" column from
-        the frames table in "analysis.tdf_bin".
-    tof_indices : np.uint32[:]
-        A buffer that can store the tof indices of all detections.
-        It's size can be determined by summing the "NumPeaks" column from
-        the frames table in "analysis.tdf_bin".
-    frame_indptr : np.int64[:]
-        The cumulative sum of the number of detections per frame.
-        The size should be equal to len(frames) + 1.
-        A dummy 0-indexed frame is required to be present for len(frames).
-        The last + 1 allows to explicitly interpret the end of a frame as
-        the start of a subsequent frame.
-    max_scan_count : int
-        The maximum number of scans a single frame can have.
-    compression_type : int
-        The compression type. This must be either 1 or 2.
-        Should be treieved from the global metadata.
-    max_peaks_per_scan : int
-        The maximum number of peaks per scan.
-        Should be retrieved from the global metadata.
-    """
-    with open(tdf_bin_file_name, "rb") as infile:
-        frame_start = frame_indptr[frame_id]
-        frame_end = frame_indptr[frame_id + 1]
-        if frame_start != frame_end:
-            offset = tims_offset_values[frame_id]
-            infile.seek(offset)
-            bin_size = int.from_bytes(infile.read(4), "little")
-            scan_count = int.from_bytes(infile.read(4), "little")
-            max_peak_count = min(
-                max_peaks_per_scan,
-                frame_end - frame_start
-            )
-            if compression_type == 1:
-                import lzf
-                compression_offset = 8 + (scan_count + 1) * 4
-                scan_offsets = np.frombuffer(
-                    infile.read((scan_count + 1) * 4),
-                    dtype=np.int32
-                ) - compression_offset
-                compressed_data = infile.read(bin_size - compression_offset)
-                scan_indices_ = np.zeros(scan_count, dtype=np.int64)
-                tof_indices_ = np.empty(
-                    frame_end - frame_start,
-                    dtype=np.uint32
-                )
-                intensities_ = np.empty(
-                    frame_end - frame_start,
-                    dtype=np.uint16
-                )
-                scan_start = 0
-                for scan_index in range(scan_count):
-                    start = scan_offsets[scan_index]
-                    end = scan_offsets[scan_index + 1]
-                    if start == end:
-                        continue
-                    decompressed_bytes = lzf.decompress(
-                        compressed_data[start: end],
-                        max_peak_count * 4 * 2
-                    )
-                    scan_start += parse_decompressed_bruker_binary_type1(
-                        decompressed_bytes,
-                        scan_indices_,
-                        tof_indices_,
-                        intensities_,
-                        scan_start,
-                        scan_index,
-                    )
-            elif compression_type == 2:
-                import pyzstd
-                compressed_data = infile.read(bin_size - 8)
-                decompressed_bytes = pyzstd.decompress(compressed_data)
-                (
-                    scan_indices_,
-                    tof_indices_,
-                    intensities_
-                ) = parse_decompressed_bruker_binary_type2(decompressed_bytes)
-            else:
-                raise ValueError("TimsCompressionType is not 1 or 2.")
-            scan_start = frame_id * max_scan_count
-            scan_end = scan_start + scan_count
-            scan_indptr[scan_start: scan_end] = scan_indices_
-            tof_indices[frame_start: frame_end] = tof_indices_
-            intensities[frame_start: frame_end] = intensities_
-
-
-def read_bruker_binary(
-    frames: np.ndarray,
-    bruker_d_folder_name: str,
-    compression_type: int,
-    max_peaks_per_scan: int,
-    mmap_detector_events: bool = None,
-) -> tuple:
-    """Read all data from an "analysis.tdf_bin" of a Bruker .d folder.
-
-    Parameters
-    ----------
-    frames : pd.DataFrame
-        The frames from the "analysis.tdf" SQL database of a Bruker .d folder.
-        These can be acquired with e.g. alphatims.bruker.read_bruker_sql.
-    bruker_d_folder_name : str
-        The full path to a Bruker .d folder.
-    compression_type : int
-        The compression type. This must be either 1 or 2.
-    max_peaks_per_scan : int
-        The maximum number of peaks per scan.
-        Should be treieved from the global metadata.
-    mmap_detector_events : bool
-        Do not save the intensity_values and tof_indices in memory,
-        but use an mmap instead.
-        Default is True
-
-    Returns
-    -------
-    : tuple (np.int64[:], np.uint32[:], np.uint16[:]).
-        The scan_indptr, tof_indices and intensities.
-    """
-    frame_indptr = np.empty(frames.shape[0] + 1, dtype=np.int64)
-    frame_indptr[0] = 0
-    frame_indptr[1:] = np.cumsum(frames.NumPeaks.values)
-    max_scan_count = frames.NumScans.max() + 1
-    scan_count = max_scan_count * frames.shape[0]
-    scan_indptr = np.zeros(scan_count + 1, dtype=np.int64)
-    if mmap_detector_events:
-        intensities = tm.empty(int(frame_indptr[-1]), dtype=np.uint16)
-        tof_indices = tm.empty(int(frame_indptr[-1]), dtype=np.uint32)
-    else:
-        intensities = np.empty(int(frame_indptr[-1]), dtype=np.uint16)
-        tof_indices = np.empty(int(frame_indptr[-1]), dtype=np.uint32)
-    tdf_bin_file_name = os.path.join(bruker_d_folder_name, "analysis.tdf_bin")
-    tims_offset_values = frames.TimsId.values
-    logging.info(
-        f"Reading {frame_indptr.size - 2:,} frames with "
-        f"{frame_indptr[-1]:,} detector events for {bruker_d_folder_name}"
-    )
-    if compression_type == 1:
-        process_frame_func = alphatims.utils.threadpool(
-            process_frame,
-            thread_count=1
-        )
-    else:
-        process_frame_func = alphatims.utils.threadpool(process_frame)
-    process_frame_func(
-        range(1, len(frames)),
-        tdf_bin_file_name,
-        tims_offset_values,
-        scan_indptr,
-        intensities,
-        tof_indices,
-        frame_indptr,
-        max_scan_count,
-        compression_type,
-        max_peaks_per_scan,
-    )
-    scan_indptr[1:] = np.cumsum(scan_indptr[:-1])
-    scan_indptr[0] = 0
-    return scan_indptr, tof_indices, intensities
-
-
-class TimsTOF(object):
+class TimsTOF(TimsTOFBase):
     """A class that stores Bruker TimsTOF data in memory for fast access.
+
+    It amends the TimsTOFBase class in alpharaw with methods to access the data.
+    Note: the TimsTOFBase was split off this class and moved to alpharaw.
 
     Data can be read directly from a Bruker .d folder.
     All OS's are supported,
@@ -714,52 +182,6 @@ class TimsTOF(object):
     """
 
     @property
-    def sample_name(self):
-        """: str : The sample name of this TimsTOF object."""
-        file_name = os.path.basename(self.bruker_d_folder_name)
-        return '.'.join(file_name.split('.')[:-1])
-
-    @property
-    def directory(self):
-        """: str : The directory of this TimsTOF object."""
-        return os.path.dirname(self.bruker_d_folder_name)
-
-    @property
-    def is_compressed(self):
-        """: bool : HDF array is compressed or not."""
-        return self._compressed
-
-    @property
-    def version(self):
-        """: str : AlphaTims version used to create this TimsTOF object."""
-        return self._version
-
-    @property
-    def acquisition_mode(self):
-        """: str : The acquisition mode."""
-        return self._acquisition_mode
-
-    @property
-    def meta_data(self):
-        """: dict : The metadata for the acquisition."""
-        return self._meta_data
-
-    @property
-    def rt_values(self):
-        """: np.ndarray : np.float64[:] : The rt values."""
-        return self._rt_values
-
-    @property
-    def mobility_values(self):
-        """: np.ndarray : np.float64[:] : The mobility values."""
-        return self._mobility_values
-
-    @property
-    def cycle(self):
-        """: np.ndarray : np.float64[:,:,:,:] : The quad values."""
-        return self._cycle
-
-    @property
     def mz_values(self):
         """: np.ndarray : np.float64[:] : The mz values."""
         if self._use_calibrated_mz_values_as_default:
@@ -773,46 +195,6 @@ class TimsTOF(object):
         return self._calibrated_mz_values
 
     @property
-    def quad_mz_values(self):
-        """: np.ndarray : np.float64[:, 2] : The (low, high) quad mz values."""
-        return self._quad_mz_values
-
-    @property
-    def intensity_values(self):
-        """: np.ndarray : np.uint16[:] : The intensity values."""
-        return self._intensity_values
-
-    @property
-    def frame_max_index(self):
-        """: int : The maximum frame index."""
-        return self._frame_max_index
-
-    @property
-    def scan_max_index(self):
-        """: int : The maximum scan index."""
-        return self._scan_max_index
-
-    @property
-    def tof_max_index(self):
-        """: int : The maximum tof index."""
-        return self._tof_max_index
-
-    @property
-    def precursor_max_index(self):
-        """: int : The maximum precursor index."""
-        return self._precursor_max_index
-
-    @property
-    def mz_min_value(self):
-        """: float : The minimum mz value."""
-        return self.mz_values[0]
-
-    @property
-    def mz_max_value(self):
-        """: float : The maximum mz value."""
-        return self.mz_values[-1]
-
-    @property
     def calibrated_mz_min_value(self):
         """: float : The minimum calibrated mz value."""
         return self.calibrated_mz_values[0]
@@ -823,109 +205,9 @@ class TimsTOF(object):
         return self.calibrated_mz_values[-1]
 
     @property
-    def rt_max_value(self):
-        """: float : The maximum rt value."""
-        return self.rt_values[-1]
-
-    @property
-    def quad_mz_min_value(self):
-        """: float : The minimum quad mz value."""
-        return self._quad_min_mz_value
-
-    @property
-    def quad_mz_max_value(self):
-        """: float : The maximum quad mz value."""
-        return self._quad_max_mz_value
-
-    @property
-    def mobility_min_value(self):
-        """: float : The minimum mobility value."""
-        return self._mobility_min_value
-
-    @property
-    def mobility_max_value(self):
-        """: float : The maximum mobility value."""
-        return self._mobility_max_value
-
-    @property
-    def intensity_min_value(self):
-        """: float : The minimum intensity value."""
-        return self._intensity_min_value
-
-    @property
-    def intensity_max_value(self):
-        """: float : The maximum intensity value."""
-        return self._intensity_max_value
-
-    @property
-    def frames(self):
-        """: pd.DataFrame : The frames table of the analysis.tdf SQL."""
-        return self._frames
-
-    @property
-    def fragment_frames(self):
-        """: pd.DataFrame : The fragment frames table."""
-        return self._fragment_frames
-
-    @property
-    def precursors(self):
-        """: pd.DataFrame : The precursor table."""
-        return self._precursors
-
-    @property
-    def tof_indices(self):
-        """: np.ndarray : np.uint32[:] : The tof indices."""
-        return self._tof_indices
-
-    @property
-    def push_indptr(self):
-        """: np.ndarray : np.int64[:] : The tof indptr."""
-        return self._push_indptr
-
-    @property
-    def quad_indptr(self):
-        """: np.ndarray : np.int64[:] : The quad indptr (tof_indices)."""
-        return self._quad_indptr
-
-    @property
-    def raw_quad_indptr(self):
-        """: np.ndarray : np.int64[:] : The raw quad indptr (push indices)."""
-        return self._raw_quad_indptr
-
-    @property
-    def precursor_indices(self):
-        """: np.ndarray : np.int64[:] : The precursor indices."""
-        return self._precursor_indices
-
-    @property
-    def dia_precursor_cycle(self):
-        """: np.ndarray : np.int64[:] : The precursor indices of a DIA cycle."""
-        return self._dia_precursor_cycle
-
-    @property
-    def dia_mz_cycle(self):
-        """: np.ndarray : np.float64[:, 2] : The mz_values of a DIA cycle."""
-        return self._dia_mz_cycle
-
-    @property
-    def zeroth_frame(self):
-        """: bool : A blank zeroth frame is present so frames are 1-indexed."""
-        return self._zeroth_frame
-
-    @property
-    def max_accumulation_time(self):
-        """: float : The maximum accumulation time of all frames."""
-        return self._max_accumulation_time
-
-    @property
-    def accumulation_times(self):
-        """: np.ndarray : The accumulation times of all frames."""
-        return self._accumulation_times
-
-    @property
-    def intensity_corrections(self):
-        """: np.ndarray : The intensity_correction per frame."""
-        return self._intensity_corrections
+    def is_compressed(self):
+        """: bool : HDF array is compressed or not."""
+        return self._compressed
 
     def __init__(
         self,
@@ -996,28 +278,54 @@ class TimsTOF(object):
             This is ignored if the polarity is dropped.
             Default is True.
         """
-        #Log a warning if there was not a valid DLL filename
-        if BRUKER_DLL_FILE_NAME == "":
-            logging.warning(
-                "WARNING: "
-                "No Bruker libraries are available for this operating system. "
-                "Mobility and m/z values need to be estimated. "
-                "While this estimation often returns acceptable results with errors "
-                "< 0.02 Th, huge errors (e.g. offsets of 6 Th) have already been "
-                "observed for some samples!"
-            )
-            logging.info("")
+        # need to be set before calling constructor of superclass
+        self._mmap_detector_events = mmap_detector_events
+        self._use_hdf_if_available = use_hdf_if_available
 
+        super().__init__(
+            bruker_d_folder_name,
+            mz_estimation_from_frame=mz_estimation_from_frame,
+            mobility_estimation_from_frame=mobility_estimation_from_frame,
+            drop_polarity=drop_polarity,
+            convert_polarity_to_int=convert_polarity_to_int,
+        )
+
+        if not hasattr(self, "version") or self._version is None:
+            self._version = alphatims.__version__
+
+        if self.version != alphatims.__version__:
+            logging.info(
+                "WARNING: "
+                f"AlphaTims version {self.version} was used to initialize "
+                f"{bruker_d_folder_name}, while the current version of "
+                f"AlphaTims is {alphatims.__version__}."
+            )
+
+        self.slice_as_dataframe = slice_as_dataframe
+        self.use_calibrated_mz_values_as_default(
+            use_calibrated_mz_values_as_default
+        )
+        # Precompile
+        self[0, "raw"]
+
+
+    def _load_data(self,
+                   bruker_d_folder_name: str,
+                   mz_estimation_from_frame: int,
+                   mobility_estimation_from_frame: int,
+                   drop_polarity: bool,
+                   convert_polarity_to_int: bool) -> None:
+        """Load data from disk."""
         if bruker_d_folder_name.endswith("/"):
             bruker_d_folder_name = bruker_d_folder_name[:-1]
         logging.info(f"Importing data from {bruker_d_folder_name}")
+
         if bruker_d_folder_name.endswith(".d"):
             bruker_hdf_file_name = f"{bruker_d_folder_name[:-2]}.hdf"
             hdf_file_exists = os.path.exists(bruker_hdf_file_name)
-            if use_hdf_if_available and hdf_file_exists:
+            if self._use_hdf_if_available and hdf_file_exists:
                 self._import_data_from_hdf_file(
-                    bruker_hdf_file_name,
-                    mmap_detector_events,
+                    bruker_hdf_file_name
                 )
                 self.bruker_hdf_file_name = bruker_hdf_file_name
             else:
@@ -1030,173 +338,20 @@ class TimsTOF(object):
                     mobility_estimation_from_frame,
                     drop_polarity,
                     convert_polarity_to_int,
-                    mmap_detector_events,
                 )
         elif bruker_d_folder_name.endswith(".hdf"):
             self._import_data_from_hdf_file(
-                bruker_d_folder_name,
-                mmap_detector_events,
+                bruker_d_folder_name
             )
             self.bruker_hdf_file_name = bruker_d_folder_name
         else:
             raise NotImplementedError(
                 "WARNING: file extension not understood"
             )
-        if not hasattr(self, "version"):
-            self._version = "N.A."
-        if self.version != alphatims.__version__:
-            logging.info(
-                "WARNING: "
-                f"AlphaTims version {self.version} was used to initialize "
-                f"{bruker_d_folder_name}, while the current version of "
-                f"AlphaTims is {alphatims.__version__}."
-            )
-        self.slice_as_dataframe = slice_as_dataframe
-        self.use_calibrated_mz_values_as_default(
-            use_calibrated_mz_values_as_default
-        )
-        # Precompile
-        self[0, "raw"]
-        logging.info(f"Successfully imported data from {bruker_d_folder_name}")
 
-    def __len__(self):
-        return len(self.intensity_values)
-
-    def __hash__(self):
-        return hash(self.bruker_d_folder_name)
-
-    def _import_data_from_d_folder(
-        self,
-        bruker_d_folder_name: str,
-        mz_estimation_from_frame: int,
-        mobility_estimation_from_frame: int,
-        drop_polarity: bool = True,
-        convert_polarity_to_int: bool = True,
-        mmap_detector_events: bool = True
-    ):
-        logging.info(f"Using .d import for {bruker_d_folder_name}")
-        self._version = alphatims.__version__
-        self._zeroth_frame = True
-        (
-            self._acquisition_mode,
-            global_meta_data,
-            self._frames,
-            self._fragment_frames,
-            self._precursors,
-            calibration_available,
-        ) = read_bruker_sql(
-            bruker_d_folder_name,
-            self._zeroth_frame,
-            drop_polarity,
-            convert_polarity_to_int,
-        )
-        self._meta_data = dict(
-            zip(global_meta_data.Key, global_meta_data.Value)
-        )
-        (
-            self._push_indptr,
-            self._tof_indices,
-            self._intensity_values,
-        ) = read_bruker_binary(
-            self.frames,
-            bruker_d_folder_name,
-            int(self._meta_data["TimsCompressionType"]),
-            int(self._meta_data["MaxNumPeaksPerScan"]),
-        )
-        logging.info(f"Indexing {bruker_d_folder_name}...")
-        self._use_calibrated_mz_values_as_default = False
-        self._frame_max_index = self.frames.shape[0]
-        self._scan_max_index = int(self.frames.NumScans.max()) + 1
-        self._tof_max_index = int(self.meta_data["DigitizerNumSamples"]) + 1
-        self._rt_values = self.frames.Time.values.astype(np.float64)
-        self._mobility_min_value = float(
-            self.meta_data["OneOverK0AcqRangeLower"]
-        )
-        self._mobility_max_value = float(
-            self.meta_data["OneOverK0AcqRangeUpper"]
-        )
-        self._accumulation_times = self.frames.AccumulationTime.values.astype(
-            np.float64
-        )
-        self._max_accumulation_time = np.max(self._accumulation_times)
-        self._intensity_corrections = self._max_accumulation_time / self._accumulation_times
-        if (mobility_estimation_from_frame != 0) and calibration_available:
-            import ctypes
-            with alphatims.bruker.open_bruker_d_folder(
-                bruker_d_folder_name
-            ) as (bruker_dll, bruker_d_folder_handle):
-                logging.info(
-                    f"Fetching mobility values from {bruker_d_folder_name}"
-                )
-                indices = np.arange(self.scan_max_index).astype(np.float64)
-                self._mobility_values = np.empty_like(indices)
-                bruker_dll.tims_scannum_to_oneoverk0(
-                    bruker_d_folder_handle,
-                    mobility_estimation_from_frame,
-                    indices.ctypes.data_as(
-                        ctypes.POINTER(ctypes.c_double)
-                    ),
-                    self.mobility_values.ctypes.data_as(
-                        ctypes.POINTER(ctypes.c_double)
-                    ),
-                    self.scan_max_index
-                )
-        else:
-            if (mobility_estimation_from_frame != 0):
-                logging.info(
-                    "Bruker DLL not available, estimating mobility values"
-                )
-            self._mobility_values = self.mobility_max_value - (
-                self.mobility_max_value - self.mobility_min_value
-            ) / self.scan_max_index * np.arange(self.scan_max_index)
-        mz_min_value = float(self.meta_data["MzAcqRangeLower"])
-        mz_max_value = float(self.meta_data["MzAcqRangeUpper"])
-        if self.meta_data["AcquisitionSoftware"] == "Bruker otofControl":
-            logging.warning(
-                "WARNING: Acquisition software is Bruker otofControl, "
-                "mz min/max values are assumed to be 5 m/z wider than "
-                "defined in analysis.tdf!"
-            )
-            mz_min_value -= 5
-            mz_max_value += 5
-        tof_intercept = np.sqrt(mz_min_value)
-        tof_slope = (
-            np.sqrt(mz_max_value) - tof_intercept
-        ) / self.tof_max_index
-        if (mz_estimation_from_frame != 0) and calibration_available:
-            import ctypes
-            with alphatims.bruker.open_bruker_d_folder(
-                bruker_d_folder_name
-            ) as (bruker_dll, bruker_d_folder_handle):
-                logging.info(
-                    f"Fetching mz values from {bruker_d_folder_name}"
-                )
-                indices = np.arange(self.tof_max_index).astype(np.float64)
-                self._mz_values = np.empty_like(indices)
-                bruker_dll.tims_index_to_mz(
-                    bruker_d_folder_handle,
-                    mz_estimation_from_frame,
-                    indices.ctypes.data_as(
-                        ctypes.POINTER(ctypes.c_double)
-                    ),
-                    self._mz_values.ctypes.data_as(
-                        ctypes.POINTER(ctypes.c_double)
-                    ),
-                    self.tof_max_index
-                )
-        else:
-            if (mz_estimation_from_frame != 0):
-                logging.info(
-                    "Bruker DLL not available, estimating mz values"
-                )
-            self._mz_values = (
-                tof_intercept + tof_slope * np.arange(self.tof_max_index)
-            )**2
-        self._parse_quad_indptr()
-        self._intensity_min_value = int(np.min(self.intensity_values))
-        self._intensity_max_value = int(np.max(self.intensity_values))
-        if self.acquisition_mode == "diaPASEF":
-            self.set_cycle()
+    def _get_empty_array_constructor_function(self) -> Callable:
+        """Get the function to create empty arrays for this class."""
+        return tm.empty
 
     def save_as_hdf(
         self,
@@ -1280,12 +435,11 @@ class TimsTOF(object):
     def _import_data_from_hdf_file(
         self,
         bruker_d_folder_name: str,
-        mmap_detector_events: bool = False,
     ):
         logging.info(f"Using HDF import for {bruker_d_folder_name}")
         with h5py.File(bruker_d_folder_name, "r") as hdf_root:
             mmap_arrays = []
-            if mmap_detector_events:
+            if self._mmap_detector_events:
                 mmap_arrays.append("/raw/_tof_indices")
                 mmap_arrays.append("/raw/_intensity_values")
             self.__dict__ = alphatims.utils.create_dict_from_hdf_group(
@@ -1847,113 +1001,6 @@ class TimsTOF(object):
             )
         )
 
-    def _parse_quad_indptr(self) -> None:
-        logging.info("Indexing quadrupole dimension")
-        frame_ids = self.fragment_frames.Frame.values + 1
-        scan_begins = self.fragment_frames.ScanNumBegin.values
-        scan_ends = self.fragment_frames.ScanNumEnd.values
-        isolation_mzs = self.fragment_frames.IsolationMz.values
-        isolation_widths = self.fragment_frames.IsolationWidth.values
-        precursors = self.fragment_frames.Precursor.values
-        if (precursors[0] is None):
-            if self.zeroth_frame:
-                frame_groups = self.frames.MsMsType.values[1:]
-            else:
-                frame_groups = self.frames.MsMsType.values
-            precursor_frames = np.flatnonzero(frame_groups == 0)
-            group_sizes = np.diff(precursor_frames)
-            group_size = group_sizes[0]
-            if np.any(group_sizes != group_size):
-                raise ValueError("Sample type not understood")
-            precursors = (1 + frame_ids - frame_ids[0]) % group_size
-            if self.zeroth_frame:
-                precursors[0] = 0
-            self.fragment_frames.Precursor = precursors
-            self._acquisition_mode = "diaPASEF"
-        scan_max_index = self.scan_max_index
-        frame_max_index = self.frame_max_index
-        quad_indptr = [0]
-        quad_low_values = []
-        quad_high_values = []
-        precursor_indices = []
-        high = -1
-        for (
-            frame_id,
-            scan_begin,
-            scan_end,
-            isolation_mz,
-            isolation_width,
-            precursor
-        ) in zip(
-            frame_ids - 1,
-            scan_begins,
-            scan_ends,
-            isolation_mzs,
-            isolation_widths / 2,
-            precursors
-        ):
-            low = frame_id * scan_max_index + scan_begin
-            # TODO: CHECK?
-            # if low < high:
-            #     print(frame_id, low, frame_id * scan_max_index + scan_end, high, low - high)
-            if low != high:
-                quad_indptr.append(low)
-                quad_low_values.append(-1)
-                quad_high_values.append(-1)
-                precursor_indices.append(0)
-            high = frame_id * scan_max_index + scan_end
-            quad_indptr.append(high)
-            quad_low_values.append(isolation_mz - isolation_width)
-            quad_high_values.append(isolation_mz + isolation_width)
-            precursor_indices.append(precursor)
-        quad_max_index = scan_max_index * frame_max_index
-        if high < quad_max_index:
-            quad_indptr.append(quad_max_index)
-            quad_low_values.append(-1)
-            quad_high_values.append(-1)
-            precursor_indices.append(0)
-        self._quad_mz_values = np.stack([quad_low_values, quad_high_values]).T
-        self._precursor_indices = np.array(precursor_indices)
-        self._raw_quad_indptr = np.array(quad_indptr)
-        self._quad_indptr = self.push_indptr[self._raw_quad_indptr]
-        self._quad_max_mz_value = np.max(self.quad_mz_values[:, 1])
-        self._quad_min_mz_value = np.min(
-            self.quad_mz_values[
-                self.quad_mz_values[:, 0] >= 0,
-                0
-            ]
-        )
-        self._precursor_max_index = int(np.max(self.precursor_indices)) + 1
-        if self._acquisition_mode == "diaPASEF":
-            offset = int(self.zeroth_frame)
-            cycle_index = np.searchsorted(
-                self.raw_quad_indptr,
-                (self.scan_max_index) * (self.precursor_max_index + offset),
-                "r"
-            ) + 1
-            repeats = np.diff(self.raw_quad_indptr[: cycle_index])
-            if self.zeroth_frame:
-                repeats[0] -= self.scan_max_index
-            cycle_length = self.scan_max_index * self.precursor_max_index
-            repeat_length = np.sum(repeats)
-            if repeat_length != cycle_length:
-                repeats[-1] -= repeat_length - cycle_length
-            self._dia_mz_cycle = np.empty((cycle_length, 2))
-            self._dia_mz_cycle[:, 0] = np.repeat(
-                self.quad_mz_values[: cycle_index - 1, 0],
-                repeats
-            )
-            self._dia_mz_cycle[:, 1] = np.repeat(
-                self.quad_mz_values[: cycle_index - 1, 1],
-                repeats
-            )
-            self._dia_precursor_cycle = np.repeat(
-                self.precursor_indices[: cycle_index - 1],
-                repeats
-            )
-        else:
-            self._dia_mz_cycle = np.empty((0, 2))
-            self._dia_precursor_cycle = np.empty(0, dtype=np.int64)
 
     def index_precursors(
         self,
@@ -2289,54 +1336,6 @@ class TimsTOF(object):
                 )
         self._use_calibrated_mz_values_as_default = use_calibrated_mz_values
 
-    def set_cycle(self) -> None:
-        """Set the quad cycle for diaPASEF data.
-        """
-        ms1_diffs = np.diff(
-            np.flatnonzero(self.frames.MsMsType[int(self.zeroth_frame):]==0)
-        )
-        subcycle_length_count = np.bincount(ms1_diffs)
-        if np.all(subcycle_length_count[:-1]!=0):
-            raise ValueError("No consistent subcycle length")
-        subcycle_length = len(subcycle_length_count) - 1
-        max_precursor = len(self.fragment_frames.Precursor.unique())
-        subcycle_count = max_precursor // (subcycle_length - 1)
-        frame_count = subcycle_length * subcycle_count
-        cycle = np.zeros(
-            (
-                frame_count,
-                self.scan_max_index,
-                2,
-            )
-        )
-        precursor_frames = np.ones(frame_count, dtype=np.bool_)
-
-        subframes = self.fragment_frames.drop("Frame", axis=1)
-        for max_index in range(1, len(subframes)):
-            subframe = subframes.iloc[max_index]
-            if subframe.equals(subframes.iloc[0]):
-                break
-        for index, row in self.fragment_frames[:max_index].iterrows():
-            frame = int(row.Frame - self.zeroth_frame)
-            scan_begin = int(row.ScanNumBegin)
-            scan_end = int(row.ScanNumEnd)
-            low_mz = row.IsolationMz - row.IsolationWidth / 2
-            high_mz = row.IsolationMz + row.IsolationWidth / 2
-            cycle[
-                frame,
-                scan_begin: scan_end,
-            ] = (low_mz, high_mz)
-            precursor_frames[frame] = False
-
-        cycle[precursor_frames] = (-1, -1)
-        cycle = cycle.reshape(
-            (
-                subcycle_count,
-                subcycle_length,
-                *cycle.shape[1:]
-            )
-        )
-        self._cycle = cycle
 
 
 class PrecursorFloatError(TypeError):

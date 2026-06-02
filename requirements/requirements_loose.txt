@@ -1,3 +1,5 @@
+alphabase
+alpharaw
 click
 h5py
 numba
